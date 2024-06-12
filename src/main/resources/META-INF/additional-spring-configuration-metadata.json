@@ -1,0 +1,21 @@
+{"properties": [
+  {
+    "name": "application.client.url",
+    "type": "java.lang.String",
+    "description": "A description for 'application.client.url'"
+  },
+  {
+    "name": "application.token.secret-key",
+    "type": "java.lang.String",
+    "description": "A description for 'application.token.secret-key'"
+  },
+  {
+    "name": "application.token.refresh-token.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'application.token.refresh-token.expiration'"
+  },{
+    "name": "application.token.access-token.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'application.token.access-token.expiration'"
+  }
+]}
