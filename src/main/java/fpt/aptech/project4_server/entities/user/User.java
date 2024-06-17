@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.entities.user;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -17,7 +18,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -32,9 +37,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class User implements UserDetails {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_custom")
+    @SequenceGenerator(sequenceName = "sequence_custom", name = "sequence_custom", allocationSize = 1, initialValue = 1000)
     private Integer id;
 
     @Email
@@ -45,7 +50,25 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private TypeRole role;
+
+    @Enumerated(EnumType.STRING)
+    private TypeLogin typeLogin;
+
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
+
+    @OneToOne(mappedBy = "user")
+    private UserDetail userDetail;
+
+    @CreationTimestamp
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime createAt;
+
+    @UpdateTimestamp
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateAt;
 
     @Override
     public String getUsername() {
@@ -62,12 +85,4 @@ public class User implements UserDetails {
         return role.getAuthrities();
     }
 
-    @CreationTimestamp
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createAt;
-
-    @UpdateTimestamp
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateAt;
 }

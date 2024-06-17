@@ -8,14 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fpt.aptech.project4_server.entities.user.Token;
+import fpt.aptech.project4_server.entities.user.TypeDevice;
 
 @Repository
 public interface TokenRepo extends JpaRepository<Token, Integer> {
     @Query("""
-                select t from Token t inner join User u on t.user.id = u.id
-             where u.id =:userId and (t.expired = false or t.revoked = false)
+            select t from Token t inner join User u on t.user.id = u.id
+                where u.id =:userId
+                    and (t.expired = false or t.revoked = false)
+                    and t.typeDevice =:typeDevice
             """)
-    List<Token> findAllValidTokensByUser(Integer userId);
+    List<Token> findAllValidTokensByUser(Integer userId, TypeDevice typeDevice);
 
     Optional<Token> findByToken(String token);
 }

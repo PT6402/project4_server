@@ -1,6 +1,7 @@
 package fpt.aptech.project4_server.entities.user;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -19,8 +20,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class UserDetail extends BaseEntity {
-    private String firstName;
-    private String lastName;
+    @Column(name = "fullname", columnDefinition = "nvarchar(200)")
+    private String fullname;
     private String avartar;
 
     @OneToOne

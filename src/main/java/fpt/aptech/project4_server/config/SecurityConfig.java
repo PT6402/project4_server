@@ -33,7 +33,7 @@ public class SecurityConfig {
     private String clientUrl;
 
     private static final String[] LIST_NO_AUTH = {
-            "api/auth/**", "/login/oauth2**"
+            "api/v1/auth/**",
     };
 
     @Bean

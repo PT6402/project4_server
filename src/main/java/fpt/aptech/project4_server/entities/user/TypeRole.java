@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-public enum Role {
+public enum TypeRole {
     ADMIN, USER;
 
     public List<SimpleGrantedAuthority> getAuthrities() {
