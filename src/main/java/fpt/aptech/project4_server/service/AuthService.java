@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import fpt.aptech.project4_server.dto.authenticate.AuthReq;
 import fpt.aptech.project4_server.dto.authenticate.RegisterReq;
 import fpt.aptech.project4_server.dto.authenticate.ResetPasswordReq;
+import fpt.aptech.project4_server.entities.user.TypeDevice;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
     ResponseEntity<?> register(RegisterReq req);
@@ -18,4 +21,7 @@ public interface AuthService {
     ResponseEntity<?> resetPasswordUser(ResetPasswordReq req);
 
     ResponseEntity<?> checkCodeReset(ResetPasswordReq req);
+
+    ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response, TypeDevice typeDevice);
+
 }

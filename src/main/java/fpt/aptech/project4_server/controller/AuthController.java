@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import fpt.aptech.project4_server.dto.authenticate.AuthReq;
 import fpt.aptech.project4_server.dto.authenticate.RegisterReq;
 import fpt.aptech.project4_server.dto.authenticate.ResetPasswordReq;
+import fpt.aptech.project4_server.entities.user.TypeDevice;
 import fpt.aptech.project4_server.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -48,6 +51,12 @@ public class AuthController {
     @PostMapping("/check-code-reset")
     public ResponseEntity<?> checkCodeReset(@RequestBody ResetPasswordReq req) {
         return authService.checkCodeReset(req);
+    }
+
+    @GetMapping("/refresh-token/{typeDevice}")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable TypeDevice typeDevice) {
+        return authService.refreshToken(request, response, typeDevice);
     }
 
 }

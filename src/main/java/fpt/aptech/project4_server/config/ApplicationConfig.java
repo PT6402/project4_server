@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
+
 public class ApplicationConfig {
     private final UserRepo userRepo;
 
@@ -53,4 +54,5 @@ public class ApplicationConfig {
                 .setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper;
     }
+
 }

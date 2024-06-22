@@ -28,6 +28,8 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.TokenRepo;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.repository.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -256,6 +258,44 @@ public class AuthServiceImpl implements AuthService {
             return new ResponseEntity<>("token invalid", HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.ok("valid code");
+    }
+
+    @Override
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response,
+            TypeDevice typeDevice) {
+        String refreshToken;
+        String userEmail;
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return new ResponseEntity<>("header Authorization or Bearer not found ", HttpStatus.BAD_REQUEST);
+        }
+
+        refreshToken = authHeader.substring(7);
+        userEmail = jwtService.extractUsername(refreshToken);
+        if (userEmail != null) {
+            var user = this.userRepo.findByEmail(userEmail).orElseThrow();
+            if (jwtService.inValidToken(refreshToken, user)) {
+                String accessToken = jwtService.generateAccessToken(user);
+                // revoke token old by type device
+                revokeAllUserTokens(user, typeDevice);
+
+                // save token new by type device
+                var tokenUser = Token.builder()
+                        .user(user)
+                        .token(accessToken)
+                        .expired(false)
+                        .revoked(false)
+                        .typeDevice(typeDevice)
+                        .isResetPassword(false)
+                        .build();
+                tokenRepo.save(tokenUser);
+
+                return ResponseEntity.ok(accessToken);
+            }
+        }
+
+        return new ResponseEntity<>("token invalid", HttpStatus.BAD_REQUEST);
     }
 
     //

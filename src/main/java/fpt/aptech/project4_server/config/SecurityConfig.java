@@ -32,6 +32,9 @@ public class SecurityConfig {
     @Value("${application.client.url}")
     private String clientUrl;
 
+    @Value("${application.mobile.url}")
+    private String mobileUrl;
+
     private static final String[] LIST_NO_AUTH = {
             "api/v1/auth/**",
     };
@@ -61,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(clientUrl));
+        configuration.setAllowedOrigins(List.of(clientUrl, mobileUrl));
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
