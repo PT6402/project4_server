@@ -28,14 +28,13 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.TokenRepo;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.repository.UserRepo;
+import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -48,11 +47,12 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
 
     @Override
-    public ResponseEntity<?> register(RegisterReq req) {
+    public ResponseEntity<ResultDto<?>> register(RegisterReq req) {
         User checkExist = userRepo.findByEmail(req.getEmail()).orElse(null);
 
         if (checkExist != null) {
-            return new ResponseEntity<>("user exist", HttpStatus.CONFLICT);
+            ResultDto<?> response = ResultDto.builder().status(false).message("user exist").build();
+            return new ResponseEntity<ResultDto<?>>(response, HttpStatus.CONFLICT);
         }
 
         // create user
@@ -63,7 +63,8 @@ public class AuthServiceImpl implements AuthService {
 
         if (req.getTypeLogin().equals(TypeLogin.GOOGLE)) {
             if (!isValidAccessTokenGG(req.getPassword())) {
-                return new ResponseEntity<>("invalid token", HttpStatus.BAD_REQUEST);
+                ResultDto<?> response = ResultDto.builder().message("invalid token").status(false).build();
+                return new ResponseEntity<ResultDto<?>>(response, HttpStatus.BAD_REQUEST);
             } else {
                 newUser.setTypeLogin(TypeLogin.GOOGLE);
                 newUser.setPassword(null);
@@ -97,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
                     .build();
             tokenRepo.save(tokenUser);
 
-            var response = AutheRes.builder()
+            var result = AutheRes.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .email(userSaved.getEmail())
@@ -105,23 +106,28 @@ public class AuthServiceImpl implements AuthService {
                     .role(userSaved.getRole())
                     .typeLogin(userSaved.getTypeLogin())
                     .build();
+            ResultDto<?> response = ResultDto.builder().message("register gg success").status(true).model(result)
+                    .build();
             return ResponseEntity.ok(response);
         }
-        return ResponseEntity.ok("register successfully !");
+        ResultDto<?> response = ResultDto.builder().message("register mail success").status(true).build();
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<?> authenticate(AuthReq req) {
+    public ResponseEntity<ResultDto<?>> authenticate(AuthReq req) {
         // check exist account
         User user = userRepo.findByEmail(req.getEmail()).orElse(null);
         if (user == null) {
-            return new ResponseEntity<>("user not found", HttpStatus.NOT_FOUND);
+            ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
+            return new ResponseEntity<ResultDto<?>>(response, HttpStatus.NOT_FOUND);
         }
 
         // check type login
         if (req.getTypeLogin().equals(TypeLogin.GOOGLE)) {
             if (!isValidAccessTokenGG(req.getPassword())) {
-                return new ResponseEntity<>("invalid token", HttpStatus.BAD_REQUEST);
+                ResultDto<?> response = ResultDto.builder().status(false).message("invalid token").build();
+                return new ResponseEntity<ResultDto<?>>(response, HttpStatus.BAD_REQUEST);
             }
 
             // TODO: check email match email in google
@@ -130,7 +136,8 @@ public class AuthServiceImpl implements AuthService {
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
             } catch (AuthenticationException e) {
-                return new ResponseEntity<>("password wrond", HttpStatus.BAD_REQUEST);
+                ResultDto<?> response = ResultDto.builder().message("password wrond").status(false).build();
+                return new ResponseEntity<ResultDto<?>>(response, HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -148,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         tokenRepo.save(tokenUser);
 
-        var response = AutheRes.builder()
+        var result = AutheRes.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .email(user.getEmail())
@@ -156,32 +163,38 @@ public class AuthServiceImpl implements AuthService {
                 .fullname(userDetailRepo.findByUser(user).orElse(null).getFullname())
                 .role(user.getRole())
                 .build();
+
+        ResultDto<?> response = ResultDto.builder().message("login success").status(true).model(result).build();
         return ResponseEntity.ok(response);
 
     }
 
     @Override
-    public ResponseEntity<?> checkTypeLogin(String email) {
+    public ResponseEntity<ResultDto<?>> checkTypeLogin(String email) {
         var user = userRepo.findByEmail(email).orElse(null);
         if (user == null) {
-            return new ResponseEntity<>("user not found", HttpStatus.NOT_FOUND);
+            ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
+            return new ResponseEntity<ResultDto<?>>(response, HttpStatus.NOT_FOUND);
         } else {
-            return ResponseEntity.ok(user.getTypeLogin());
+            ResultDto<?> response = ResultDto.builder().model(user.getTypeLogin()).status(true).build();
+            return ResponseEntity.ok(response);
         }
     }
 
     @Override
-    public ResponseEntity<?> forgotPassword(String email) {
+    public ResponseEntity<ResultDto<?>> forgotPassword(String email) {
 
         try {
             var user = userRepo.findByEmail(email).orElse(null);
 
             if (user == null) {
-                return new ResponseEntity<>("user not found", HttpStatus.NOT_FOUND);
+                ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
 
             if (user.getTypeLogin().equals(TypeLogin.GOOGLE)) {
-                return new ResponseEntity<>("type invalid", HttpStatus.BAD_REQUEST);
+                ResultDto<?> response = ResultDto.builder().message("type invalid").status(false).build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
 
             Random random = new Random();
@@ -189,10 +202,10 @@ public class AuthServiceImpl implements AuthService {
             var checkSendMail = mailService.sendMail(email, "reset password",
                     "this is code to reset password: " + String.format("%04d", randomNumber));
             if (!checkSendMail) {
-                return new ResponseEntity<>("mail send fail!", HttpStatus.BAD_REQUEST);
+                ResultDto<?> response = ResultDto.builder().message("mail send fail!").status(false).build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             } else {
-                String accessToken = jwtService.generateAccessToken(user);
-
+                String accessToken = jwtService.generateResetPass(user);
                 var token = Token.builder()
                         .user(user)
                         .token(accessToken + "|" + String.format("%04d",
@@ -202,73 +215,105 @@ public class AuthServiceImpl implements AuthService {
                         .isResetPassword(true)
                         .build();
                 tokenRepo.save(token);
-
-                return ResponseEntity.ok(accessToken);
+                ResultDto<?> response = ResultDto.builder().message("send mail success").status(true).model(accessToken)
+                        .build();
+                return ResponseEntity.ok(response);
             }
 
         } catch (Exception e) {
-            return new ResponseEntity<>("mail send fail!", HttpStatus.BAD_REQUEST);
+            ResultDto<?> response = ResultDto.builder().message("mail send fail!").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
-    public ResponseEntity<?> resetPasswordUser(ResetPasswordReq req) {
-        if (jwtService.extractExpiration(req.getAccessToken()).before(new Date())) {
-            return new ResponseEntity<>("token expired", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ResultDto<?>> resetPasswordUser(ResetPasswordReq req) {
+        try {
+            if (jwtService.extractExpiration(req.getAccessToken()).before(new Date())) {
+                ResultDto<?> response = ResultDto.builder().message("token expired").status(false).build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+        } catch (NullPointerException e) {
+            ResultDto<?> response = ResultDto.builder().message("token expired").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().message("send mail fail").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         String email = jwtService.extractUsername(req.getAccessToken());
         if (!email.equals(req.getEmail())) {
-            return new ResponseEntity<>("username not match", HttpStatus.BAD_REQUEST);
+            ResultDto<?> response = ResultDto.builder().message("username not match").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         User user = userRepo.findByEmail(email).orElse(null);
         if (user == null) {
-            return new ResponseEntity<>("user not found", HttpStatus.NOT_FOUND);
+            ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         Token checkToken = tokenRepo.findByToken(req.getAccessToken() + "|" + req.getCode())
                 .orElse(null);
         if (checkToken == null) {
-            return new ResponseEntity<>("token invalid", HttpStatus.BAD_REQUEST);
+            ResultDto<?> response = ResultDto.builder().message("token invalid").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         userRepo.save(user);
-        return ResponseEntity.ok("reset password success!");
+        ResultDto<?> response = ResultDto.builder().message("reset password success!").status(true).build();
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<?> checkCodeReset(ResetPasswordReq req) {
-        if (jwtService.extractExpiration(req.getAccessToken()).before(new Date())) {
-            return new ResponseEntity<>("token expired", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ResultDto<?>> checkCodeReset(ResetPasswordReq req) {
+        try {
+            if (jwtService.extractExpiration(req.getAccessToken()).before(new Date())) {
+                ResultDto<?> response = ResultDto.builder().message("token expired").status(false).build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+        } catch (NullPointerException e) {
+            ResultDto<?> response = ResultDto.builder().message("token expired").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().message("send mail fail").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+
         String email = jwtService.extractUsername(req.getAccessToken());
         if (!email.equals(req.getEmail())) {
-            return new ResponseEntity<>("username not match", HttpStatus.BAD_REQUEST);
+            ResultDto<?> response = ResultDto.builder().message("username not match").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         User user = userRepo.findByEmail(email).orElse(null);
         if (user == null) {
-            return new ResponseEntity<>("user not found", HttpStatus.NOT_FOUND);
+            ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
-        log.info("this is code: " + req.getCode());
         Token checkToken = tokenRepo.findByToken(req.getAccessToken() + "|" + req.getCode().toString())
                 .orElse(null);
         if (checkToken == null) {
-            return new ResponseEntity<>("token invalid", HttpStatus.BAD_REQUEST);
+            ResultDto<?> response = ResultDto.builder().message("code invalid").status(false).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok("valid code");
+        ResultDto<?> response = ResultDto.builder().message("valid code").status(true).build();
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response,
+    public ResponseEntity<ResultDto<?>> refreshToken(HttpServletRequest request, HttpServletResponse response,
             TypeDevice typeDevice) {
         String refreshToken;
         String userEmail;
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ResponseEntity<>("header Authorization or Bearer not found ", HttpStatus.BAD_REQUEST);
+            ResultDto<?> result = ResultDto.builder().message("header Authorization or Bearer not found ").status(false)
+                    .build();
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
         refreshToken = authHeader.substring(7);
@@ -291,11 +336,16 @@ public class AuthServiceImpl implements AuthService {
                         .build();
                 tokenRepo.save(tokenUser);
 
-                return ResponseEntity.ok(accessToken);
+                ResultDto<?> result = ResultDto.builder().message("refresh token success").model(accessToken)
+                        .status(true).build();
+
+                return ResponseEntity.ok(result);
             }
         }
 
-        return new ResponseEntity<>("token invalid", HttpStatus.BAD_REQUEST);
+        ResultDto<?> result = ResultDto.builder().message("token invalid")
+                .status(false).build();
+        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
 
     //

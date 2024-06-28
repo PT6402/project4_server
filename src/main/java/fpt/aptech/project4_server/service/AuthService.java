@@ -6,22 +6,24 @@ import fpt.aptech.project4_server.dto.authenticate.AuthReq;
 import fpt.aptech.project4_server.dto.authenticate.RegisterReq;
 import fpt.aptech.project4_server.dto.authenticate.ResetPasswordReq;
 import fpt.aptech.project4_server.entities.user.TypeDevice;
+import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-    ResponseEntity<?> register(RegisterReq req);
+    ResponseEntity<ResultDto<?>> register(RegisterReq req);
 
-    ResponseEntity<?> authenticate(AuthReq req);
+    ResponseEntity<ResultDto<?>> authenticate(AuthReq req);
 
-    ResponseEntity<?> checkTypeLogin(String email);
+    ResponseEntity<ResultDto<?>> checkTypeLogin(String email);
 
-    ResponseEntity<?> forgotPassword(String email);
+    ResponseEntity<ResultDto<?>> forgotPassword(String email);
 
-    ResponseEntity<?> resetPasswordUser(ResetPasswordReq req);
+    ResponseEntity<ResultDto<?>> resetPasswordUser(ResetPasswordReq req);
 
-    ResponseEntity<?> checkCodeReset(ResetPasswordReq req);
+    ResponseEntity<ResultDto<?>> checkCodeReset(ResetPasswordReq req);
 
-    ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response, TypeDevice typeDevice);
+    ResponseEntity<ResultDto<?>> refreshToken(HttpServletRequest request, HttpServletResponse response,
+            TypeDevice typeDevice);
 
 }

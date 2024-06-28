@@ -33,6 +33,9 @@ public class JwtServiceImpl implements JwtService {
     @Value("${application.token.refresh-token.expiration}")
     private long refreshTokenExpiration;
 
+    @Value("${application.token.access-token-reset-pass.expiration}")
+    private long accessTokenResetPassExpiration;
+
     @Override
     public String generateAccessToken(UserDetails userDetails) {
         return generateToken(userDetails, accessTokenExpiration);
@@ -41,6 +44,11 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(userDetails, refreshTokenExpiration);
+    }
+
+    @Override
+    public String generateResetPass(UserDetails userDetails) {
+        return generateToken(userDetails, accessTokenResetPassExpiration);
     }
 
     @Override
