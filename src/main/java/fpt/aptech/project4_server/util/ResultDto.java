@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResultDto<T> {
+
     private T model;
     private String message;
     private boolean status;
