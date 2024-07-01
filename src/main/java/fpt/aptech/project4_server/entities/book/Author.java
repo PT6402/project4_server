@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.book;
+package fpt.aptech.project4_server.entities.book;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.*;

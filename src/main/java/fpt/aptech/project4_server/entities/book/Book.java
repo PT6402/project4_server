@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.book;
+package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
