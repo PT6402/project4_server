@@ -1,7 +1,6 @@
 package fpt.aptech.project4_server.entities.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.book.Feedback;
 import fpt.aptech.project4_server.entities.book.Review;
