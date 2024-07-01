@@ -1,9 +1,9 @@
 package fpt.aptech.project4_server.entities.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.book.Feedback;
 import fpt.aptech.project4_server.entities.book.Review;
-import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -33,13 +33,13 @@ public class UserDetail extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Review> reviews;
-    
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Feedback> feedbacks;
-    
+
 }

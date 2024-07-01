@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "tbCoupon")
-public class Coupon extends BaseEntity{
+public class Coupon extends BaseEntity {
     private String code;
-    
+
 }
