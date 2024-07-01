@@ -36,7 +36,7 @@ public class SecurityConfig {
     private String mobileUrl;
 
     private static final String[] LIST_NO_AUTH = {
-            "api/v1/auth/**", "api/v1/cate/**", "/v2/api-docs",
+            "api/v1/auth/**","api/v1/cate/**","/v2/api-docs",
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/swagger-resources",

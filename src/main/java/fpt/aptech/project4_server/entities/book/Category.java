@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -18,9 +19,12 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "tbCategory")
-public class Category extends BaseEntity {
+public class Category extends BaseEntity{
     private String name;
+    private String description;
+    private String pathImage;
 
+    
     @ManyToMany(mappedBy = "categories")
     private List<Book> books;
 }

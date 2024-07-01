@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class Image extends BaseEntity {
 
     private String cover;
+
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;

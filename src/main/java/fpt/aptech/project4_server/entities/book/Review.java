@@ -20,14 +20,14 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "tbReview")
 public class Review extends BaseEntity {
-
+    
     private String content;
     private int rating;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
-
+    
     @ManyToOne
     @JoinColumn(name = "user_detail_id")
     private UserDetail userDetail;
