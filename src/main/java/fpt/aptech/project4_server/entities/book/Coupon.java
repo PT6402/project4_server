@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.book;
+package fpt.aptech.project4_server.entities.book;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "tbCoupon")
-public class Coupon extends BaseEntity{
+public class Coupon extends BaseEntity {
     private String code;
-    
+
 }

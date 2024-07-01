@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.book;
+package fpt.aptech.project4_server.entities.book;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.user.UserDetail;
@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,11 +18,15 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "tbFeedback")
-public class Feedback extends BaseEntity {
+@Table(name = "tbReview")
+public class Review extends BaseEntity {
 
     private String content;
-    private LocalDateTime feedbackDate;
+    private int rating;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private Book book;
 
     @ManyToOne
     @JoinColumn(name = "user_detail_id")

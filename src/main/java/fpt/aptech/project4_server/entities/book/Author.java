@@ -1,12 +1,11 @@
-package fpt.aptech.project4_server.book;
+package fpt.aptech.project4_server.entities.book;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -17,10 +16,11 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "tbCategory")
-public class Category extends BaseEntity{
+@Table(name = "tbAuthor")
+public class Author extends BaseEntity {
+
     private String name;
-    
-    @ManyToMany(mappedBy = "categories")
+
+    @ManyToMany(mappedBy = "authors")
     private List<Book> books;
 }
