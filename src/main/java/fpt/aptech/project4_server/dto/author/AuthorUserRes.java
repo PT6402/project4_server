@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.dto.category;
+package fpt.aptech.project4_server.dto.author;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CateUserRes {
+public class AuthorUserRes {
 
     private int id;
     private String name;
-    private String description;
     private String pathImage;
 }
