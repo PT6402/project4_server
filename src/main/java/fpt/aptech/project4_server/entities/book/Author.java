@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.entities.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -20,7 +21,9 @@ import lombok.experimental.SuperBuilder;
 public class Author extends BaseEntity {
 
     private String name;
+    private String pathImage;
 
     @ManyToMany(mappedBy = "authors")
+    @JsonIgnore
     private List<Book> books;
 }
