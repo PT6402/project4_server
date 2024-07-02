@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,10 +51,10 @@ public class CateController {
         return categoryService.CateUserShow();
     }
 
-    @PutMapping("/update")
+    @PutMapping("/update/{id}")
 
-    public ResponseEntity<?> updateCategory(@RequestParam String name, @RequestParam Integer id, @RequestParam String description, @RequestParam String pathImage) {
+    public ResponseEntity<?> updateCategory(@PathVariable Integer id,@ModelAttribute CateAdCreateRes cate) {
 
-        return categoryService.UpdateCate(id, name, description, pathImage);
+        return categoryService.UpdateCate(id, cate);
     }
 }
