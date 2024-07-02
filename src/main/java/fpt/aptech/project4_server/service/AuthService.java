@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
+
     ResponseEntity<ResultDto<?>> register(RegisterReq req);
 
     ResponseEntity<ResultDto<?>> authenticate(AuthReq req);
