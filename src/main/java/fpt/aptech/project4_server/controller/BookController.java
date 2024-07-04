@@ -4,14 +4,15 @@
  */
 package fpt.aptech.project4_server.controller;
 
-import static com.fasterxml.jackson.databind.util.ClassUtil.name;
+import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
+import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
-import fpt.aptech.project4_server.service.CateService;
-import jakarta.websocket.server.PathParam;
+import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.service.PdfService;
 import java.io.IOException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,42 +20,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
  * @author macos
  */
 @RestController
-@RequestMapping("api/v1/cate")
-
-public class CateController {
-
+@RequestMapping("api/v1/book")
+public class BookController {
     @Autowired
-    CateService categoryService;
-
+    PdfService pv;
+    
     @PostMapping("/create")
 
-    public ResponseEntity<?> createCategory(@ModelAttribute CateAdCreateRes cate) throws IOException {
+    public ResponseEntity<?> createBook(@ModelAttribute BookAdCreateRes bookad) throws IOException {
 
-        return categoryService.createNewCate(cate);
+   
+         return pv.createNewBook(bookad);
+           
     }
-
-    @GetMapping("/userShow")
-    public ResponseEntity<?> Usershow() {
-
-        return categoryService.CateUserShow();
+//    
+    @GetMapping("/showlist")
+    public ResponseEntity<?> BookLUshow(){
+        return pv.BooklistUserShow();
     }
-
-    @PutMapping("/update/{id}")
-
-    public ResponseEntity<?> updateCategory(@PathVariable Integer id,@ModelAttribute CateAdCreateRes cate) {
-
-        return categoryService.UpdateCate(id, cate);
+     @GetMapping("/showone/{id}")
+    public ResponseEntity<?> Bookshow(@PathVariable int id){
+        return pv.BookSingleUserShow(id);
     }
-}
+} 
