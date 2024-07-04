@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Service.java to edit this template
- */
 package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
@@ -25,12 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
-
 import java.nio.file.Paths;
-/**
- *
- * @author macos
- */
 @Service
 public class CateService {
 
@@ -41,7 +32,6 @@ public class CateService {
     private String fileUpload;
 
     public ResponseEntity<ResultDto<?>> createNewCate(CateAdCreateRes cateres) throws IOException {
-
         try {
             var listcheck = caterepo.findAll();
             for (Category c : listcheck) {
@@ -53,11 +43,13 @@ public class CateService {
             }
 
             // Lưu file ảnh
-          MultipartFile multipartFile = cateres.getFileImage();
+            MultipartFile multipartFile = cateres.getFileImage();
 
             String fileName = multipartFile.getOriginalFilename();
+
             FileCopyUtils.copy(cateres.getFileImage().getBytes(), new File(fileUpload+ "/"+ fileName));
           
+
 //            
 //            Category newCate = new Category();
 //            newCate.setName(cateres.getName());
@@ -65,7 +57,7 @@ public class CateService {
 //            newCate.setPathImage("src/main/resources/static/image/"+fileName);
             var newCate = Category.builder().name(cateres.getName())
                     .description(cateres.getDescription())
-                    .pathImage(fileUpload + "\\"+ fileName).build();
+                    .pathImage(fileUpload + "\\" + fileName).build();
 
             caterepo.save(newCate);
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
