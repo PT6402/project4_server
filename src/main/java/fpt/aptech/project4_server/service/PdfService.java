@@ -5,9 +5,13 @@
 package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.category.BookUserRes;
+import fpt.aptech.project4_server.dto.category.BooklistUserRes;
+import fpt.aptech.project4_server.dto.category.CateUserRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
 import java.awt.image.BufferedImage;
@@ -20,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -43,19 +48,23 @@ public class PdfService {
     private PdfRepo pdfrepo;
     @Autowired
     private BookRepo bookrepo;
-     @Autowired
+    @Autowired
     private CateRepo caterepo;
+    @Autowired
+    private ImageBookRepo IBrepo;
     @Value("${upload.path}")
     private String fileUpload;
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
+        ImagesBook images = new ImagesBook();
 
         filePdf.setFile_name(file.getOriginalFilename());
         filePdf.setFile_type(file.getContentType());
         filePdf.setFile_data(file.getBytes());
 
         filePdf = pdfrepo.save(filePdf);
+        images = IBrepo.save(images);
         convertPdfToImages(filePdf);
 
         return pdfrepo.save(filePdf);
@@ -65,8 +74,9 @@ public class PdfService {
 
         try (PDDocument document = Loader.loadPDF(filePdf.getFile_data())) {
             PDFRenderer pdfRenderer = new PDFRenderer(document);
+            List<ImagesBook> imagesList = new ArrayList<>();
 
-            for (int page = 0; page < 1; page++) {
+            for (int page = 0; page < 4; page++) {
                 BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "jpg", baos);
@@ -79,20 +89,17 @@ public class PdfService {
                 Path imagePath = Paths.get(fileUpload, imageName);
                 Files.createDirectories(imagePath.getParent());
                 Files.write(imagePath, imageInByte);
-//                FileCopyUtils.copy(imageInByte, new File(fileUpload+ "/"+ fileEntity.getFile_name() + "_page_" + (page + 1) + ".jpg"));
-//                FilePdf imageEntity = new FilePdf();
-//                imageEntity.setImg_name(FilePdf.); + "_page_" + (page + 1) + ".jpg");
-//                imageEntity.setData(imageInByte);
-//                imageEntity.setFileEntity(fileEntity);
+                
 
-//                imageEntities.add(imageEntity);
-                // Lưu dữ liệu hình ảnh vào thực thể FilePdf
-                if (page == 0) {  // Lưu chỉ hình ảnh đầu tiên vào thực thể, nếu cần tất cả hình ảnh, cần cập nhật cấu trúc thực thể
-                    filePdf.setImg_name(imageName);
-                    filePdf.setImg_data(imageInByte);
-                }
+                ImagesBook images = new ImagesBook();
+                images.setImage_name(imageName);
+                images.setImage_data(imageInByte);
+                images.setCover(page == 0);  // Chỉ đặt cover là true cho hình đầu tiên
+                images.setPdf(filePdf);
+                
+                imagesList.add(images);
             }
-
+             IBrepo.saveAll(imagesList);
         }
 
     }
@@ -104,7 +111,7 @@ public class PdfService {
     public ResponseEntity<ResultDto<?>> createNewBook(BookAdCreateRes bookad) throws IOException {
         try {
             var listcheck = bookrepo.findAll();
-            Book newbook=new Book();
+            Book newbook = new Book();
             for (Book b : listcheck) {
                 if (b.getName() != null && b.getName().equals(bookad.getName())) {
                     ResultDto<?> response = ResultDto.builder().status(false).message("Book is existed").build();
@@ -117,19 +124,19 @@ public class PdfService {
             newbook.setPrice(bookad.getPrice());
             newbook.setName(bookad.getName());
             newbook.setPublisherDescription(bookad.getPublisherDescription());
-            
+
             newbook.setPageQuantity(document.getNumberOfPages());
             newbook.setRating(0);
             newbook.setRatingQuantity(0);
             // Lưu thông tin của sách
-             newbook.setCategories(bookad.getCatelist());
+            newbook.setCategories(bookad.getCatelist());
+            newbook.setAuthors(bookad.getAuthorlist());
             Book savedBook = bookrepo.save(newbook);
-            
+
             // Liên kết thông tin file PDF với sách vừa lưu
             filePdf.setBook(savedBook);
             pdfrepo.save(filePdf);
-           
-          
+
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.OK);
         } catch (Exception e) {
@@ -137,4 +144,100 @@ public class PdfService {
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    public ResponseEntity<ResultDto<?>> BooklistUserShow() {
+        try {
+          
+          var listbook = bookrepo.findAll().stream().map(c -> {
+            ImagesBook image = getImages(c.getFilePdf());
+            byte[] fileImage = image != null ? image.getImage_data() : null;
+            
+            return BooklistUserRes.builder()
+                    .id(c.getId())
+                    .name(c.getName())
+                    .price(c.getPrice())
+                    .rating(c.getRating())
+                    .ratingQuantity(c.getRatingQuantity())
+                    .fileimage(fileImage)
+                    .catelist(c.getCategories())
+                    .build();
+        }).collect(Collectors.toList());
+
+        ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    } catch (Exception e) {
+        ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }}
+
+//        
+         public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(bookId);
+        
+        if (optionalBook.isPresent()) {
+            Book book = optionalBook.get();
+            
+            // Lấy danh sách hình ảnh từ getImage
+            List<byte[]> imageDatas = getImage(book.getFilePdf())
+                    .orElseThrow(() -> new RuntimeException("No images found"))
+                    .stream()
+                    .map(ImagesBook::getImage_data)
+                    .collect(Collectors.toList());
+
+            // Tạo đối tượng BookUserRes từ thông tin sách
+            BookUserRes bookUserRes = BookUserRes.builder()
+                    .id(book.getId())
+                    .name(book.getName())
+                    .price(book.getPrice())
+                    .pageQuantity(book.getPageQuantity())
+                    .edition(book.getEdition())
+                    .publisherDescription(book.getPublisherDescription())
+                    .rating(book.getRating())
+                    .ratingQuantity(book.getRatingQuantity())
+                    .fileimagelist(imageDatas)
+                    .catelist(book.getCategories())
+                    .build();
+
+            // Tạo ResponseDto thành công
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(bookUserRes).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            // Nếu không tìm thấy sách với id được cung cấp
+            ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+    } catch (Exception e) {
+        // Xử lý lỗi
+        ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+    }
+         
+        public ImagesBook getImages(FilePdf file){
+            System.out.println(file.getId());
+        var listIB=IBrepo.findAll();
+        
+        for(ImagesBook c:listIB){
+            if(c.getPdf().getId()==file.getId()){
+                if(c.isCover()){
+                    return c;
+                }
+            }
+        }return null;
+        
+    }
+        
+public Optional<List<ImagesBook>> getImage(FilePdf file) {
+    System.out.println(file.getId());
+    var listIB = IBrepo.findAll();
+
+    List<ImagesBook> imagesList = listIB.stream()
+            .filter(c -> c.getPdf().getId()==file.getId())
+            .collect(Collectors.toList());
+
+    return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
+}
 }

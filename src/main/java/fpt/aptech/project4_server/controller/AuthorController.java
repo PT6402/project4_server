@@ -14,23 +14,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/authors")
 public class AuthorController {
 
     @Autowired
     AuthorService authorService;
 
-    @GetMapping("/authors")
+    @GetMapping("/showall")
     public ResponseEntity<ResultDto<List<Author>>> getAuthors() {
         return authorService.getAuthors();
     }
 
-    @GetMapping("/authors/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ResultDto<Author>> getAuthor(@PathVariable("id") int id) {
         return authorService.getAuthor(id);
     }
 
-    @PostMapping("/authors")
+    @PostMapping("/create")
     public ResponseEntity<ResultDto<?>> saveAuthor(@RequestParam("name") String name,
                                                    @RequestParam("fileImage") MultipartFile fileImage) throws IOException{
         AuthorAdminCreateRes authorRes = AuthorAdminCreateRes.builder()
@@ -45,7 +45,7 @@ public class AuthorController {
         }
     }
 
-    @PutMapping("/authors/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id, @RequestBody Author authorDetails) {
         return authorService.updateAuthor(id, authorDetails);
     }

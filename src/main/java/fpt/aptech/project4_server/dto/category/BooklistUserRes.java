@@ -5,7 +5,6 @@
 package fpt.aptech.project4_server.dto.category;
 
 import fpt.aptech.project4_server.entities.book.Author;
-import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,15 +21,12 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookAdCreateRes {
+public class BooklistUserRes {
+    private int id;
      private String name;
     private double price;
-    private int pageQuantity;
-    private String edition;
-    private String publisherDescription;
     private double rating;
     private int ratingQuantity;
-   List<Author> authorlist;
-    private MultipartFile file;
+    private byte[] fileimage;
     List<Category> catelist;
 }

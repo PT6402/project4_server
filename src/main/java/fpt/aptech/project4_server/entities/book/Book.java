@@ -31,6 +31,8 @@ public class Book extends BaseEntity {
     @OneToMany(mappedBy = "book")
     @JsonIgnore
     private List<Page> pages;
+    
+     
 
     @ManyToMany
     @JoinTable(
@@ -38,6 +40,7 @@ public class Book extends BaseEntity {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
+   
     private List<Author> authors;
 
     @ManyToMany
@@ -46,6 +49,7 @@ public class Book extends BaseEntity {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "cate_id")
     )
+
     private List<Category> categories;
     
    @OneToOne(mappedBy="book")
