@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
+import fpt.aptech.project4_server.entities.user.Cart;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -26,7 +27,6 @@ public class Book extends BaseEntity {
     private String publisherDescription;
     private double rating;
     private int ratingQuantity;
- 
 
     @OneToMany(mappedBy = "book")
     @JsonIgnore
@@ -51,7 +51,12 @@ public class Book extends BaseEntity {
     )
 
     private List<Category> categories;
+
+    @OneToOne(mappedBy = "book")
+    private FilePdf filePdf;
     
-   @OneToOne(mappedBy="book")
-   private FilePdf filePdf;
+    @ManyToMany(mappedBy = "books")
+    @JsonIgnore
+    private List<Cart> carts;
+    
 }

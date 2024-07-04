@@ -37,7 +37,6 @@ public class SecurityConfig {
     private String mobileUrl;
 
     private static final String[] LIST_NO_AUTH = {
-
         "api/v1/auth/**", "api/v1/cate/**", "/v2/api-docs",
         "/v3/api-docs",
         "/v3/api-docs/**",
@@ -51,9 +50,7 @@ public class SecurityConfig {
         "api/v1/authors/**",
         "api/v1/reviews/**",
         "api/v1/book/**",
-    };
-
-
+        "api/v1/cart/**",};
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
