@@ -49,8 +49,8 @@ public class SecurityConfig {
         "/swagger-ui.html", "/test",
         "api/v1/authors/**",
         "api/v1/reviews/**",
-        "/api/v1/cart/**",};
-
+        "api/v1/book/**",
+        "api/v1/cart/**",};
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.entities.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
@@ -25,5 +26,6 @@ public class Category extends BaseEntity{
 
     
     @ManyToMany(mappedBy = "categories")
+    @JsonIgnore
     private List<Book> books;
 }

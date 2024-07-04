@@ -19,8 +19,8 @@ public class AuthorController {
 
     @Autowired
     AuthorService authorService;
-
-    @GetMapping("")
+  
+    @GetMapping
     public ResponseEntity<ResultDto<List<Author>>> getAuthors() {
         return authorService.getAuthors();
     }
@@ -30,7 +30,7 @@ public class AuthorController {
         return authorService.getAuthor(id);
     }
 
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<ResultDto<?>> saveAuthor(@RequestParam("name") String name,
                                                    @RequestParam("fileImage") MultipartFile fileImage) throws IOException{
         AuthorAdminCreateRes authorRes = AuthorAdminCreateRes.builder()
@@ -44,7 +44,6 @@ public class AuthorController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-
     @PutMapping("/{id}")
     public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id, @RequestBody Author authorDetails) {
         return authorService.updateAuthor(id, authorDetails);
