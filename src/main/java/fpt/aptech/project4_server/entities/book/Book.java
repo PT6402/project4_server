@@ -26,7 +26,7 @@ public class Book extends BaseEntity {
     private String publisherDescription;
     private double rating;
     private int ratingQuantity;
-    private String fileBook;
+ 
 
     @OneToMany(mappedBy = "book")
     @JsonIgnore
@@ -47,4 +47,7 @@ public class Book extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "cate_id")
     )
     private List<Category> categories;
+    
+   @OneToOne(mappedBy="book")
+   private FilePdf filePdf;
 }
