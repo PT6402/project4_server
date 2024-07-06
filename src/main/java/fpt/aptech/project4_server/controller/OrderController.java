@@ -1,6 +1,7 @@
 package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
+import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.service.OrderService;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -23,8 +24,8 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId, @RequestParam int paymentStatus, @RequestBody List<Integer> bookIds) {
-        return orderService.updateOrder(orderId, paymentStatus, bookIds);
+    public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId, @RequestBody OrderUpdateRequest orderUpdateRequest) {
+        return orderService.updateOrder(orderId, orderUpdateRequest);
     }
 
     @DeleteMapping("/{orderId}")

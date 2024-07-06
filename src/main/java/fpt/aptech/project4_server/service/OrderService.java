@@ -1,6 +1,7 @@
 package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
+import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.entities.user.OrderDetail;
@@ -52,7 +53,6 @@ public class OrderService {
                 books.add(bookId);
             });
 
-            // List<Book> books = bookRepository.findAllById(orderRequest.getBookIds());
             if (books.size() != orderRequest.getBookIds().size()) {
                 ResultDto<?> response = ResultDto.builder().status(false).message("Some books not found").build();
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
@@ -64,23 +64,8 @@ public class OrderService {
                     .build();
 
             Order savedOrder = orderRepository.save(order);
-
-//            books.forEach(book -> {
-//                var bookOrderDetail = OrderDetail.builder()
-//                        .order(savedOrder)
-//                        .book(book)
-//                        .build();
-//                orderDetailRepository.save(bookOrderDetail);
-//            });
-//
-////            savedOrder.setOrderDetails(orderDetails);
-////            orderRepository.save(savedOrder);
             List<OrderDetail> orderDetails = new ArrayList();
             for (Book book : books) {
-//                OrderDetail orderDetail = OrderDetail.builder()
-//                        .order(savedOrder)
-//                        .book(book)
-//                        .build();
                 OrderDetail orderDetail = new OrderDetail();
                 orderDetail.setOrder(savedOrder);
                 orderDetail.setBook(book);
@@ -90,9 +75,6 @@ public class OrderService {
                 orderDetailRepository.save(orderDetail);
             }
 
-//            orderDetails.forEach(c -> System.out.println(c.getOrder().getId()));
-//            savedOrder.setOrderDetails(orderDetails);
-//            orderRepository.save(savedOrder);
             ResultDto<?> response = ResultDto.builder().status(true).message("Order created successfully").build();
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -128,7 +110,7 @@ public class OrderService {
         }
     }
 
-    public ResponseEntity<ResultDto<?>> updateOrder(int orderId, int paymentStatus, List<Integer> bookIds) {
+    public ResponseEntity<ResultDto<?>> updateOrder(int orderId, OrderUpdateRequest orderUpdateRequest) {
         try {
             Optional<Order> orderOptional = orderRepository.findById(orderId);
 
@@ -140,19 +122,19 @@ public class OrderService {
             }
 
             Order order = orderOptional.get();
-            order.setPaymentStatus(paymentStatus);
+            order.setPaymentStatus(orderUpdateRequest.getPaymentStatus());
             orderRepository.save(order);
 
             List<OrderDetail> existingOrderDetails = orderDetailRepository.findByOrderId(orderId);
 
             // Remove existing order details that are not in the new book list
             List<OrderDetail> detailsToRemove = existingOrderDetails.stream()
-                    .filter(detail -> !bookIds.contains(detail.getBook().getId()))
+                    .filter(detail -> !orderUpdateRequest.getBookIds().contains(detail.getBook().getId()))
                     .collect(Collectors.toList());
             orderDetailRepository.deleteAll(detailsToRemove);
 
             // Add new order details
-            for (int bookId : bookIds) {
+            for (int bookId : orderUpdateRequest.getBookIds()) {
                 if (bookRepository.findById(bookId).isPresent()) {
                     boolean exists = existingOrderDetails.stream()
                             .anyMatch(detail -> detail.getBook().getId() == bookId);
