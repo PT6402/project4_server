@@ -31,8 +31,6 @@ public class Book extends BaseEntity {
     @OneToMany(mappedBy = "book")
     @JsonIgnore
     private List<Page> pages;
-    
-     
 
     @ManyToMany
     @JoinTable(
