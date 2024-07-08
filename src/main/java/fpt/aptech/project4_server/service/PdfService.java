@@ -15,6 +15,7 @@ import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -312,5 +313,52 @@ public class PdfService {
 
     }
     
-    
+      @Transactional
+    public ResultDto<?> deleteBookById(int bookId) {
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(bookId);
+            if (optionalBook.isPresent()) {
+                Book book = optionalBook.get();
+
+                // Xóa liên kết với các bảng khác nếu cần
+                if (book.getFilePdf() != null) {
+                    book.getFilePdf().setBook(null);
+                }
+
+                book.getAuthors().clear();
+                book.getCategories().clear();
+                book.getPages().clear();
+                book.getMybook().forEach(mybook -> {
+                    if (mybook.getCurrentpage() != null) {
+                        mybook.setCurrentpage(null);
+                    }
+                });
+                book.getMybook().clear();
+
+                bookrepo.delete(book);
+
+                // Trả về phản hồi thành công
+                ResultDto<?> response = ResultDto.builder()
+                        .status(true)
+                        .message("Delete successfully")
+                        .build();
+                return response;
+
+            } else {
+                // Trả về phản hồi khi không tìm thấy sách
+                ResultDto<?> response = ResultDto.builder()
+                        .status(false)
+                        .message("Book not found with id: " + bookId)
+                        .build();
+                return response;
+            }
+        } catch (Exception e) {
+            // Trả về phản hồi khi xảy ra lỗi
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Delete fail: " + e.getMessage())
+                    .build();
+            return response;
+        }
+    }
 }

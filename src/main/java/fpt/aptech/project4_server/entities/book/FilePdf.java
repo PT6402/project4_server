@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
@@ -35,7 +36,7 @@ public class FilePdf extends BaseEntity {
     @JoinColumn(name = "book_id")
     private Book book;
     
-    @OneToMany(mappedBy = "pdf")
+    @OneToMany(mappedBy = "pdf",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     private List<ImagesBook> imagesbook;
 }

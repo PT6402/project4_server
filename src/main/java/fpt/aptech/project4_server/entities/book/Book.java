@@ -32,11 +32,11 @@ public class Book extends BaseEntity {
     private int ratingQuantity;
  
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     private List<Page> pages;
     
-      @OneToMany(mappedBy = "book")
+      @OneToMany(mappedBy = "book",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     private List<Mybook> mybook;
 
@@ -60,6 +60,6 @@ public class Book extends BaseEntity {
 
     private List<Category> categories;
     
-   @OneToOne(mappedBy="book")
+   @OneToOne(mappedBy="book",cascade = CascadeType.ALL,orphanRemoval = true)
    private FilePdf filePdf;
 }
