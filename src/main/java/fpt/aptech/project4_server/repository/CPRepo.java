@@ -4,14 +4,14 @@
  */
 package fpt.aptech.project4_server.repository;
 
-import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.entities.book.CurrentPage;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 
 /**
  *
  * @author macos
  */
-public interface PdfRepo extends JpaRepository<FilePdf, Integer> {
-
+public interface CPRepo extends JpaRepository<CurrentPage, Integer> {
     
 }

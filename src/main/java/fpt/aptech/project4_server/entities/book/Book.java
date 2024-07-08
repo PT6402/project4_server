@@ -2,10 +2,14 @@ package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
+import fpt.aptech.project4_server.entities.user.UserDetail;
+import fpt.aptech.project4_server.entities.user.Mybook;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import lombok.Data;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -32,7 +36,11 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<Page> pages;
     
-     
+      @OneToMany(mappedBy = "book")
+    @JsonIgnore
+    private List<Mybook> mybook;
+
+   
 
     @ManyToMany
     @JoinTable(

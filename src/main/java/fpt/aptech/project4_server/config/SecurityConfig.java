@@ -51,6 +51,7 @@ public class SecurityConfig {
         "api/v1/authors/**",
         "api/v1/reviews/**",
         "api/v1/book/**",
+        "api/v1/mybook/**","api/v1/read/**",
     };
 
 

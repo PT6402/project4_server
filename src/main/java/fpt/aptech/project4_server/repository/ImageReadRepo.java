@@ -4,20 +4,19 @@
  */
 package fpt.aptech.project4_server.repository;
 
-import fpt.aptech.project4_server.entities.book.Book;
-import fpt.aptech.project4_server.entities.book.FilePdf;
-import jakarta.transaction.Transactional;
+import fpt.aptech.project4_server.entities.book.CurrentPage;
+import fpt.aptech.project4_server.entities.book.ImageRead;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
  * @author macos
  */
-public interface BookRepo extends JpaRepository<Book, Integer> {
-
-
+public interface ImageReadRepo extends JpaRepository<ImageRead, Integer> {
+    
+    @Query("SELECT ir FROM ImageRead ir WHERE ir.currentpage.id = :currentPageId")
+    List<ImageRead> findByCurrentpage(@Param("currentPageId") int currentPageId);
 }

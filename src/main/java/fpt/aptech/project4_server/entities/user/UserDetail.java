@@ -7,6 +7,7 @@ import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -29,6 +30,8 @@ public class UserDetail extends BaseEntity {
     @Column(name = "fullname", columnDefinition = "nvarchar(200)")
     private String fullname;
     private String avartar;
+    private Integer current_book_id;
+    
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -42,4 +45,8 @@ public class UserDetail extends BaseEntity {
     @JsonIgnore
     private List<Feedback> feedbacks;
     
+        @OneToMany(mappedBy = "userDetail")
+    @JsonIgnore
+    private List<Mybook> mybook;
+  
 }

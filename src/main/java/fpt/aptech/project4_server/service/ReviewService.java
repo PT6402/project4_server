@@ -3,7 +3,8 @@ package fpt.aptech.project4_server.service;
 import fpt.aptech.project4_server.dto.review.ReviewCreateDTO;
 import fpt.aptech.project4_server.dto.review.ReviewUpdateDTO;
 import fpt.aptech.project4_server.entities.book.Review;
-import fpt.aptech.project4_server.repository.BookRepository;
+import fpt.aptech.project4_server.repository.BookRepo;
+
 import fpt.aptech.project4_server.repository.ReviewRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -21,7 +22,7 @@ public class ReviewService {
     ReviewRepository reviewRepository;
 
     @Autowired
-    BookRepository bookRepository;
+    BookRepo bookRepository;
 
     @Autowired
     UserDetailRepo userDetailRepository;
