@@ -31,22 +31,25 @@ public class UserDetail extends BaseEntity {
     private String fullname;
     private String avartar;
     private Integer current_book_id;
-    
 
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Review> reviews;
-    
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Feedback> feedbacks;
-    
-        @OneToMany(mappedBy = "userDetail")
+
+    @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Mybook> mybook;
-  
+    
+    @OneToMany(mappedBy = "userDetail")
+    @JsonIgnore
+    private List<Wishlist> wishlist;
+
 }

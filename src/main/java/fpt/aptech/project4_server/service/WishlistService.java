@@ -5,20 +5,18 @@
 package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.mybook.MBUserRes;
+import fpt.aptech.project4_server.dto.wishlist.WLUserRes;
 import fpt.aptech.project4_server.entities.book.Book;
-import fpt.aptech.project4_server.entities.book.ImagesBook;
-import fpt.aptech.project4_server.entities.book.Review;
-import fpt.aptech.project4_server.entities.user.Mybook;
+
 import fpt.aptech.project4_server.entities.user.UserDetail;
+import fpt.aptech.project4_server.entities.user.Wishlist;
 import fpt.aptech.project4_server.repository.BookRepo;
-import fpt.aptech.project4_server.repository.Mybookrepo;
+
 import fpt.aptech.project4_server.repository.UserDetailRepo;
+import fpt.aptech.project4_server.repository.WishlistRepo;
 import fpt.aptech.project4_server.util.ResultDto;
-import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +27,16 @@ import org.springframework.stereotype.Service;
  * @author macos
  */
 @Service
-public class MyBookService {
+public class WishlistService {
 
     @Autowired
-    Mybookrepo MBrepo;
+    WishlistRepo WLrepo;
     @Autowired
     UserDetailRepo UDrepo;
     @Autowired
     BookRepo Brepo;
 
-    public ResponseEntity<ResultDto<?>> createMybook(int bookid, int userdetailid) {
+    public ResponseEntity<ResultDto<?>> createWishlist(int bookid, int userdetailid) {
         try {
             UserDetail userDetail = UDrepo.findById(userdetailid)
                     .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
@@ -47,22 +45,22 @@ public class MyBookService {
                     .orElseThrow(() -> new IllegalArgumentException("Book not found"));
             System.out.println(book.getId());
             // Kiểm tra trùng lặp sách trong Mybook của UserDetail
-            Optional<Mybook> existingMybook = MBrepo.findByUserDetailAndBook(userDetail.getId(), book.getId());
-            if (existingMybook.isPresent()) {
+            Optional<Wishlist> existingWishlist = WLrepo.findByUserDetailAndBook(userDetail.getId(), book.getId());
+            if (existingWishlist.isPresent()) {
                 ResultDto<?> response = ResultDto.builder()
                         .status(false)
-                        .message("Book already associated with Mybook")
+                        .message("Book already associated with Wishlist")
                         .build();
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
             }
 
             // Tạo Mybook mới và lưu vào cơ sở dữ liệu
-            Mybook mybook = Mybook.builder()
+            Wishlist wishlist = Wishlist.builder()
                     .userDetail(userDetail)
                     .book(book)
                     .build();
 
-            MBrepo.save(mybook);
+            WLrepo.save(wishlist);
 
             ResultDto<?> response = ResultDto.builder()
                     .status(true)
@@ -86,7 +84,7 @@ public class MyBookService {
     }
 
     //show list mybook
-    public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
+    public ResponseEntity<ResultDto<?>> ShowWishlist(int userdetailid) {
         try {
             Optional<UserDetail> optionalUD = UDrepo.findById(userdetailid);
             if (optionalUD.isEmpty()) {
@@ -96,38 +94,33 @@ public class MyBookService {
                                 .message("UserDetail not found")
                                 .build());
             }
-            List<Mybook> mybooks = MBrepo.findByUserDetailId(userdetailid);
+            List<Wishlist> wishlists=WLrepo.findByUserDetailId(userdetailid);
 
-//       ResultDto<List<Mybook>> response = ResultDto.<List<Mybook>>builder()
-//                    .status(true)
-//                    .message("Success")
-//                    .model(mybooks)
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-            List<MBUserRes> mbUserResList = mybooks.stream()
-                    .map(mybook -> {
-                        MBUserRes mbUserRes = new MBUserRes();
-                        mbUserRes.setBookname(mybook.getBook().getName());
-                        mbUserRes.setBookid(mybook.getBook().getId());
-                        mbUserRes.setBookAuthor(mybook.getBook().getAuthors().stream().findFirst().orElse(null).getName()); // Assuming one author per book for simplicity
+
+            List<WLUserRes> wlUserResList = wishlists.stream()
+                    .map(wishlist -> {
+                        WLUserRes wlUserRes = new WLUserRes();
+                        wlUserRes.setBookname(wishlist.getBook().getName());
+                        wlUserRes.setBookid(wishlist.getBook().getId());
+                        wlUserRes.setBookAuthor(wishlist.getBook().getAuthors().stream().findFirst().orElse(null).getName()); // Assuming one author per book for simplicity
 
                         // Lấy hình ảnh từ danh sách imagebook có cover = 1
-                        byte[] coverImage = mybook.getBook().getFilePdf().getImagesbook().stream()
+                        byte[] coverImage = wishlist.getBook().getFilePdf().getImagesbook().stream()
                                 .filter(c -> c.isCover())
                                 .map(c -> c.getImage_data())
                                 .findFirst()
                                 .orElse(null);
 
-                        mbUserRes.setFileImage(coverImage);
+                        wlUserRes.setFileImage(coverImage);
 
-                        return mbUserRes;
+                        return wlUserRes;
                     })
                     .toList();
 
-            ResultDto<List<MBUserRes>> response = ResultDto.<List<MBUserRes>>builder()
+            ResultDto<List<WLUserRes>> response = ResultDto.<List<WLUserRes>>builder()
                     .status(true)
                     .message("Success")
-                    .model(mbUserResList)
+                    .model(wlUserResList)
                     .build();
             return new ResponseEntity<>(response, HttpStatus.OK);
 

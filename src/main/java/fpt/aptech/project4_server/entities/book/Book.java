@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.entities.user.Mybook;
+import fpt.aptech.project4_server.entities.user.Wishlist;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import lombok.Data;
@@ -30,17 +31,18 @@ public class Book extends BaseEntity {
     private String publisherDescription;
     private double rating;
     private int ratingQuantity;
- 
 
-    @OneToMany(mappedBy = "book",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Page> pages;
-    
-      @OneToMany(mappedBy = "book",cascade = CascadeType.ALL,orphanRemoval = true)
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Mybook> mybook;
-
-   
+    
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Wishlist> wishlist;
 
     @ManyToMany
     @JoinTable(
@@ -48,7 +50,7 @@ public class Book extends BaseEntity {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-   
+
     private List<Author> authors;
 
     @ManyToMany
@@ -59,7 +61,7 @@ public class Book extends BaseEntity {
     )
 
     private List<Category> categories;
-    
-   @OneToOne(mappedBy="book",cascade = CascadeType.ALL,orphanRemoval = true)
-   private FilePdf filePdf;
+
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private FilePdf filePdf;
 }
