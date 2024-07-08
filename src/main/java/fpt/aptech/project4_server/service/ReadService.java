@@ -50,7 +50,7 @@ public class ReadService {
     @Value("${upload.path}")
     private String fileUpload;
     
-    private List<ImageRead> convertPdfToImagesInitial(int mybookid, int startIndex) throws IOException {
+    private List<ImageRead> convertPdfToImages(int mybookid, int startIndex) throws IOException {
         Optional<Mybook> optionalMB = MBrepo.findById(mybookid);
         if (optionalMB.isEmpty()) {
             throw new IllegalArgumentException("Mybook not found with id: " + mybookid);
@@ -61,9 +61,10 @@ public class ReadService {
         try (PDDocument document = Loader.loadPDF(existingMB.getBook().getFilePdf().getFile_data())) {
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<ImageRead> imagesList = new ArrayList<>();
+            
+            for (int page = startIndex-5;  page < (startIndex +5) && page < document.getNumberOfPages(); page++) {
 
-            for (int page = startIndex-1; page < startIndex + 10 && page < document.getNumberOfPages(); page++) {
-                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
+BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "jpg", baos);
                 baos.flush();
@@ -88,7 +89,7 @@ public class ReadService {
             return imagesList;
         }
     }
-    private List<ImageRead> convertPdfToImages(int mybookid) throws IOException {
+    private List<ImageRead> convertPdfToImagesInitial(int mybookid) throws IOException {
         Optional<Mybook> optionalMB = MBrepo.findById(mybookid);
         if (optionalMB.isEmpty()) {
             throw new IllegalArgumentException("Mybook not found with id: " + mybookid);
@@ -171,9 +172,9 @@ public class ReadService {
         // Tạo danh sách ImageRead mới
         List<ImageRead> imagelist;
         if (index == 0) {
-            imagelist = convertPdfToImages(mybookid);
+            imagelist = convertPdfToImagesInitial(mybookid);
         } else {
-            imagelist = convertPdfToImagesInitial(mybookid, index);
+            imagelist = convertPdfToImages(mybookid, index);
         }
 
         // Cập nhật CurrentPage cho các ImageRead mới
