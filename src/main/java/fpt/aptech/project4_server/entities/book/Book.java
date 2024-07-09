@@ -2,11 +2,16 @@ package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
+import fpt.aptech.project4_server.entities.user.UserDetail;
+import fpt.aptech.project4_server.entities.user.Mybook;
+import fpt.aptech.project4_server.entities.user.Wishlist;
 import fpt.aptech.project4_server.entities.user.Cart;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import lombok.Data;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -28,9 +33,18 @@ public class Book extends BaseEntity {
     private double rating;
     private int ratingQuantity;
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+
     @JsonIgnore
     private List<Page> pages;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Mybook> mybook;
+    
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Wishlist> wishlist;
 
     @ManyToMany
     @JoinTable(
@@ -38,7 +52,7 @@ public class Book extends BaseEntity {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-   
+
     private List<Author> authors;
 
     @ManyToMany
@@ -50,8 +64,10 @@ public class Book extends BaseEntity {
 
     private List<Category> categories;
 
-    @OneToOne(mappedBy = "book")
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private FilePdf filePdf;
+
+
     
     @ManyToMany(mappedBy = "books")
     @JsonIgnore

@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -34,6 +35,7 @@ public class UserDetail extends BaseEntity {
     @Column(name = "fullname", columnDefinition = "nvarchar(200)")
     private String fullname;
     private String avartar;
+    private Integer current_book_id;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -42,9 +44,11 @@ public class UserDetail extends BaseEntity {
     @OneToOne(mappedBy = "userDetail")
     private Cart cart;
 
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Review> reviews;
+
 
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
@@ -53,5 +57,14 @@ public class UserDetail extends BaseEntity {
     @ManyToMany(mappedBy = "userDetails")
     @JsonIgnore
     private List<Order> orders;
+
+
+    @OneToMany(mappedBy = "userDetail")
+    @JsonIgnore
+    private List<Mybook> mybook;
+    
+    @OneToMany(mappedBy = "userDetail")
+    @JsonIgnore
+    private List<Wishlist> wishlist;
 
 }
