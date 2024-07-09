@@ -89,17 +89,16 @@ public class PdfService {
                 Path imagePath = Paths.get(fileUpload, imageName);
                 Files.createDirectories(imagePath.getParent());
                 Files.write(imagePath, imageInByte);
-                
 
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);
                 images.setImage_data(imageInByte);
                 images.setCover(page == 0);  // Chỉ đặt cover là true cho hình đầu tiên
                 images.setPdf(filePdf);
-                
+
                 imagesList.add(images);
             }
-             IBrepo.saveAll(imagesList);
+            IBrepo.saveAll(imagesList);
         }
 
     }
@@ -147,97 +146,100 @@ public class PdfService {
 
     public ResponseEntity<ResultDto<?>> BooklistUserShow() {
         try {
-          
-          var listbook = bookrepo.findAll().stream().map(c -> {
-            ImagesBook image = getImages(c.getFilePdf());
-            byte[] fileImage = image != null ? image.getImage_data() : null;
-            
-            return BooklistUserRes.builder()
-                    .id(c.getId())
-                    .name(c.getName())
-                    .price(c.getPrice())
-                    .rating(c.getRating())
-                    .ratingQuantity(c.getRatingQuantity())
-                    .fileimage(fileImage)
-                    .catelist(c.getCategories())
-                    .build();
-        }).collect(Collectors.toList());
 
-        ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+            var listbook = bookrepo.findAll().stream().map(c -> {
+                ImagesBook image = getImages(c.getFilePdf());
+                byte[] fileImage = image != null ? image.getImage_data() : null;
 
-    } catch (Exception e) {
-        ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }}
+                return BooklistUserRes.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .price(c.getPrice())
+                        .rating(c.getRating())
+                        .ratingQuantity(c.getRatingQuantity())
+                        .fileimage(fileImage)
+                        .catelist(c.getCategories())
+                        .build();
+            }).collect(Collectors.toList());
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            System.out.println("Test: " + e.getMessage());
+            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
 
 //        
-         public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
+    public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
-        
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
-            
-            // Lấy danh sách hình ảnh từ getImage
-            List<byte[]> imageDatas = getImage(book.getFilePdf())
-                    .orElseThrow(() -> new RuntimeException("No images found"))
-                    .stream()
-                    .map(ImagesBook::getImage_data)
-                    .collect(Collectors.toList());
 
-            // Tạo đối tượng BookUserRes từ thông tin sách
-            BookUserRes bookUserRes = BookUserRes.builder()
-                    .id(book.getId())
-                    .name(book.getName())
-                    .price(book.getPrice())
-                    .pageQuantity(book.getPageQuantity())
-                    .edition(book.getEdition())
-                    .publisherDescription(book.getPublisherDescription())
-                    .rating(book.getRating())
-                    .ratingQuantity(book.getRatingQuantity())
-                    .fileimagelist(imageDatas)
-                    .catelist(book.getCategories())
-                    .build();
+            if (optionalBook.isPresent()) {
+                Book book = optionalBook.get();
 
-            // Tạo ResponseDto thành công
-            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(bookUserRes).build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            // Nếu không tìm thấy sách với id được cung cấp
-            ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                // Lấy danh sách hình ảnh từ getImage
+                List<byte[]> imageDatas = getImage(book.getFilePdf())
+                        .orElseThrow(() -> new RuntimeException("No images found"))
+                        .stream()
+                        .map(ImagesBook::getImage_data)
+                        .collect(Collectors.toList());
+
+                // Tạo đối tượng BookUserRes từ thông tin sách
+                BookUserRes bookUserRes = BookUserRes.builder()
+                        .id(book.getId())
+                        .name(book.getName())
+                        .price(book.getPrice())
+                        .pageQuantity(book.getPageQuantity())
+                        .edition(book.getEdition())
+                        .publisherDescription(book.getPublisherDescription())
+                        .rating(book.getRating())
+                        .ratingQuantity(book.getRatingQuantity())
+                        .fileimagelist(imageDatas)
+                        .catelist(book.getCategories())
+                        .build();
+
+                // Tạo ResponseDto thành công
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(bookUserRes).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                // Nếu không tìm thấy sách với id được cung cấp
+                ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+        } catch (Exception e) {
+            // Xử lý lỗi
+            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+    }
 
-    } catch (Exception e) {
-        // Xử lý lỗi
-        ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-    }
-         
-        public ImagesBook getImages(FilePdf file){
-            System.out.println(file.getId());
-        var listIB=IBrepo.findAll();
-        
-        for(ImagesBook c:listIB){
-            if(c.getPdf().getId()==file.getId()){
-                if(c.isCover()){
+    public ImagesBook getImages(FilePdf file) {
+        System.out.println(file.getId());
+        var listIB = IBrepo.findAll();
+
+        for (ImagesBook c : listIB) {
+            if (c.getPdf().getId() == file.getId()) {
+                if (c.isCover()) {
                     return c;
                 }
             }
-        }return null;
-        
+        }
+        return null;
+
     }
-        
-public Optional<List<ImagesBook>> getImage(FilePdf file) {
-    System.out.println(file.getId());
-    var listIB = IBrepo.findAll();
 
-    List<ImagesBook> imagesList = listIB.stream()
-            .filter(c -> c.getPdf().getId()==file.getId())
-            .collect(Collectors.toList());
+    public Optional<List<ImagesBook>> getImage(FilePdf file) {
+        System.out.println(file.getId());
+        var listIB = IBrepo.findAll();
 
-    return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
-}
+        List<ImagesBook> imagesList = listIB.stream()
+                .filter(c -> c.getPdf().getId() == file.getId())
+                .collect(Collectors.toList());
+
+        return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
+    }
 }
