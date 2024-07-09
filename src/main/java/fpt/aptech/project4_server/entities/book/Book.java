@@ -5,6 +5,7 @@ import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.entities.user.Wishlist;
+import fpt.aptech.project4_server.entities.user.Cart;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class Book extends BaseEntity {
     private int ratingQuantity;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+
     @JsonIgnore
     private List<Page> pages;
 
@@ -64,4 +66,11 @@ public class Book extends BaseEntity {
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private FilePdf filePdf;
+
+
+    
+    @ManyToMany(mappedBy = "books")
+    @JsonIgnore
+    private List<Cart> carts;
+    
 }

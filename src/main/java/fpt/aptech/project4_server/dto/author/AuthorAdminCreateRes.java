@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthorAdminCreateRes {
+
     private MultipartFile fileImage;
     private String name;
 }

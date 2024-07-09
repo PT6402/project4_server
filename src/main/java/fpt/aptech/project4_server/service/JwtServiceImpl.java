@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("deprecation")
 @Slf4j
 public class JwtServiceImpl implements JwtService {
+
     @Value("${application.token.secret-key}")
     private String secretKey;
 

@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 
 public class ApplicationConfig {
+
     private final UserRepo userRepo;
 
     @Bean
