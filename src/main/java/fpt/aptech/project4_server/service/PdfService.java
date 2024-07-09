@@ -14,6 +14,8 @@ import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,20 +59,20 @@ public class PdfService {
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
-        ImagesBook images = new ImagesBook();
+//       List<ImagesBook> imageslist = new ImagesBook();
 
         filePdf.setFile_name(file.getOriginalFilename());
         filePdf.setFile_type(file.getContentType());
         filePdf.setFile_data(file.getBytes());
-
-        filePdf = pdfrepo.save(filePdf);
-        images = IBrepo.save(images);
+        
+//        filePdf = pdfrepo.save(filePdf);
+//        images = IBrepo.save(images);
         convertPdfToImages(filePdf);
 
         return pdfrepo.save(filePdf);
     }
 
-    private void convertPdfToImages(FilePdf filePdf) throws IOException {
+    private List<ImagesBook> convertPdfToImages(FilePdf filePdf) throws IOException {
 
         try (PDDocument document = Loader.loadPDF(filePdf.getFile_data())) {
             PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -98,7 +100,9 @@ public class PdfService {
 
                 imagesList.add(images);
             }
-            IBrepo.saveAll(imagesList);
+
+        return imagesList;
+
         }
 
     }
@@ -117,7 +121,12 @@ public class PdfService {
                     return new ResponseEntity<ResultDto<?>>(response, HttpStatus.CONFLICT);
                 }
             }
-            FilePdf filePdf = uploadAndConvertPdf(bookad.getFile());
+            FilePdf filePdf = new FilePdf();
+            filePdf.setFile_name(bookad.getFile().getOriginalFilename());
+            filePdf.setFile_type(bookad.getFile().getContentType());
+            filePdf.setFile_data(bookad.getFile().getBytes());
+           
+         
             PDDocument document = Loader.loadPDF(filePdf.getFile_data());
             newbook.setEdition(bookad.getEdition());
             newbook.setPrice(bookad.getPrice());
@@ -134,7 +143,9 @@ public class PdfService {
 
             // Liên kết thông tin file PDF với sách vừa lưu
             filePdf.setBook(savedBook);
-            pdfrepo.save(filePdf);
+            var savepdf=pdfrepo.save(filePdf);
+             List<ImagesBook> imagelist=convertPdfToImages(savepdf);
+             IBrepo.saveAll(imagelist);
 
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.OK);
@@ -166,7 +177,7 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
-            System.out.println("Test: " + e.getMessage());
+
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
@@ -177,8 +188,10 @@ public class PdfService {
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
 
+
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
+
 
                 // Lấy danh sách hình ảnh từ getImage
                 List<byte[]> imageDatas = getImage(book.getFilePdf())
@@ -242,4 +255,117 @@ public class PdfService {
 
         return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
     }
+
+
+    public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) {
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(id);
+            if (!optionalBook.isPresent()) {
+                throw new EntityNotFoundException("Book not found with id: " + id);}
+            
+                Book existingBook = optionalBook.get();
+//                  FilePdf filePdf = new FilePdf();
+//                   filePdf.setFile_name(bookres.getFile().getOriginalFilename());
+//            filePdf.setFile_type(bookres.getFile().getContentType());
+//            filePdf.setFile_data(bookres.getFile().getBytes());
+                  PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
+               
+                existingBook.setId(id);
+                existingBook.setName(bookres.getName());
+                existingBook.setPrice(bookres.getPrice());
+                existingBook.setPageQuantity(document.getNumberOfPages());
+                existingBook.setEdition(bookres.getEdition());
+                existingBook.setPublisherDescription(bookres.getPublisherDescription());
+                existingBook.setAuthors(bookres.getAuthorlist());
+                existingBook.setCategories(bookres.getCatelist());
+                var updateBook=bookrepo.save(existingBook);
+                 var idpdf=pdfrepo.findById(existingBook.getFilePdf().getId());
+                 if(idpdf.isEmpty()){
+                       throw new EntityNotFoundException("filepdf not found with id: " );
+                 }else{
+                     var filePdfupdate=idpdf.get();
+                     filePdfupdate.setFile_name(bookres.getFile().getOriginalFilename());
+                     filePdfupdate.setFile_type(bookres.getFile().getContentType());
+                     filePdfupdate.setFile_data(bookres.getFile().getBytes());
+                     filePdfupdate.setBook(updateBook);
+                      List<ImagesBook> oldlist=existingBook.getFilePdf().getImagesbook();
+                      IBrepo.deleteAll(oldlist);
+                     
+                 
+                        var savepdf=pdfrepo.save(filePdfupdate);
+             List<ImagesBook> imagelist=convertPdfToImages(savepdf);
+//          
+             IBrepo.saveAll(imagelist);
+             
+                 
+                    
+                 }
+                         
+                         
+
+          
+//              
+                ResultDto<?> response = ResultDto.builder().status(true).message("Update successfully")
+                        .model(existingBook)
+                        .build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            
+             
+            
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    
+      @Transactional
+    public ResultDto<?> deleteBookById(int bookId) {
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(bookId);
+            if (optionalBook.isPresent()) {
+                Book book = optionalBook.get();
+
+                // Xóa liên kết với các bảng khác nếu cần
+                if (book.getFilePdf() != null) {
+                    book.getFilePdf().setBook(null);
+                }
+
+                book.getAuthors().clear();
+                book.getCategories().clear();
+                book.getPages().clear();
+                book.getMybook().forEach(mybook -> {
+                    if (mybook.getCurrentpage() != null) {
+                        mybook.setCurrentpage(null);
+                    }
+                });
+                book.getMybook().clear();
+
+                bookrepo.delete(book);
+
+                // Trả về phản hồi thành công
+                ResultDto<?> response = ResultDto.builder()
+                        .status(true)
+                        .message("Delete successfully")
+                        .build();
+                return response;
+
+            } else {
+                // Trả về phản hồi khi không tìm thấy sách
+                ResultDto<?> response = ResultDto.builder()
+                        .status(false)
+                        .message("Book not found with id: " + bookId)
+                        .build();
+                return response;
+            }
+        } catch (Exception e) {
+            // Trả về phản hồi khi xảy ra lỗi
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Delete fail: " + e.getMessage())
+                    .build();
+            return response;
+        }
+    }
+
 }
