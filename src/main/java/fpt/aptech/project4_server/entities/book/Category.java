@@ -3,6 +3,7 @@ package fpt.aptech.project4_server.entities.book;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -22,7 +23,8 @@ import lombok.experimental.SuperBuilder;
 public class Category extends BaseEntity{
     private String name;
     private String description;
-    private String pathImage;
+    @Lob
+    private byte[] Imagedata;
 
     
     @ManyToMany(mappedBy = "categories")

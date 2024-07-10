@@ -82,19 +82,13 @@ public class AuthorService {
                 }
             }
 
-            // Lưu file ảnh
-            MultipartFile multipartFile = authorRes.getFileImage();
+           // Lưu file ảnh dưới dạng byte array
+        byte[] imageData = authorRes.getFileImage().getBytes();
 
-            String fileName = multipartFile.getOriginalFilename();
-            FileCopyUtils.copy(authorRes.getFileImage().getBytes(), new File(fileUpload + "/" + fileName));
-            System.out.println(fileUpload + "/" + fileName);
-            
-            //  Category newCate = new Category();
-            //  newCate.setName(cateres.getName());
-            //  newCate.setDescription(cateres.getDescription());
-            //  newCate.setPathImage("src/main/resources/static/image/"+fileName);
-            var newAuthor = Author.builder().name(authorRes.getName())
-                    .pathImage(fileUpload + "\\" + fileName).build();
+        var newAuthor = Author.builder()
+                .name(authorRes.getName())
+                .Image_data(imageData)
+                .build();
 
             authorRepository.save(newAuthor);
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();

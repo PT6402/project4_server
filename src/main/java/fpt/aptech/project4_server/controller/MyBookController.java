@@ -28,8 +28,8 @@ public class MyBookController {
     @Autowired
     MyBookService MBservice;
     @PostMapping("/create")
-    public ResponseEntity<?> createMBook(@RequestParam Integer bookid,@RequestParam Integer userdetailid)throws IOException{
-        return MBservice.createMybook(bookid,userdetailid);
+    public ResponseEntity<?> createMBook(@RequestParam Integer bookid,@RequestParam Integer userdetailid,@RequestParam Integer packagereadid)throws IOException{
+        return MBservice.createMybook(bookid,userdetailid,packagereadid);
     }
  
     @GetMapping("/show/{id}")

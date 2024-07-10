@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "tb_mybook")
 public class Mybook extends BaseEntity {
-
+    private LocalDateTime ExpiredDate;
     @ManyToOne
     @JoinColumn(name = "userdetail_id")
 

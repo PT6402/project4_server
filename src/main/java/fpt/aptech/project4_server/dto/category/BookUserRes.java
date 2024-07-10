@@ -1,5 +1,7 @@
 package fpt.aptech.project4_server.dto.category;
 
+import fpt.aptech.project4_server.dto.author.AuthorUserRes;
+import fpt.aptech.project4_server.dto.review.ReviewShow1;
 import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.Review;
@@ -23,8 +25,8 @@ public class BookUserRes {
     private String publisherDescription;
     private double rating;
     private int ratingQuantity;
-    List<Author> authorlist;
-    List<Review> reviewlist;
+    List<AuthorUserRes> authorlist;
+    List<ReviewShow1> reviewlist;
     List<byte[]> fileimagelist;
-    List<Category> catelist;
+    List<CateShow> catelist;
 }
