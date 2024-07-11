@@ -41,10 +41,18 @@ public class Book extends BaseEntity {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Mybook> mybook;
-    
+
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Wishlist> wishlist;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Review> review;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PackageRead> packageread;
 
     @ManyToMany
     @JoinTable(
@@ -66,10 +74,8 @@ public class Book extends BaseEntity {
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private FilePdf filePdf;
 
-
-    
     @ManyToMany(mappedBy = "books")
     @JsonIgnore
     private List<Cart> carts;
-    
+
 }

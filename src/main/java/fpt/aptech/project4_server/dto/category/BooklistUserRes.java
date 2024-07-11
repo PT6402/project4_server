@@ -1,5 +1,7 @@
 package fpt.aptech.project4_server.dto.category;
 
+import fpt.aptech.project4_server.dto.author.AuthorShow;
+import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Category;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -18,6 +20,7 @@ public class BooklistUserRes {
     private double price;
     private double rating;
     private int ratingQuantity;
+     List<AuthorShow> authorlist;
+    List<CateShow> catelist;
     private byte[] fileimage;
-    List<Category> catelist;
 }

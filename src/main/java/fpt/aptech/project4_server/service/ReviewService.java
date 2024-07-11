@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.review.ReviewCreateDTO;
 import fpt.aptech.project4_server.dto.review.ReviewUpdateDTO;
+import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Review;
 import fpt.aptech.project4_server.repository.BookRepo;
 
@@ -94,8 +95,20 @@ public class ReviewService {
                     .book(bookOptional.get())
                     .userDetail(userOptional.get())
                     .build();
-
+            
             reviewRepository.save(newReview);
+            Book book = bookOptional.get();
+            book.setRatingQuantity(book.getRatingQuantity()+1);
+            
+            List<Review> reviewlist= reviewRepository.findByBookId(reviewRequest.getBookId());
+            
+            double totalRat=reviewlist.stream()
+                .mapToDouble(Review::getRating)
+                .sum();
+            double avarageRat = totalRat/book.getRatingQuantity();
+            book.setRating(avarageRat);
+            bookRepository.save(book);
+            
             ResultDto<?> response = ResultDto.builder().status(true).message("Review created successfully!").build();
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -113,6 +126,15 @@ public class ReviewService {
                 review.setRating(reviewUpdateDTO.getRating());
 
                 Review updateReview = reviewRepository.save(review);
+                List<Review> reviewlist= reviewRepository.findByBookId(updateReview.getBook().getId());
+                   var bookOptional = bookRepository.findById(updateReview.getBook().getId());
+              Book book = bookOptional.get();
+            double totalRat=reviewlist.stream()
+                .mapToDouble(Review::getRating)
+                .sum();
+            double avarageRat = totalRat/book.getRatingQuantity();
+            book.setRating(avarageRat);
+            bookRepository.save(book);
 
                 ResultDto<Review> response = ResultDto.<Review>builder()
                         .status(true)

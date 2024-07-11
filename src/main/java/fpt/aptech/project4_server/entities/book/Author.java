@@ -21,7 +21,8 @@ import lombok.experimental.SuperBuilder;
 public class Author extends BaseEntity {
 
     private String name;
-    private String pathImage;
+    @Lob
+    private byte[] Image_data;
 
     @ManyToMany(mappedBy = "authors")
     @JsonIgnore

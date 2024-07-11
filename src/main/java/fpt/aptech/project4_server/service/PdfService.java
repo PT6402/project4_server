@@ -4,10 +4,14 @@
  */
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.dto.author.AuthorShow;
+import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.category.BookUserRes;
 import fpt.aptech.project4_server.dto.category.BooklistUserRes;
+import fpt.aptech.project4_server.dto.category.CateShow;
 import fpt.aptech.project4_server.dto.category.CateUserRes;
+import fpt.aptech.project4_server.dto.review.ReviewShow1;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
@@ -161,7 +165,12 @@ public class PdfService {
             var listbook = bookrepo.findAll().stream().map(c -> {
                 ImagesBook image = getImages(c.getFilePdf());
                 byte[] fileImage = image != null ? image.getImage_data() : null;
-
+                List<CateShow> catshowlist=c.getCategories().stream()
+                        .map(category->new CateShow(category.getId(),category.getName()))
+                        .toList();
+                List<AuthorShow> authorshowlist=c.getAuthors().stream()
+                        .map(author->new AuthorShow(author.getId(),author.getName()))
+                        .toList();
                 return BooklistUserRes.builder()
                         .id(c.getId())
                         .name(c.getName())
@@ -169,7 +178,8 @@ public class PdfService {
                         .rating(c.getRating())
                         .ratingQuantity(c.getRatingQuantity())
                         .fileimage(fileImage)
-                        .catelist(c.getCategories())
+                        .catelist(catshowlist)
+                        .authorlist(authorshowlist)
                         .build();
             }).collect(Collectors.toList());
 
@@ -199,7 +209,18 @@ public class PdfService {
                         .stream()
                         .map(ImagesBook::getImage_data)
                         .collect(Collectors.toList());
+              // Chuyển đổi danh sách Category thành danh sách CategoryRes
+            List<CateShow> categoryResList = book.getCategories().stream()
+                    .map(category -> new CateShow(category.getId(), category.getName()))
+                    .collect(Collectors.toList());
 
+            // Chuyển đổi danh sách Author thành danh sách AuthorRes
+            List<AuthorUserRes> authorResList = book.getAuthors().stream()
+                    .map(author -> new AuthorUserRes(author.getId(), author.getName(), author.getImage_data()))
+                    .collect(Collectors.toList());
+             List<ReviewShow1> reviewList = book.getReview().stream()
+                    .map(review -> new ReviewShow1(review.getContent(),review.getRating(),review.getId(),review.getUserDetail().getId(),review.getUserDetail().getFullname()))
+                    .collect(Collectors.toList());
                 // Tạo đối tượng BookUserRes từ thông tin sách
                 BookUserRes bookUserRes = BookUserRes.builder()
                         .id(book.getId())
@@ -211,7 +232,9 @@ public class PdfService {
                         .rating(book.getRating())
                         .ratingQuantity(book.getRatingQuantity())
                         .fileimagelist(imageDatas)
-                        .catelist(book.getCategories())
+                        .catelist(categoryResList)
+                        .authorlist(authorResList)
+                        .reviewlist(reviewList)
                         .build();
 
                 // Tạo ResponseDto thành công

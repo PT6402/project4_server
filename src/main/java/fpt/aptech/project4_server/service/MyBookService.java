@@ -6,15 +6,20 @@ package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.mybook.MBUserRes;
 import fpt.aptech.project4_server.entities.book.Book;
+import fpt.aptech.project4_server.entities.book.CurrentPage;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
+import fpt.aptech.project4_server.entities.book.PackageRead;
 import fpt.aptech.project4_server.entities.book.Review;
 import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.BookRepo;
+import fpt.aptech.project4_server.repository.CPRepo;
 import fpt.aptech.project4_server.repository.Mybookrepo;
+import fpt.aptech.project4_server.repository.PackageReadRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +42,12 @@ public class MyBookService {
     UserDetailRepo UDrepo;
     @Autowired
     BookRepo Brepo;
+    @Autowired
+    CPRepo CPrepo;
+    @Autowired
+    PackageReadRepository PRrepo;
 
-    public ResponseEntity<ResultDto<?>> createMybook(int bookid, int userdetailid) {
+    public ResponseEntity<ResultDto<?>> createMybook(int bookid, int userdetailid,int packagereadid) {
         try {
             UserDetail userDetail = UDrepo.findById(userdetailid)
                     .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
@@ -55,11 +64,27 @@ public class MyBookService {
                         .build();
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
             }
+             // Truy xuất PackageRead
+            PackageRead packageRead = PRrepo.findById(packagereadid)
+                    .orElseThrow(() -> new IllegalArgumentException("PackageRead not found"));
+
+            // Tính toán expired_date
+            LocalDateTime createAt = LocalDateTime.now();
+            LocalDateTime expiredDate = createAt.plusDays(packageRead.getDayQuantity());
+
+            // Tạo mới CurrentPage với current_page_index = 0
+            CurrentPage currentPage = new CurrentPage();
+            currentPage.setCurrenPageIndex(0);
+            currentPage.setImagePageData(book.getFilePdf().getFile_data());
+            CPrepo.save(currentPage);
 
             // Tạo Mybook mới và lưu vào cơ sở dữ liệu
             Mybook mybook = Mybook.builder()
                     .userDetail(userDetail)
                     .book(book)
+                   .currentpage(currentPage)
+                    .createAt(createAt)
+                    .ExpiredDate(expiredDate)
                     .build();
 
             MBrepo.save(mybook);

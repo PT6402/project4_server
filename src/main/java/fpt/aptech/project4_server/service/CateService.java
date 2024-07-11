@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.dto.category.CateUserRes;
+import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.repository.CateRepo;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -43,21 +44,13 @@ public class CateService {
             }
 
             // Lưu file ảnh
-            MultipartFile multipartFile = cateres.getFileImage();
+                // Lưu file ảnh dưới dạng byte array
+        byte[] imageData = cateres.getFileImage().getBytes();
 
-            String fileName = multipartFile.getOriginalFilename();
-
-            FileCopyUtils.copy(cateres.getFileImage().getBytes(), new File(fileUpload+ "/"+ fileName));
-          
-
-//            
-//            Category newCate = new Category();
-//            newCate.setName(cateres.getName());
-//            newCate.setDescription(cateres.getDescription());
-//            newCate.setPathImage("src/main/resources/static/image/"+fileName);
-            var newCate = Category.builder().name(cateres.getName())
-                    .description(cateres.getDescription())
-                    .pathImage(fileUpload + "\\" + fileName).build();
+        var newCate = Category.builder()
+                .name(cateres.getName())
+                .Imagedata(imageData)
+                .build();
 
             caterepo.save(newCate);
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
@@ -91,17 +84,7 @@ public class CateService {
             existingCategory.setDescription(cateres.getDescription());
             MultipartFile file= cateres.getFileImage();
             if(file != null && !file.isEmpty()) {
-                if (existingCategory.getPathImage() != null) {
-                    java.nio.file.Path oldFilePath = Paths.get(existingCategory.getPathImage());
-                    Files.deleteIfExists(oldFilePath);
-                    Files.deleteIfExists(oldFilePath);
-                }
-                 // Lưu file mới
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                java.nio.file.Path filePath = Paths.get(fileUpload + "/"+ fileName);
-                Files.createDirectories(filePath.getParent());
-                Files.write(filePath, file.getBytes());
-                existingCategory.setPathImage(filePath.toString());
+               existingCategory.setImagedata(file.getBytes());
             }
             
             caterepo.save(existingCategory);
@@ -116,7 +99,7 @@ public class CateService {
     }
       public ResponseEntity<ResultDto<?>> CateUserShow() {
         try {
-            var listcate = caterepo.findAll().stream().map(c -> CateUserRes.builder().id(c.getId()).name(c.getName()).build());
+            var listcate = caterepo.findAll().stream().map(c -> CateUserRes.builder().id(c.getId()).name(c.getName()).description(c.getDescription()).Imagedata(c.getImagedata()).build());
             ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listcate).build();
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.OK);
 

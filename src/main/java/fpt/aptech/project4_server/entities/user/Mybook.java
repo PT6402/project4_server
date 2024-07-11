@@ -9,7 +9,9 @@ import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.CurrentPage;
 import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.entities.book.NotePage;
 import fpt.aptech.project4_server.entities.book.Page;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
@@ -17,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -38,7 +41,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "tb_mybook")
 public class Mybook extends BaseEntity {
-
+    private LocalDateTime ExpiredDate;
     @ManyToOne
     @JoinColumn(name = "userdetail_id")
 
@@ -51,5 +54,9 @@ public class Mybook extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "currentpage_id")
     private CurrentPage currentpage;
+    
+    @OneToMany(mappedBy = "mybook")
+    @JsonIgnore
+    private List<NotePage> notepage;
 
 }
