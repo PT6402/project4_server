@@ -9,7 +9,9 @@ import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.CurrentPage;
 import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.entities.book.NotePage;
 import fpt.aptech.project4_server.entities.book.Page;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
@@ -52,5 +54,9 @@ public class Mybook extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "currentpage_id")
     private CurrentPage currentpage;
+    
+    @OneToMany(mappedBy = "mybook")
+    @JsonIgnore
+    private List<NotePage> notepage;
 
 }

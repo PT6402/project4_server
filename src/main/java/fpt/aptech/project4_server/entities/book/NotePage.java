@@ -5,6 +5,7 @@
 package fpt.aptech.project4_server.entities.book;
 
 import fpt.aptech.project4_server.entities.BaseEntity;
+import fpt.aptech.project4_server.entities.user.Mybook;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
@@ -34,6 +35,6 @@ public class NotePage extends BaseEntity{
     private int OrderPage;
     
    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private Book book; 
+    @JoinColumn(name = "mybook_id")
+    private Mybook mybook; 
 }
