@@ -111,7 +111,9 @@ public class PdfService {
                 
                 imagesList.add(images);
             }
+
             return imagesList;
+
         }
         
     }
@@ -191,6 +193,7 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.OK);
             
         } catch (Exception e) {
+
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
@@ -200,9 +203,10 @@ public class PdfService {
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
-            
+
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
+
 
                 // Lấy danh sách hình ảnh từ getImage
                 List<byte[]> imageDatas = getImage(book.getFilePdf())
@@ -297,7 +301,7 @@ public class PdfService {
         
         return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
     }
-    
+
     public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(id);
@@ -401,4 +405,5 @@ public class PdfService {
             return response;
         }
     }
+
 }

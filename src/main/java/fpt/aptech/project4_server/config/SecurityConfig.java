@@ -52,9 +52,15 @@ public class SecurityConfig {
         "api/v1/book/**",
         "api/v1/cart/**",
         "api/v1/orders/**",
+
         "api/v1/mybook/**","api/v1/read/**","api/v1/wishlist/**","api/v1/package/**",
         "api/v1/note/**",
+
+
+        "/api/v1/feedback/**",
+        "/api/v1/coupon/**",
     };
+
 
 
     @Bean
