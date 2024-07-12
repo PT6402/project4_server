@@ -4,7 +4,7 @@
  */
 package fpt.aptech.project4_server.dto.book;
 
-import jakarta.persistence.Lob;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,12 +18,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookPagnination {
-
-    private String name;
-    private double rating;
-    private int ratingQuantity;
-//
-//    @Lob
-//    private byte[]ImageCove;
+public class BookFilter {
+    private Double rating;
+    
+    private List<Integer> list;
 }

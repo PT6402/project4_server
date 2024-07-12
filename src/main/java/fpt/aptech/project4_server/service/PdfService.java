@@ -7,6 +7,7 @@ package fpt.aptech.project4_server.service;
 import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.book.BookPagnination;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
 import fpt.aptech.project4_server.dto.book.BooklistUserRes;
@@ -423,18 +424,17 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            .ImageCove(fileImage)
-                          
+//                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
-                Paginations pag=new Paginations();
+                Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
                 pag.setTotalPage(totalBooks);
-                  ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                int start = Math.min((page-1) * limit, totalBooks);
-                int end = Math.min(page*limit, totalBooks);
+                int start = Math.min((page - 1) * limit, totalBooks);
+                int end = Math.min(page * limit, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
                 System.out.println(totalBooks);
                 System.out.println(start);
@@ -447,17 +447,102 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            .ImageCove(fileImage)
-                        
+//                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
-                Paginations pag=new Paginations();
+                Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
                 pag.setTotalPage(totalBooks);
-                  ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
-            
+
             }
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Fail to show")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<ResultDto<?>> Filter(int page, int limit, BookFilter bf) {
+        try {
+            List<Book> books;
+
+            // Kiểm tra nếu không có filter nào được cung cấp
+            if ((bf.getList() == null || bf.getList().isEmpty()) && (bf.getRating() == null)) {
+                books = bookrepo.findAll();
+            } else {
+                // Lấy tất cả các sách có cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
+                if (bf.getList() != null && !bf.getList().isEmpty()) {
+                    books = new ArrayList<>();
+                    for (Integer cateId : bf.getList()) {
+                        List<Book> booksByCateId = bookrepo.findByCateId(cateId);
+                        books.addAll(booksByCateId);
+                    }
+                } else {
+                    books = bookrepo.findAll();
+                }
+
+                // Lọc những cuốn sách có rating từ 0 đến rating của BookFilter nếu rating không null
+                if (bf.getRating() != null) {
+                    books = books.stream()
+                            .filter(book -> book.getRating() >= 0 && book.getRating() <= bf.getRating())
+                            .collect(Collectors.toList());
+                }
+            }
+
+            int totalBooks = books.size();
+            List<Book> paginatedBooks;
+            if (page == 1) {
+                int start = Math.min(page - 1, totalBooks);
+                int end = Math.min(page * limit, totalBooks);
+                paginatedBooks = books.subList(start, end);
+                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                    ImagesBook image = getImages(c.getFilePdf());
+                    byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                    return BookPagnination.builder()
+                            .name(c.getName())
+                            .rating(c.getRating())
+                            .ratingQuantity(c.getRatingQuantity())
+//                            .ImageCove(fileImage)
+                            .build();
+                }).collect(Collectors.toList());
+
+                Paginations pag = new Paginations();
+                pag.setPaglist(bookPagninations);
+                pag.setTotalPage(totalBooks);
+
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }else{
+                 int start = Math.min((page-1) * limit, totalBooks);
+                int end = Math.min(page*limit, totalBooks);
+                paginatedBooks = books.subList(start, end);
+                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                    ImagesBook image = getImages(c.getFilePdf());
+                    byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                    return BookPagnination.builder()
+                            .name(c.getName())
+                            .rating(c.getRating())
+                            .ratingQuantity(c.getRatingQuantity())
+//                            .ImageCove(fileImage)
+                            .build();
+                }).collect(Collectors.toList());
+
+                Paginations pag = new Paginations();
+                pag.setPaglist(bookPagninations);
+                pag.setTotalPage(totalBooks);
+
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+
+          
 
         } catch (Exception e) {
             ResultDto<?> response = ResultDto.builder()
