@@ -130,29 +130,29 @@ public class AuthorService {
         }
     }
 
-//     public ResponseEntity<ResultDto<Void>> deleteAuthor(int id) {
-//        try {
-//            Optional<Author> authorOptional = authorRepository.findById(id);
-//            if (authorOptional.isPresent()) {
-//                authorRepository.deleteById(id);
-//                ResultDto<Void> response = ResultDto.<Void>builder()
-//                        .status(true)
-//                        .message("Author deleted successfully")
-//                        .build();
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            } else {
-//                ResultDto<Void> response = ResultDto.<Void>builder()
-//                        .status(false)
-//                        .message("Author not found")
-//                        .build();
-//                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-//            }
-//        } catch (Exception e) {
-//            ResultDto<Void> response = ResultDto.<Void>builder()
-//                    .status(false)
-//                    .message("Failed to delete author")
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+     public ResponseEntity<ResultDto<Void>> deleteAuthor(int id) {
+        try {
+            Optional<Author> authorOptional = authorRepository.findById(id);
+            if (authorOptional.isPresent()) {
+                authorRepository.deleteById(id);
+                ResultDto<Void> response = ResultDto.<Void>builder()
+                        .status(true)
+                        .message("Author deleted successfully")
+                        .build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                ResultDto<Void> response = ResultDto.<Void>builder()
+                        .status(false)
+                        .message("Author not found")
+                        .build();
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            ResultDto<Void> response = ResultDto.<Void>builder()
+                    .status(false)
+                    .message("Failed to delete author")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

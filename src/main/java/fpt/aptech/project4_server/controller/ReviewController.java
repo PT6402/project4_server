@@ -3,6 +3,7 @@ package fpt.aptech.project4_server.controller;
 import fpt.aptech.project4_server.dto.review.ReviewCreateDTO;
 import fpt.aptech.project4_server.dto.review.ReviewUpdateDTO;
 import fpt.aptech.project4_server.entities.book.Review;
+import fpt.aptech.project4_server.service.ForbiddenWordsService;
 import fpt.aptech.project4_server.service.ReviewService;
 import fpt.aptech.project4_server.util.ResultDto;
 import java.util.List;
@@ -23,6 +24,8 @@ public class ReviewController {
 
     @Autowired
     ReviewService reviewService;
+    @Autowired
+    ForbiddenWordsService forbidden;
 
     @GetMapping("")
     public ResponseEntity<ResultDto<List<Review>>> getReviews() {
@@ -36,11 +39,25 @@ public class ReviewController {
 
     @PostMapping("")
     public ResponseEntity<ResultDto<?>> createReview(@RequestBody ReviewCreateDTO reviewRequest) {
+        if(forbidden.containsForbiddenWord(reviewRequest.getContent()))
+        {
+            ResultDto<String> result = new ResultDto<>();
+            result.setStatus(false);
+            result.setMessage("Your review contain forbidden words");
+            return ResponseEntity.badRequest().body(result);
+        }
         return reviewService.createReview(reviewRequest);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResultDto<?>> updateReview(@PathVariable("id") int id, @RequestBody ReviewUpdateDTO reviewUpdateDTO) {
+        if(forbidden.containsForbiddenWord(reviewUpdateDTO.getContent()))
+        {
+            ResultDto<String> result = new ResultDto<>();
+            result.setStatus(false);
+            result.setMessage("Your review contain forbidden words");
+            return ResponseEntity.badRequest().body(result);
+        }
         return reviewService.updateReview(id, reviewUpdateDTO);
     }
 
