@@ -28,10 +28,7 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "tbPackageRead")
 public class PackageRead extends BaseEntity{
     private String PackageName;
-    private Double RentPrice;
+ 
     private int DayQuantity;
-    
-    @ManyToOne
-    @JoinColumn(name = "book_id")
-    private Book book;
+
 }

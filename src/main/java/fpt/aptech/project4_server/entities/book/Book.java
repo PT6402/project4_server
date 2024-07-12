@@ -50,9 +50,7 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<Review> review;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<PackageRead> packageread;
+   
 
     @ManyToMany
     @JoinTable(

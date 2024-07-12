@@ -4,7 +4,7 @@
  */
 package fpt.aptech.project4_server.controller;
 
-import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.service.ReadService;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;

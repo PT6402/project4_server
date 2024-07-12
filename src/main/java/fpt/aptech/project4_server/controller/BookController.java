@@ -4,7 +4,7 @@
  */
 package fpt.aptech.project4_server.controller;
 
-import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
