@@ -55,6 +55,10 @@ public class BookController {
     public ResponseEntity<?> Bookshow(@PathVariable int id){
         return pv.BookSingleUserShow(id);
     }
+      @GetMapping("/showpage")
+    public ResponseEntity<?> BookPage(@RequestParam("page") int id,@RequestParam("limit") int limit){
+        return pv.Pagnination(id, limit);
+    }
     
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id)  {

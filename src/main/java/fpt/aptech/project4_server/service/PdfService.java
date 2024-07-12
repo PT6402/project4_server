@@ -7,8 +7,10 @@ package fpt.aptech.project4_server.service;
 import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookPagnination;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
 import fpt.aptech.project4_server.dto.book.BooklistUserRes;
+import fpt.aptech.project4_server.dto.book.Paginations;
 import fpt.aptech.project4_server.dto.category.CateShow;
 import fpt.aptech.project4_server.dto.category.CateUserRes;
 import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
@@ -54,7 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class PdfService {
-    
+
     @Autowired
     private PdfRepo pdfrepo;
     @Autowired
@@ -67,7 +69,7 @@ public class PdfService {
     private PackageReadRepository Prepo;
     @Value("${upload.path}")
     private String fileUpload;
-    
+
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
 //       List<ImagesBook> imageslist = new ImagesBook();
@@ -79,16 +81,16 @@ public class PdfService {
 //        filePdf = pdfrepo.save(filePdf);
 //        images = IBrepo.save(images);
         convertPdfToImages(filePdf);
-        
+
         return pdfrepo.save(filePdf);
     }
-    
+
     private List<ImagesBook> convertPdfToImages(FilePdf filePdf) throws IOException {
-        
+
         try (PDDocument document = Loader.loadPDF(filePdf.getFile_data())) {
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<ImagesBook> imagesList = new ArrayList<>();
-            
+
             for (int page = 0; page < 4; page++) {
                 BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -102,24 +104,24 @@ public class PdfService {
                 Path imagePath = Paths.get(fileUpload, imageName);
                 Files.createDirectories(imagePath.getParent());
                 Files.write(imagePath, imageInByte);
-                
+
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);
                 images.setImage_data(imageInByte);
                 images.setCover(page == 0);  // Chỉ đặt cover là true cho hình đầu tiên
                 images.setPdf(filePdf);
-                
+
                 imagesList.add(images);
             }
             return imagesList;
         }
-        
+
     }
-    
+
     public Optional<FilePdf> getFileById(Integer id) {
         return pdfrepo.findById(id);
     }
-    
+
     public ResponseEntity<ResultDto<?>> createNewBook(BookAdCreateRes bookad) throws IOException {
         try {
             var listcheck = bookrepo.findAll();
@@ -134,13 +136,13 @@ public class PdfService {
             filePdf.setFile_name(bookad.getFile().getOriginalFilename());
             filePdf.setFile_type(bookad.getFile().getContentType());
             filePdf.setFile_data(bookad.getFile().getBytes());
-            
+
             PDDocument document = Loader.loadPDF(filePdf.getFile_data());
             newbook.setEdition(bookad.getEdition());
             newbook.setPrice(bookad.getPrice());
             newbook.setName(bookad.getName());
             newbook.setPublisherDescription(bookad.getPublisherDescription());
-            
+
             newbook.setPageQuantity(document.getNumberOfPages());
             newbook.setRating(0);
             newbook.setRatingQuantity(0);
@@ -154,7 +156,7 @@ public class PdfService {
             var savepdf = pdfrepo.save(filePdf);
             List<ImagesBook> imagelist = convertPdfToImages(savepdf);
             IBrepo.saveAll(imagelist);
-            
+
             ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.OK);
         } catch (Exception e) {
@@ -162,10 +164,10 @@ public class PdfService {
             return new ResponseEntity<ResultDto<?>>(response, HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     public ResponseEntity<ResultDto<?>> BooklistUserShow() {
         try {
-            
+
             var listbook = bookrepo.findAll().stream().map(c -> {
                 ImagesBook image = getImages(c.getFilePdf());
                 byte[] fileImage = image != null ? image.getImage_data() : null;
@@ -186,10 +188,10 @@ public class PdfService {
                         .authorlist(authorshowlist)
                         .build();
             }).collect(Collectors.toList());
-            
+
             ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
             return new ResponseEntity<>(response, HttpStatus.OK);
-            
+
         } catch (Exception e) {
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -200,7 +202,7 @@ public class PdfService {
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
-            
+
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
 
@@ -226,21 +228,18 @@ public class PdfService {
                 List<PackageShowbook> packageList = Prepo.findAll().stream()
                         .map(packageRead -> {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
-                          
-                             
+
                             double rentPrice = price.divide(BigDecimal.valueOf(45), 5, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0,RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
                                     rentPrice
-                               
                             );
                         })
                         .collect(Collectors.toList());
-            
-                
+
                 BookUserRes bookUserRes = BookUserRes.builder()
                         .id(book.getId())
                         .name(book.getName())
@@ -264,18 +263,18 @@ public class PdfService {
                 ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
-            
+
         } catch (Exception e) {
             // Xử lý lỗi
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     public ImagesBook getImages(FilePdf file) {
         System.out.println(file.getId());
         var listIB = IBrepo.findAll();
-        
+
         for (ImagesBook c : listIB) {
             if (c.getPdf().getId() == file.getId()) {
                 if (c.isCover()) {
@@ -284,34 +283,34 @@ public class PdfService {
             }
         }
         return null;
-        
+
     }
-    
+
     public Optional<List<ImagesBook>> getImage(FilePdf file) {
         System.out.println(file.getId());
         var listIB = IBrepo.findAll();
-        
+
         List<ImagesBook> imagesList = listIB.stream()
                 .filter(c -> c.getPdf().getId() == file.getId())
                 .collect(Collectors.toList());
-        
+
         return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
     }
-    
+
     public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(id);
             if (!optionalBook.isPresent()) {
                 throw new EntityNotFoundException("Book not found with id: " + id);
             }
-            
+
             Book existingBook = optionalBook.get();
 //                  FilePdf filePdf = new FilePdf();
 //                   filePdf.setFile_name(bookres.getFile().getOriginalFilename());
 //            filePdf.setFile_type(bookres.getFile().getContentType());
 //            filePdf.setFile_data(bookres.getFile().getBytes());
             PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
-            
+
             existingBook.setId(id);
             existingBook.setName(bookres.getName());
             existingBook.setPrice(bookres.getPrice());
@@ -332,12 +331,12 @@ public class PdfService {
                 filePdfupdate.setBook(updateBook);
                 List<ImagesBook> oldlist = existingBook.getFilePdf().getImagesbook();
                 IBrepo.deleteAll(oldlist);
-                
+
                 var savepdf = pdfrepo.save(filePdfupdate);
                 List<ImagesBook> imagelist = convertPdfToImages(savepdf);
 //          
                 IBrepo.saveAll(imagelist);
-                
+
             }
 
 //              
@@ -345,14 +344,14 @@ public class PdfService {
                     .model(existingBook)
                     .build();
             return new ResponseEntity<>(response, HttpStatus.OK);
-            
+
         } catch (Exception e) {
             ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-        
+
     }
-    
+
     @Transactional
     public ResultDto<?> deleteBookById(int bookId) {
         try {
@@ -364,7 +363,7 @@ public class PdfService {
                 if (book.getFilePdf() != null) {
                     book.getFilePdf().setBook(null);
                 }
-                
+
                 book.getAuthors().clear();
                 book.getCategories().clear();
                 book.getPages().clear();
@@ -374,7 +373,7 @@ public class PdfService {
                     }
                 });
                 book.getMybook().clear();
-                
+
                 bookrepo.delete(book);
 
                 // Trả về phản hồi thành công
@@ -383,7 +382,7 @@ public class PdfService {
                         .message("Delete successfully")
                         .build();
                 return response;
-                
+
             } else {
                 // Trả về phản hồi khi không tìm thấy sách
                 ResultDto<?> response = ResultDto.builder()
@@ -401,4 +400,72 @@ public class PdfService {
             return response;
         }
     }
+
+    public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
+        try {
+            // Lấy tất cả các sách từ bookrepo
+            List<Book> allBooks = bookrepo.findAll();
+            int totalBooks = allBooks.size();
+
+            // Tính toán chỉ số bắt đầu và kết thúc cho trang hiện tại
+            if (page == 1) {
+                int start = Math.min(page - 1, totalBooks);
+                int end = Math.min(page * limit, totalBooks);
+                List<Book> paginatedBooks = allBooks.subList(start, end);
+                System.out.println(totalBooks);
+                System.out.println(start);
+                System.out.println(end);
+                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                    ImagesBook image = getImages(c.getFilePdf());
+                    byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                    return BookPagnination.builder()
+                            .name(c.getName())
+                            .rating(c.getRating())
+                            .ratingQuantity(c.getRatingQuantity())
+                            .ImageCove(fileImage)
+                          
+                            .build();
+                }).collect(Collectors.toList());
+                Paginations pag=new Paginations();
+                pag.setPaglist(bookPagninations);
+                pag.setTotalPage(totalBooks);
+                  ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                int start = Math.min((page-1) * limit, totalBooks);
+                int end = Math.min(page*limit, totalBooks);
+                List<Book> paginatedBooks = allBooks.subList(start, end);
+                System.out.println(totalBooks);
+                System.out.println(start);
+                System.out.println(end);
+                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                    ImagesBook image = getImages(c.getFilePdf());
+                    byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                    return BookPagnination.builder()
+                            .name(c.getName())
+                            .rating(c.getRating())
+                            .ratingQuantity(c.getRatingQuantity())
+                            .ImageCove(fileImage)
+                        
+                            .build();
+                }).collect(Collectors.toList());
+                Paginations pag=new Paginations();
+                pag.setPaglist(bookPagninations);
+                pag.setTotalPage(totalBooks);
+                  ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            
+            }
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Fail to show")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }
