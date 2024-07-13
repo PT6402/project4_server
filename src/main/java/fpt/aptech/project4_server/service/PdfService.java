@@ -114,7 +114,9 @@ public class PdfService {
 
                 imagesList.add(images);
             }
+
             return imagesList;
+
         }
 
     }
@@ -194,6 +196,7 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
+
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
@@ -206,6 +209,7 @@ public class PdfService {
 
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
+
 
                 // Lấy danh sách hình ảnh từ getImage
                 List<byte[]> imageDatas = getImage(book.getFilePdf())
@@ -402,6 +406,7 @@ public class PdfService {
         }
     }
 
+
     public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
         try {
             // Lấy tất cả các sách từ bookrepo
@@ -552,5 +557,6 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
 
 }

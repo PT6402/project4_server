@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.entities.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import jakarta.persistence.Entity;
@@ -26,6 +27,7 @@ public class Feedback extends BaseEntity {
     private LocalDateTime feedbackDate;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_detail_id")
     private UserDetail userDetail;
 

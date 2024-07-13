@@ -37,26 +37,29 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("api/v1/book")
 public class BookController {
+
     @Autowired
     PdfService pv;
-    
+
     @PostMapping("/create")
 
     public ResponseEntity<?> createBook(@ModelAttribute BookAdCreateRes bookad) throws IOException {
 
-   
-         return pv.createNewBook(bookad);
-           
+        return pv.createNewBook(bookad);
+
     }
 //    
+
     @GetMapping("/showlist")
-    public ResponseEntity<?> BookLUshow(){
+    public ResponseEntity<?> BookLUshow() {
         return pv.BooklistUserShow();
     }
-     @GetMapping("/showone/{id}")
-    public ResponseEntity<?> Bookshow(@PathVariable int id){
+
+    @GetMapping("/showone/{id}")
+    public ResponseEntity<?> Bookshow(@PathVariable int id) {
         return pv.BookSingleUserShow(id);
     }
+
       @GetMapping("/showpage")
     public ResponseEntity<?> BookPage(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit){
         return pv.Pagnination(id, limit);
@@ -66,6 +69,7 @@ public class BookController {
     public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
         return pv.Filter(id, limit,bookfilter);
     }
+
     
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id)  {
@@ -84,3 +88,4 @@ public class BookController {
         }
     }
 } 
+
