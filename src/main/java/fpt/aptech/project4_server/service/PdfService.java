@@ -226,11 +226,16 @@ public class PdfService {
                         .map(review -> new ReviewShow1(review.getContent(), review.getRating(), review.getId(), review.getUserDetail().getId(), review.getUserDetail().getFullname()))
                         .collect(Collectors.toList());
 
+                List<PackageRead> packageReadList = Prepo.findAll();
+                int maxDayQuantity = packageReadList.stream()
+                        .mapToInt(PackageRead::getDayQuantity)
+                        .max()
+                        .orElse(1);
                 List<PackageShowbook> packageList = Prepo.findAll().stream()
                         .map(packageRead -> {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
-                            double rentPrice = price.divide(BigDecimal.valueOf(45), 5, RoundingMode.HALF_UP)
+                            double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
@@ -424,7 +429,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-//                            .ImageCove(fileImage)
+                            //                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -447,7 +452,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-//                            .ImageCove(fileImage)
+                            //                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -508,7 +513,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-//                            .ImageCove(fileImage)
+                            //                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -518,9 +523,9 @@ public class PdfService {
 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
-            }else{
-                 int start = Math.min((page-1) * limit, totalBooks);
-                int end = Math.min(page*limit, totalBooks);
+            } else {
+                int start = Math.min((page - 1) * limit, totalBooks);
+                int end = Math.min(page * limit, totalBooks);
                 paginatedBooks = books.subList(start, end);
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImages(c.getFilePdf());
@@ -530,7 +535,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-//                            .ImageCove(fileImage)
+                            //                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -541,8 +546,6 @@ public class PdfService {
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
-
-          
 
         } catch (Exception e) {
             ResultDto<?> response = ResultDto.builder()
