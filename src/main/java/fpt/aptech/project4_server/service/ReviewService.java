@@ -73,49 +73,64 @@ public class ReviewService {
     }
 
     public ResponseEntity<ResultDto<?>> createReview(ReviewCreateDTO reviewRequest) {
-        try {
-            // Tim book
-            var bookOptional = bookRepository.findById(reviewRequest.getBookId());
-            if (bookOptional.isEmpty()) {
-                ResultDto<?> response = ResultDto.builder().status(false).message("Book not found!").build();
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-
-            // Tim user
-            var userOptional = userDetailRepository.findById(reviewRequest.getUserId());
-            if (userOptional.isEmpty()) {
-                ResultDto<?> response = ResultDto.builder().status(false).message("User not found!").build();
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-
-            // Tao review moi
-            var newReview = Review.builder()
-                    .content(reviewRequest.getContent())
-                    .rating(reviewRequest.getRating())
-                    .book(bookOptional.get())
-                    .userDetail(userOptional.get())
-                    .build();
-            
-            reviewRepository.save(newReview);
-            Book book = bookOptional.get();
-            book.setRatingQuantity(book.getRatingQuantity()+1);
-            
-            List<Review> reviewlist= reviewRepository.findByBookId(reviewRequest.getBookId());
-            
-            double totalRat=reviewlist.stream()
-                .mapToDouble(Review::getRating)
-                .sum();
-            double avarageRat = totalRat/book.getRatingQuantity();
-            book.setRating(avarageRat);
-            bookRepository.save(book);
-            
-            ResultDto<?> response = ResultDto.builder().status(true).message("Review created successfully!").build();
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (Exception e) {
-            ResultDto<?> response = ResultDto.builder().status(false).message("Failed to create review!").build();
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    try {
+        // Tìm book
+        var bookOptional = bookRepository.findById(reviewRequest.getBookId());
+        if (bookOptional.isEmpty()) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("Book not found!").build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
+
+        // Tìm user
+        var userOptional = userDetailRepository.findById(reviewRequest.getUserId());
+        if (userOptional.isEmpty()) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("User not found!").build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        // Log để kiểm tra giá trị đầu vào
+        System.out.println("Book ID: " + reviewRequest.getBookId());
+        System.out.println("User ID: " + reviewRequest.getUserId());
+
+        // Kiểm tra xem review đã tồn tại chưa
+        var existingReview = reviewRepository.findByBookIdAndUserDetailId(reviewRequest.getUserId(), reviewRequest.getBookId());
+        if (existingReview.isPresent()) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("User has already reviewed this book!").build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        // Tạo review mới
+        var newReview = Review.builder()
+                .content(reviewRequest.getContent())
+                .rating(reviewRequest.getRating())
+                .book(bookOptional.get())
+                .userDetail(userOptional.get())
+                .build();
+        
+        reviewRepository.save(newReview);
+        Book book = bookOptional.get();
+        book.setRatingQuantity(book.getRatingQuantity() + 1);
+        
+        List<Review> reviewList = reviewRepository.findByBookId(reviewRequest.getBookId());
+        
+        double totalRating = reviewList.stream()
+            .mapToDouble(Review::getRating)
+            .sum();
+        double averageRating = totalRating / book.getRatingQuantity();
+        book.setRating(averageRating);
+        bookRepository.save(book);
+        
+        ResultDto<?> response = ResultDto.builder().status(true).message("Review created successfully!").build();
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    } catch (Exception e) {
+        // Log lỗi để kiểm tra ngoại lệ
+        e.printStackTrace();
+        ResultDto<?> response = ResultDto.builder().status(false).message("Failed to create review!").build();
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
+
+
 
     public ResponseEntity<ResultDto<?>> updateReview(int id, ReviewUpdateDTO reviewUpdateDTO) {
         try {
