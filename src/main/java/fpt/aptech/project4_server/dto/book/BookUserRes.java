@@ -8,6 +8,7 @@ import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.PackageRead;
 import fpt.aptech.project4_server.entities.book.Review;
+import jakarta.persistence.Lob;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,7 @@ public class BookUserRes {
     private int ratingQuantity;
     List<AuthorUserRes> authorlist;
     List<ReviewShow1> reviewlist;
-    List<byte[]> fileimagelist;
+    @Lob      
+    private byte[] fileimage;
     List<CateShow> catelist;
 }
