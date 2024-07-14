@@ -1,7 +1,8 @@
 package fpt.aptech.project4_server.dto.order;
 
-import fpt.aptech.project4_server.entities.book.Book;
 import java.util.List;
+
+import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderCreateRequest {
-
     private int userId;
-    private List<Book> bookIds;
+    private List<CartItemAddRequest> cartItems;
 }

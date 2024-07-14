@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.dto.packageread;
+package fpt.aptech.project4_server.dto.coupon;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PackageAdCreateRes {
-    private String packageName;
-    private int dayQuantity;
+public class CouponCreateRequest {
+
+    private String code;
+    private double discountRate;
 }

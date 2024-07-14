@@ -1,12 +1,9 @@
 package fpt.aptech.project4_server.entities.user;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.book.Book;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,20 +16,19 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "tbOrderDetail")
-public class OrderDetail extends BaseEntity {
+@Table(name = "tbCartItem")
+public class CartItem extends BaseEntity {
 
     @ManyToOne
-    @JsonBackReference
-    @JoinColumn(name = "order_id")
-    private Order order;
+    @JoinColumn(name = "cart_id")
+    @JsonIgnore
+    private Cart cart;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;
 
+    private String packageName;
     private Integer dayQuantity;
-
     private Double rentPrice;
-
 }

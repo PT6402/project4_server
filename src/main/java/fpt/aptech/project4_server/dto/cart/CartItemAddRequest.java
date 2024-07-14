@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.dto.packageread;
+package fpt.aptech.project4_server.dto.cart;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PackageShowbook {
+public class CartItemAddRequest {
+    private int bookId;
     private String packageName;
-    private int dayQuantity;
-    private Double rentPrice;
 }

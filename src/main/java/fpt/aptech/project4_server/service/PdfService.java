@@ -28,6 +28,7 @@ import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -54,10 +56,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- *
- * @author macos
- */
 @Service
 public class PdfService {
 
@@ -121,7 +119,9 @@ public class PdfService {
 
                 imagesList.add(images);
             }
+
             return imagesList;
+
         }
 
     }
@@ -202,15 +202,18 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
+
             ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
-//        
+    //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
+
     try {
         Optional<Book> optionalBook = bookrepo.findById(bookId);
+
 
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
@@ -540,6 +543,7 @@ public class PdfService {
         }
     }
 
+
     @Transactional
     public ResultDto<?> deleteBookById(int bookId) {
         try {
@@ -612,6 +616,7 @@ public class PdfService {
 
 // Hàm kiểm tra và cập nhật trạng thái của sách
     public ResultDto<?> checkStatus(int bookId) {
+
         Optional<Book> optionalBook = bookrepo.findById(bookId);
         if (!optionalBook.isPresent()) {
             ResultDto<?> response = ResultDto.builder()
@@ -670,5 +675,6 @@ public class PdfService {
 
         bookrepo.delete(book);
     }
+
 
 }
