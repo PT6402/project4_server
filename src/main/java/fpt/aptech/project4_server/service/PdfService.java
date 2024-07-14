@@ -26,6 +26,7 @@ import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -51,10 +53,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- *
- * @author macos
- */
 @Service
 public class PdfService {
 
@@ -202,14 +200,13 @@ public class PdfService {
         }
     }
 
-//        
+    //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
 
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
-
 
                 // Lấy danh sách hình ảnh từ getImage
                 List<byte[]> imageDatas = getImage(book.getFilePdf())
@@ -239,13 +236,16 @@ public class PdfService {
                         .map(packageRead -> {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
+
                             double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+
                                     .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
                                     rentPrice
+
                             );
                         })
                         .collect(Collectors.toList());

@@ -1,17 +1,22 @@
 package fpt.aptech.project4_server.service;
 
+import com.stripe.exception.StripeException;
+import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.entities.book.Book;
+import fpt.aptech.project4_server.entities.book.PackageRead;
+import fpt.aptech.project4_server.entities.user.Cart;
+import fpt.aptech.project4_server.entities.user.CartItem;
 import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.entities.user.OrderDetail;
 import fpt.aptech.project4_server.entities.user.UserDetail;
-import fpt.aptech.project4_server.repository.BookRepository;
-import fpt.aptech.project4_server.repository.OrderDetailRepository;
-import fpt.aptech.project4_server.repository.OrderRepository;
-import fpt.aptech.project4_server.repository.UserDetailRepo;
+import fpt.aptech.project4_server.repository.*;
+import fpt.aptech.project4_server.response.PaymentResponse;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,53 +39,138 @@ public class OrderService {
     private UserDetailRepo userDetailRepo;
 
     @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private PackageReadRepository packageReadRepository;
 
     public ResponseEntity<ResultDto<?>> createOrder(OrderCreateRequest orderRequest) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(orderRequest.getUserId());
             if (userDetailOptional.isEmpty()) {
-                ResultDto<?> response = ResultDto.builder().status(false).message("User not found").build();
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(), HttpStatus.NOT_FOUND);
             }
 
             UserDetail userDetail = userDetailOptional.get();
 
-            List<Book> books = new ArrayList();
+            List<OrderDetail> orderDetails = new ArrayList<>();
+            for (CartItemAddRequest cartItemRequest : orderRequest.getCartItems()) {
+                Optional<Book> bookOptional = bookRepository.findById(cartItemRequest.getBookId());
+                if (bookOptional.isEmpty()) {
+                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Book not found: " + cartItemRequest.getBookId()).build(), HttpStatus.NOT_FOUND);
+                }
 
-            orderRequest.getBookIds().forEach(c -> {
-                var bookId = bookRepository.findById(c.getId()).get();
-                books.add(bookId);
-            });
+                Optional<PackageRead> packageOptional = packageReadRepository.findByPackageName(cartItemRequest.getPackageName());
+                if (packageOptional.isEmpty()) {
+                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Package not found: " + cartItemRequest.getPackageName()).build(), HttpStatus.NOT_FOUND);
+                }
 
-            if (books.size() != orderRequest.getBookIds().size()) {
-                ResultDto<?> response = ResultDto.builder().status(false).message("Some books not found").build();
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                Book book = bookOptional.get();
+                PackageRead packageRead = packageOptional.get();
+                double rentPrice = calculateRentPrice(book.getPrice(), packageRead.getDayQuantity());
+
+                OrderDetail orderDetail = new OrderDetail();
+                orderDetail.setBook(book);
+                orderDetail.setDayQuantity(packageRead.getDayQuantity());
+                orderDetail.setRentPrice(rentPrice);
+                orderDetails.add(orderDetail);
             }
 
             Order order = Order.builder()
                     .userDetails(List.of(userDetail))
-                    .paymentStatus(0) // Set default payment status, adjust as needed
+                    .paymentStatus(0)
+                    .orderDetails(orderDetails)
                     .build();
 
             Order savedOrder = orderRepository.save(order);
-            List<OrderDetail> orderDetails = new ArrayList();
-            for (Book book : books) {
-                OrderDetail orderDetail = new OrderDetail();
-                orderDetail.setOrder(savedOrder);
-                orderDetail.setBook(book);
 
-                orderDetails.add(orderDetail);
-                System.out.println(book.getId());
+            for (OrderDetail orderDetail : orderDetails) {
+                orderDetail.setOrder(savedOrder);
                 orderDetailRepository.save(orderDetail);
             }
 
-            ResultDto<?> response = ResultDto.builder().status(true).message("Order created successfully").build();
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            // Create payment link
+            PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
+
+            return new ResponseEntity<>(ResultDto.builder()
+                    .status(true)
+                    .message("Order created successfully")
+                    .model(paymentResponse)
+                    .build(), HttpStatus.CREATED);
+        } catch (StripeException e) {
+            return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
-            ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private double calculateRentPrice(double basePrice, int dayQuantity) {
+        return (basePrice / 45) * dayQuantity;
+    }
+
+    public ResponseEntity<ResultDto<?>> checkoutCart(int userId, List<String> packageNames) {
+        try {
+            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            if (userDetailOptional.isEmpty()) {
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(), HttpStatus.NOT_FOUND);
+            }
+
+            UserDetail userDetail = userDetailOptional.get();
+            Cart cart = userDetail.getCart();
+
+            if (cart == null || cart.getBooks().isEmpty()) {
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("Cart is empty").build(), HttpStatus.BAD_REQUEST);
+            }
+
+            Order order = Order.builder()
+                    .userDetails(List.of(userDetail))
+                    .paymentStatus(0)
+                    .orderDetails(new ArrayList<>())
+                    .build();
+
+            List<OrderDetail> orderDetails = new ArrayList<>();
+            for (int i = 0; i < cart.getBooks().size(); i++) {
+                Book book = cart.getBooks().get(i);
+                String packageName = packageNames.get(i);
+
+                Optional<PackageRead> packageOptional = packageReadRepository.findByPackageName(packageName);
+                if (packageOptional.isEmpty()) {
+                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Package not found: " + packageName).build(), HttpStatus.NOT_FOUND);
+                }
+
+                PackageRead packageRead = packageOptional.get();
+                double rentPrice = calculateRentPrice(book.getPrice(), packageRead.getDayQuantity());
+
+                OrderDetail orderDetail = new OrderDetail();
+                orderDetail.setOrder(order);
+                orderDetail.setBook(book);
+                orderDetail.setDayQuantity(packageRead.getDayQuantity());
+                orderDetail.setRentPrice(rentPrice);
+
+                orderDetails.add(orderDetail);
+            }
+
+            order.setOrderDetails(orderDetails);
+            Order savedOrder = orderRepository.save(order);
+
+            // Create payment link
+            PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
+
+            return new ResponseEntity<>(ResultDto.builder()
+                    .status(true)
+                    .message("Order created successfully")
+                    .model(paymentResponse)
+                    .build(), HttpStatus.CREATED);
+        } catch (StripeException e) {
+            return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
