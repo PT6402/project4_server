@@ -71,14 +71,14 @@ public class PdfService {
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
-//       List<ImagesBook> imageslist = new ImagesBook();
+        // List<ImagesBook> imageslist = new ImagesBook();
 
         filePdf.setFile_name(file.getOriginalFilename());
         filePdf.setFile_type(file.getContentType());
         filePdf.setFile_data(file.getBytes());
 
-//        filePdf = pdfrepo.save(filePdf);
-//        images = IBrepo.save(images);
+        // filePdf = pdfrepo.save(filePdf);
+        // images = IBrepo.save(images);
         convertPdfToImages(filePdf);
 
         return pdfrepo.save(filePdf);
@@ -107,7 +107,7 @@ public class PdfService {
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);
                 images.setImage_data(imageInByte);
-                images.setCover(page == 0);  // Chỉ đặt cover là true cho hình đầu tiên
+                images.setCover(page == 0); // Chỉ đặt cover là true cho hình đầu tiên
                 images.setPdf(filePdf);
 
                 imagesList.add(images);
@@ -181,7 +181,7 @@ public class PdfService {
                 return BooklistUserRes.builder()
                         .id(c.getId())
                         .name(c.getName())
-                        //                        .price(c.getPrice())
+                        // .price(c.getPrice())
                         .rating(c.getRating())
                         .ratingQuantity(c.getRatingQuantity())
                         .fileimage(fileImage)
@@ -224,7 +224,8 @@ public class PdfService {
                         .map(author -> new AuthorUserRes(author.getId(), author.getName(), author.getImage_data()))
                         .collect(Collectors.toList());
                 List<ReviewShow1> reviewList = book.getReview().stream()
-                        .map(review -> new ReviewShow1(review.getContent(), review.getRating(), review.getId(), review.getUserDetail().getId(), review.getUserDetail().getFullname()))
+                        .map(review -> new ReviewShow1(review.getContent(), review.getRating(), review.getId(),
+                                review.getUserDetail().getId(), review.getUserDetail().getFullname()))
                         .collect(Collectors.toList());
 
                 List<PackageRead> packageReadList = Prepo.findAll();
@@ -236,17 +237,17 @@ public class PdfService {
                         .map(packageRead -> {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
-
                             double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
 
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
+                                    .setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
                                     rentPrice
 
-                            );
+                        );
                         })
                         .collect(Collectors.toList());
 
@@ -315,10 +316,10 @@ public class PdfService {
             }
 
             Book existingBook = optionalBook.get();
-//                  FilePdf filePdf = new FilePdf();
-//                   filePdf.setFile_name(bookres.getFile().getOriginalFilename());
-//            filePdf.setFile_type(bookres.getFile().getContentType());
-//            filePdf.setFile_data(bookres.getFile().getBytes());
+            // FilePdf filePdf = new FilePdf();
+            // filePdf.setFile_name(bookres.getFile().getOriginalFilename());
+            // filePdf.setFile_type(bookres.getFile().getContentType());
+            // filePdf.setFile_data(bookres.getFile().getBytes());
             PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
 
             existingBook.setId(id);
@@ -344,12 +345,12 @@ public class PdfService {
 
                 var savepdf = pdfrepo.save(filePdfupdate);
                 List<ImagesBook> imagelist = convertPdfToImages(savepdf);
-//          
+                //
                 IBrepo.saveAll(imagelist);
 
             }
 
-//              
+            //
             ResultDto<?> response = ResultDto.builder().status(true).message("Update successfully")
                     .model(existingBook)
                     .build();
@@ -411,7 +412,6 @@ public class PdfService {
         }
     }
 
-
     public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
         try {
             // Lấy tất cả các sách từ bookrepo
@@ -434,7 +434,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -457,7 +457,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -485,7 +485,8 @@ public class PdfService {
             if ((bf.getList() == null || bf.getList().isEmpty()) && (bf.getRating() == null)) {
                 books = bookrepo.findAll();
             } else {
-                // Lấy tất cả các sách có cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
+                // Lấy tất cả các sách có cate_id trong danh sách từ BookFilter nếu danh sách
+                // không rỗng
                 if (bf.getList() != null && !bf.getList().isEmpty()) {
                     books = new ArrayList<>();
                     for (Integer cateId : bf.getList()) {
@@ -496,7 +497,8 @@ public class PdfService {
                     books = bookrepo.findAll();
                 }
 
-                // Lọc những cuốn sách có rating từ 0 đến rating của BookFilter nếu rating không null
+                // Lọc những cuốn sách có rating từ 0 đến rating của BookFilter nếu rating không
+                // null
                 if (bf.getRating() != null) {
                     books = books.stream()
                             .filter(book -> book.getRating() >= 0 && book.getRating() <= bf.getRating())
@@ -518,7 +520,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -540,7 +542,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -560,6 +562,5 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-
 
 }

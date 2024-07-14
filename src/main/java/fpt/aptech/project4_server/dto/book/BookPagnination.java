@@ -23,7 +23,7 @@ public class BookPagnination {
     private String name;
     private double rating;
     private int ratingQuantity;
-//
-//    @Lob
-//    private byte[]ImageCove;
+    //
+    @Lob
+    private byte[] ImageCove;
 }
