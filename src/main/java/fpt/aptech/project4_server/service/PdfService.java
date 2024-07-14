@@ -421,7 +421,13 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                   if(totalBooks<limit){
+                    pag.setTotalPage(1);
+                }else if(limit%totalBooks==0){
+                     pag.setTotalPage(limit/totalBooks);
+                }else{
+                    pag.setTotalPage(limit/totalBooks+1);
+                }
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
                 
@@ -474,6 +480,7 @@ public class PdfService {
                     byte[] fileImage = image != null ? image.getImage_data() : null;
                     
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -483,7 +490,13 @@ public class PdfService {
                 
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                   if(totalBooks<limit){
+                    pag.setTotalPage(1);
+                }else if(limit%totalBooks==0){
+                     pag.setTotalPage(limit/totalBooks);
+                }else{
+                    pag.setTotalPage(limit/totalBooks+1);
+                }
                 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
@@ -496,6 +509,7 @@ public class PdfService {
                     byte[] fileImage = image != null ? image.getImage_data() : null;
                     
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -505,7 +519,13 @@ public class PdfService {
                 
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                   if(totalBooks<limit){
+                    pag.setTotalPage(1);
+                }else if(limit%totalBooks==0){
+                     pag.setTotalPage(limit/totalBooks);
+                }else{
+                    pag.setTotalPage(limit/totalBooks+1);
+                }
                 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
