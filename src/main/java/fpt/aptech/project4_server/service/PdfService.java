@@ -178,7 +178,7 @@ public class PdfService {
         try {
 
             var listbook = bookrepo.findAll().stream().map(c -> {
-                ImagesBook image = getImages(c.getFilePdf());
+                ImagesBook image = getImage(c.getFilePdf());
                 byte[] fileImage = image != null ? image.getImage_data() : null;
                 List<CateShow> catshowlist = c.getCategories().stream()
                         .map(category -> new CateShow(category.getId(), category.getName()))
@@ -210,18 +210,17 @@ public class PdfService {
 
     //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
+
         try {
             Optional<Book> optionalBook = bookrepo.findById(bookId);
 
             if (optionalBook.isPresent()) {
                 Book book = optionalBook.get();
 
-                // Lấy danh sách hình ảnh từ getImage
-                List<byte[]> imageDatas = getImage(book.getFilePdf())
-                        .orElseThrow(() -> new RuntimeException("No images found"))
-                        .stream()
-                        .map(ImagesBook::getImage_data)
-                        .collect(Collectors.toList());
+                // Lấy hình ảnh cover từ getImage
+                ImagesBook image = getImage(book.getFilePdf());
+                byte[] fileImage = image != null ? image.getImage_data() : null;
+
                 // Chuyển đổi danh sách Category thành danh sách CategoryRes
                 List<CateShow> categoryResList = book.getCategories().stream()
                         .map(category -> new CateShow(category.getId(), category.getName()))
@@ -229,8 +228,9 @@ public class PdfService {
 
                 // Chuyển đổi danh sách Author thành danh sách AuthorRes
                 List<AuthorUserRes> authorResList = book.getAuthors().stream()
-                        .map(author -> new AuthorUserRes(author.getId(), author.getName(), author.getImage_data()))
+                        .map(author -> new AuthorUserRes(author.getId(), author.getName()))
                         .collect(Collectors.toList());
+
                 List<ReviewShow1> reviewList = book.getReview().stream()
                         .map(review -> new ReviewShow1(review.getContent(), review.getRating(), review.getId(),
                                 review.getUserDetail().getId(), review.getUserDetail().getFullname()))
@@ -246,16 +246,13 @@ public class PdfService {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
                             double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-
                                     .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
                                     .setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
-                                    rentPrice
-
-                        );
+                                    rentPrice);
                         })
                         .collect(Collectors.toList());
 
@@ -268,7 +265,7 @@ public class PdfService {
                         .publisherDescription(book.getPublisherDescription())
                         .rating(book.getRating())
                         .ratingQuantity(book.getRatingQuantity())
-                        .fileimagelist(imageDatas)
+                        .fileimage(fileImage)
                         .catelist(categoryResList)
                         .authorlist(authorResList)
                         .reviewlist(reviewList)
@@ -290,7 +287,7 @@ public class PdfService {
         }
     }
 
-    public ImagesBook getImages(FilePdf file) {
+    public ImagesBook getImage(FilePdf file) {
         System.out.println(file.getId());
         var listIB = IBrepo.findAll();
 
@@ -305,7 +302,7 @@ public class PdfService {
 
     }
 
-    public Optional<List<ImagesBook>> getImage(FilePdf file) {
+    public Optional<List<ImagesBook>> getImages(FilePdf file) {
         System.out.println(file.getId());
         var listIB = IBrepo.findAll();
 
@@ -384,7 +381,7 @@ public class PdfService {
                 List<Book> paginatedBooks = allBooks.subList(start, end);
 
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImages(c.getFilePdf());
+                    ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
@@ -413,7 +410,7 @@ public class PdfService {
                 List<Book> paginatedBooks = allBooks.subList(start, end);
 
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImages(c.getFilePdf());
+                    ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
@@ -483,7 +480,7 @@ public class PdfService {
                 int end = Math.min(page * limit, totalBooks);
                 paginatedBooks = books.subList(start, end);
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImages(c.getFilePdf());
+                    ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
@@ -512,7 +509,7 @@ public class PdfService {
                 int end = Math.min(page * limit, totalBooks);
                 paginatedBooks = books.subList(start, end);
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImages(c.getFilePdf());
+                    ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
@@ -620,6 +617,7 @@ public class PdfService {
 
     // Hàm kiểm tra và cập nhật trạng thái của sách
     public ResultDto<?> checkStatus(int bookId) {
+
         Optional<Book> optionalBook = bookrepo.findById(bookId);
         if (!optionalBook.isPresent()) {
             ResultDto<?> response = ResultDto.builder()
