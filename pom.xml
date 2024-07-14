@@ -7,7 +7,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.0</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>fpt.aptech</groupId>
     <artifactId>project4_server</artifactId>
@@ -102,6 +102,7 @@
             <artifactId>pdfbox</artifactId>
             <version>3.0.2</version>
         </dependency>
+
          <!-- Commons IO -->
     <dependency>
         <groupId>commons-io</groupId>
@@ -109,16 +110,22 @@
         <version>2.11.0</version>
     </dependency>
 
-    <!-- Apache PDFBox Tools -->
-    <dependency>
-        <groupId>org.apache.pdfbox</groupId>
-        <artifactId>pdfbox-tools</artifactId>
-        <version>3.0.2</version>
-    </dependency>
 
 
  
 
+
+        <!-- Apache PDFBox Tools -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-tools</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>20.62.0</version>
+        </dependency>
     </dependencies>
 
     <build>

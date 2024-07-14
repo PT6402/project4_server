@@ -2,10 +2,7 @@ package fpt.aptech.project4_server.entities.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
-import fpt.aptech.project4_server.entities.user.UserDetail;
-import fpt.aptech.project4_server.entities.user.Mybook;
-import fpt.aptech.project4_server.entities.user.Wishlist;
-import fpt.aptech.project4_server.entities.user.Cart;
+import fpt.aptech.project4_server.entities.user.*;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import lombok.Data;
@@ -69,7 +66,6 @@ public class Book extends BaseEntity {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "cate_id")
     )
-
     private List<Category> categories;
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -78,5 +74,9 @@ public class Book extends BaseEntity {
     @ManyToMany(mappedBy = "books")
     @JsonIgnore
     private List<Cart> carts;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<CartItem> cartItems;
 
 }
