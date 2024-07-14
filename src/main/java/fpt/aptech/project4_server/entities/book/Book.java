@@ -29,6 +29,8 @@ public class Book extends BaseEntity {
     private String publisherDescription;
     private double rating;
     private int ratingQuantity;
+    @Column(name = "status_mybook")
+    private Boolean statusMybook;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
 

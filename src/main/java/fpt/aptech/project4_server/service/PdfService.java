@@ -22,6 +22,8 @@ import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
+import fpt.aptech.project4_server.entities.book.ScheduleBookDeletion;
+import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,6 +38,7 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +69,10 @@ public class PdfService {
     private ImageBookRepo IBrepo;
     @Autowired
     private PackageReadRepository Prepo;
+    @Autowired
+    private Mybookrepo MBrepo;
+    @Autowired
+    private ScheduleDeleteRepository SDrepo;
     @Value("${upload.path}")
     private String fileUpload;
 
@@ -150,6 +157,7 @@ public class PdfService {
             // Lưu thông tin của sách
             newbook.setCategories(bookad.getCatelist());
             newbook.setAuthors(bookad.getAuthorlist());
+            newbook.setStatusMybook(false);
             Book savedBook = bookrepo.save(newbook);
 
             // Liên kết thông tin file PDF với sách vừa lưu
@@ -363,74 +371,24 @@ public class PdfService {
 
     }
 
-    @Transactional
-    public ResultDto<?> deleteBookById(int bookId) {
-        try {
-            Optional<Book> optionalBook = bookrepo.findById(bookId);
-            if (optionalBook.isPresent()) {
-                Book book = optionalBook.get();
-
-                // Xóa liên kết với các bảng khác nếu cần
-                if (book.getFilePdf() != null) {
-                    book.getFilePdf().setBook(null);
-                }
-
-                book.getAuthors().clear();
-                book.getCategories().clear();
-                book.getPages().clear();
-                book.getMybook().forEach(mybook -> {
-                    if (mybook.getCurrentpage() != null) {
-                        mybook.setCurrentpage(null);
-                    }
-                });
-                book.getMybook().clear();
-
-                bookrepo.delete(book);
-
-                // Trả về phản hồi thành công
-                ResultDto<?> response = ResultDto.builder()
-                        .status(true)
-                        .message("Delete successfully")
-                        .build();
-                return response;
-
-            } else {
-                // Trả về phản hồi khi không tìm thấy sách
-                ResultDto<?> response = ResultDto.builder()
-                        .status(false)
-                        .message("Book not found with id: " + bookId)
-                        .build();
-                return response;
-            }
-        } catch (Exception e) {
-            // Trả về phản hồi khi xảy ra lỗi
-            ResultDto<?> response = ResultDto.builder()
-                    .status(false)
-                    .message("Delete fail: " + e.getMessage())
-                    .build();
-            return response;
-        }
-    }
-
     public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
         try {
             // Lấy tất cả các sách từ bookrepo
             List<Book> allBooks = bookrepo.findAll();
             int totalBooks = allBooks.size();
-
+            System.out.println(totalBooks);
             // Tính toán chỉ số bắt đầu và kết thúc cho trang hiện tại
             if (page == 1) {
                 int start = Math.min(page - 1, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
-                System.out.println(totalBooks);
-                System.out.println(start);
-                System.out.println(end);
+
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImages(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -439,21 +397,27 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                if (totalBooks < limit) {
+                    pag.setTotalPage(1);
+                } else if (limit % totalBooks == 0) {
+                    pag.setTotalPage(limit / totalBooks);
+                } else {
+                    pag.setTotalPage(limit / totalBooks + 1);
+                }
+
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 int start = Math.min((page - 1) * limit, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
-                System.out.println(totalBooks);
-                System.out.println(start);
-                System.out.println(end);
+
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImages(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -462,7 +426,13 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                if (totalBooks < limit) {
+                    pag.setTotalPage(1);
+                } else if (limit % totalBooks == 0) {
+                    pag.setTotalPage(limit / totalBooks);
+                } else {
+                    pag.setTotalPage(limit / totalBooks + 1);
+                }
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
 
@@ -517,6 +487,7 @@ public class PdfService {
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -526,7 +497,13 @@ public class PdfService {
 
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                if (totalBooks < limit) {
+                    pag.setTotalPage(1);
+                } else if (limit % totalBooks == 0) {
+                    pag.setTotalPage(limit / totalBooks);
+                } else {
+                    pag.setTotalPage(limit / totalBooks + 1);
+                }
 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
@@ -539,6 +516,7 @@ public class PdfService {
                     byte[] fileImage = image != null ? image.getImage_data() : null;
 
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -548,7 +526,13 @@ public class PdfService {
 
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                if (totalBooks < limit) {
+                    pag.setTotalPage(1);
+                } else if (limit % totalBooks == 0) {
+                    pag.setTotalPage(limit / totalBooks);
+                } else {
+                    pag.setTotalPage(limit / totalBooks + 1);
+                }
 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
@@ -561,6 +545,138 @@ public class PdfService {
                     .build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Transactional
+    public ResultDto<?> deleteBookById(int bookId) {
+        try {
+            // Kiểm tra xem sách có tồn tại không
+            Optional<Book> optionalBook = bookrepo.findById(bookId);
+            if (!optionalBook.isPresent()) {
+                ResultDto<?> response = ResultDto.builder()
+                        .status(false)
+                        .message("Book not found with id: " + bookId)
+                        .build();
+                return response;
+            }
+
+            Book book = optionalBook.get();
+
+            // Kiểm tra trạng thái của sách
+            ResultDto<?> checkStatusResult = checkStatus(bookId);
+            if (!checkStatusResult.isStatus()) {
+                return checkStatusResult;
+            }
+
+            Object model = checkStatusResult.getModel();
+            if (model == null || (model instanceof Boolean && !(Boolean) model)) {
+                // Xóa ngay sách nếu statusMybook là false
+                // Xử lý xóa các liên kết và sách
+                handleBookDeletion(book);
+
+                ResultDto<?> response = ResultDto.builder()
+                        .status(true)
+                        .message("Delete successfully")
+                        .build();
+                return response;
+
+            } else {
+                // Đánh dấu cần xóa và chờ đến ngày hết hạn
+                ScheduleBookDeletion scheduledBookDeletion = new ScheduleBookDeletion();
+                scheduledBookDeletion.setBookId(bookId);
+
+                // Lấy ngày hết hạn trễ nhất từ kết quả checkStatusResult
+                if (model instanceof LocalDateTime) {
+                    scheduledBookDeletion.setExpiredDate((LocalDateTime) model);
+                } else {
+                    // Nếu không có ngày hết hạn thì có thể xử lý mặc định ở đây
+                    // Ví dụ:
+                    // scheduledBookDeletion.setExpiredDate(LocalDateTime.now().plusDays(30));
+                    // Hoặc trả về lỗi nếu không có ngày hết hạn
+                    ResultDto<?> response = ResultDto.builder()
+                            .status(false)
+                            .message("Failed to schedule deletion. Missing expiry date.")
+                            .build();
+                    return response;
+                }
+
+                SDrepo.save(scheduledBookDeletion);
+
+                ResultDto<?> response = ResultDto.builder()
+                        .status(false)
+                        .message("Book has active mybook. It will be deleted after the expired date.")
+                        .model(bookId) // Lưu bookId vào model để lên lịch xoá sau này
+                        .build();
+                return response;
+            }
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Delete fail: " + e.getMessage())
+                    .build();
+            return response;
+        }
+    }
+
+    // Hàm kiểm tra và cập nhật trạng thái của sách
+    public ResultDto<?> checkStatus(int bookId) {
+        Optional<Book> optionalBook = bookrepo.findById(bookId);
+        if (!optionalBook.isPresent()) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Book not found with id: " + bookId)
+                    .build();
+            return response;
+        }
+
+        Book book = optionalBook.get();
+        LocalDateTime now = LocalDateTime.now();
+
+        // Tìm mybook có expiredDate lớn hơn hiện tại và lớn nhất
+        Optional<LocalDateTime> latestExpiredDate = MBrepo.findByBookId(bookId).stream()
+                .map(Mybook::getExpiredDate)
+                .filter(expiredDate -> expiredDate.isAfter(now))
+                .max(LocalDateTime::compareTo);
+
+        // Kiểm tra và cập nhật trạng thái statusMybook của book
+        if (latestExpiredDate.isPresent()) {
+            book.setStatusMybook(true);
+            bookrepo.save(book);
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("Book has active mybook")
+                    .model(latestExpiredDate.get()) // Trả về latestExpiredDate trong model
+                    .build();
+            return response;
+        } else {
+            book.setStatusMybook(false);
+            bookrepo.save(book);
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("Book has no active mybook")
+                    .build();
+            return response;
+        }
+    }
+
+    // Hàm xử lý xóa các liên kết và sách
+    private void handleBookDeletion(Book book) {
+        // Xóa liên kết với các bảng khác nếu cần
+        if (book.getFilePdf() != null) {
+            book.getFilePdf().setBook(null);
+        }
+
+        book.getAuthors().clear();
+        book.getCategories().clear();
+        book.getPages().clear();
+        book.getMybook().forEach(mybook -> {
+            if (mybook.getCurrentpage() != null) {
+                mybook.setCurrentpage(null);
+            }
+        });
+        book.getMybook().clear();
+
+        bookrepo.delete(book);
     }
 
 }
