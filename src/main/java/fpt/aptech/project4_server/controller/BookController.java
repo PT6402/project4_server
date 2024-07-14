@@ -11,7 +11,9 @@ import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
  * @author macos
  */
 @RestController
@@ -58,15 +59,16 @@ public class BookController {
         return pv.BookSingleUserShow(id);
     }
 
-    
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id)  {
 
-   
-         return pv.UpdateBook(id,bookad);
-           
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
+
+
+        return pv.UpdateBook(id, bookad);
+
     }
-     @DeleteMapping("/delete/{id}")
+
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
         ResultDto<?> response = pv.deleteBookById(id);
         if (response.isStatus()) {

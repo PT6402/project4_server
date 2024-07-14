@@ -23,6 +23,11 @@ public class OrderController {
         return orderService.createOrder(orderRequest);
     }
 
+    @PostMapping("/checkout/{userId}")
+    public ResponseEntity<ResultDto<?>> checkoutCart(@PathVariable int userId, @RequestBody List<String> packageNames) {
+        return orderService.checkoutCart(userId, packageNames);
+    }
+
     @PutMapping("/{orderId}")
     public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId, @RequestBody OrderUpdateRequest orderUpdateRequest) {
         return orderService.updateOrder(orderId, orderUpdateRequest);
