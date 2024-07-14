@@ -30,8 +30,8 @@ public class ScheduledTaskService {
     @Autowired
     private PdfService pdfService;
 
-    // Chạy job vào mỗi ngày vào lúc 2 giờ sáng
-    @Scheduled(cron = "0 0 2 * * ?")
+    // Chạy job vào mỗi ngày vào lúc 0 giờ sáng
+    @Scheduled(cron = "0 0 0 * * ?")
     public void scheduleTask() {
         LocalDateTime now = LocalDateTime.now();
         List<ScheduleBookDeletion> scheduledBooksToDelete = scheduledBookDeletionRepo.findByExpiredDateBefore(now);

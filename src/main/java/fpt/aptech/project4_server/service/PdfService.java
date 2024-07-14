@@ -371,20 +371,19 @@ public class PdfService {
             // Lấy tất cả các sách từ bookrepo
             List<Book> allBooks = bookrepo.findAll();
             int totalBooks = allBooks.size();
-
+            System.out.println(totalBooks);
             // Tính toán chỉ số bắt đầu và kết thúc cho trang hiện tại
             if (page == 1) {
                 int start = Math.min(page - 1, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
-                System.out.println(totalBooks);
-                System.out.println(start);
-                System.out.println(end);
+            
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImages(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
                     
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
@@ -393,21 +392,27 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                pag.setTotalPage(totalBooks);
+                if(totalBooks<limit){
+                    pag.setTotalPage(1);
+                }else if(limit%totalBooks==0){
+                     pag.setTotalPage(limit/totalBooks);
+                }else{
+                    pag.setTotalPage(limit/totalBooks+1);
+                }
+               
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 int start = Math.min((page - 1) * limit, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
-                System.out.println(totalBooks);
-                System.out.println(start);
-                System.out.println(end);
+               
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImages(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
                     
                     return BookPagnination.builder()
+                            .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
