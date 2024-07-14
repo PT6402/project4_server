@@ -1,36 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
- */
 package fpt.aptech.project4_server.controller;
 
-import fpt.aptech.project4_server.dto.category.PackageAdCreateRes;
+import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
+import fpt.aptech.project4_server.dto.packageread.PackageShowbook;
 import fpt.aptech.project4_server.service.PackageService;
 import fpt.aptech.project4_server.util.ResultDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-/**
- *
- * @author macos
- */
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/package")
 public class PackageController {
+
     @Autowired
-    PackageService Pservice;
-    
-     @PostMapping("/create/{id}")
-     public ResponseEntity<ResultDto<?>> createPackage(@PathVariable Integer id, @ModelAttribute PackageAdCreateRes packres){
-         return Pservice.createPackage(id, packres);
-     }
-   
-    
+    private PackageService packageService;
+
+    @PostMapping("/create")
+    public ResponseEntity<ResultDto<?>> createPackage(@RequestBody PackageAdCreateRes packRes) {
+        return packageService.createPackage(packRes);
+    }
+
+    @PutMapping("/update/{packageId}")
+    public ResponseEntity<ResultDto<?>> updatePackage(@PathVariable int packageId, @RequestBody PackageAdCreateRes packRes) {
+        return packageService.updatePackage(packageId, packRes);
+    }
+
+    @DeleteMapping("/delete/{packageId}")
+    public ResponseEntity<ResultDto<?>> deletePackage(@PathVariable int packageId) {
+        return packageService.deletePackage(packageId);
+    }
+
+    @GetMapping("/view")
+    public ResponseEntity<ResultDto<List<PackageShowbook>>> viewPackages() {
+        return packageService.viewPackages();
+    }
 }

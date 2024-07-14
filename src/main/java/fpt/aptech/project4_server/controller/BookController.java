@@ -4,14 +4,17 @@
  */
 package fpt.aptech.project4_server.controller;
 
-import fpt.aptech.project4_server.dto.category.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +26,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
  * @author macos
  */
 @RestController
@@ -58,15 +61,28 @@ public class BookController {
         return pv.BookSingleUserShow(id);
     }
 
-    
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id)  {
 
-   
-         return pv.UpdateBook(id,bookad);
-           
+      @GetMapping("/showpage")
+    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit){
+        return pv.Pagnination(id, limit);
     }
-     @DeleteMapping("/delete/{id}")
+    
+    @PostMapping("/showpage")
+    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
+        return pv.Filter(id, limit,bookfilter);
+    }
+
+    
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
+
+
+        return pv.UpdateBook(id, bookad);
+
+    }
+
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
         ResultDto<?> response = pv.deleteBookById(id);
         if (response.isStatus()) {
