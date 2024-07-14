@@ -5,6 +5,7 @@
 package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
+import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,6 +61,18 @@ public class BookController {
         return pv.BookSingleUserShow(id);
     }
 
+
+      @GetMapping("/showpage")
+    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit){
+        return pv.Pagnination(id, limit);
+    }
+    
+    @PostMapping("/showpage")
+    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
+        return pv.Filter(id, limit,bookfilter);
+    }
+
+    
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
