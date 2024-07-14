@@ -13,3 +13,7 @@ from tb_token
 
 select *
 from tb_user_detail
+
+delete tb_user
+delete tb_token
+delete tb_user_detail
