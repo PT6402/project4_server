@@ -68,8 +68,8 @@ public class BookController {
     }
     
     @PostMapping("/showpage")
-    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
-        return pv.Filter(id, limit,bookfilter);
+    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer page,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
+        return pv.Filter(page, limit,bookfilter);
     }
 
     

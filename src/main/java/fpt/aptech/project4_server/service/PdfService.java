@@ -467,11 +467,11 @@ public class PdfService {
                 } else {
                     books = bookrepo.findAll();
                 }
-
-                // Lọc những cuốn sách có rating từ 0 đến rating của BookFilter nếu rating không null
+                System.out.println("rating nhap vao"+" "+bf.getRating());
+           
                 if (bf.getRating() != null) {
                     books = books.stream()
-                            .filter(book -> book.getRating() >= 0 && book.getRating() <= bf.getRating())
+                            .filter(book -> book.getRating() >= bf.getRating() && book.getRating() < (bf.getRating() + 1))
                             .collect(Collectors.toList());
                 }
             }

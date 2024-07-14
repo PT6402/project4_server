@@ -20,9 +20,9 @@ public class CartController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping("/add/{userId}/{bookId}")
-    public ResponseEntity<ResultDto<?>> addBookToCart(@PathVariable int userId, @PathVariable int bookId) {
-        return cartService.addBookToCart(userId, bookId);
+    @PostMapping("/add/{userdetailId}/{bookId}")
+    public ResponseEntity<ResultDto<?>> addBookToCart(@PathVariable int userdetailId, @PathVariable int bookId) {
+        return cartService.addBookToCart(userdetailId, bookId);
     }
 
     @DeleteMapping("/remove/{userId}/{bookId}")
