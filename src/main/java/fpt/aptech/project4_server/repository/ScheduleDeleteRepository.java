@@ -14,6 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author macos
  */
-public interface ScheduleDeleteRepository extends JpaRepository<ScheduleBookDeletion, Id> {
+public interface ScheduleDeleteRepository extends JpaRepository<ScheduleBookDeletion, Integer> {
      List<ScheduleBookDeletion> findByExpiredDateBefore(LocalDateTime now);
 }

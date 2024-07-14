@@ -4,6 +4,7 @@ import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.category.CateShow;
 import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Category;
+import jakarta.persistence.Lob;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,5 +24,6 @@ public class BooklistUserRes {
     private int ratingQuantity;
      List<AuthorShow> authorlist;
     List<CateShow> catelist;
+    @Lob
     private byte[] fileimage;
 }

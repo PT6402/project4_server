@@ -14,6 +14,6 @@ public class AuthorUserRes {
 
     private int id;
     private String name;
-    @Lob
-    private byte[] Imagedata;
+//    @Lob
+//    private byte[] Imagedata;
 }
