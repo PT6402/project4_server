@@ -13,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 public interface BookRepo extends JpaRepository<Book, Integer> {
     @Query("SELECT b FROM Book b JOIN b.categories c WHERE c.id = :cateId")
     List<Book> findByCateId(@Param("cateId") Integer cateId);
+    
+    @Query("SELECT d FROM Book d WHERE d.statusMybook= true ")
+    List<Book> findBooksToDelete();
 }
 
 

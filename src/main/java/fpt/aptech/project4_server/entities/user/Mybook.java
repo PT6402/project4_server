@@ -55,7 +55,7 @@ public class Mybook extends BaseEntity {
     @JoinColumn(name = "currentpage_id")
     private CurrentPage currentpage;
     
-    @OneToMany(mappedBy = "mybook")
+    @OneToMany(mappedBy = "mybook",cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<NotePage> notepage;
 
