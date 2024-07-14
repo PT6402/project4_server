@@ -7,6 +7,7 @@ package fpt.aptech.project4_server.repository;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.entities.user.UserDetail;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import java.util.Optional;
@@ -19,6 +20,7 @@ import org.springframework.data.repository.query.Param;
  * @author macos
  */
 public interface Mybookrepo extends JpaRepository<Mybook, Integer> {
+
     @Query
      ("Select b from Mybook b where b.userDetail.id=:userID AND b.book.id=:bookID")       
     Optional<Mybook> findByUserDetailAndBook(@Param("userID") Integer userID,@Param("bookID") Integer bookID);
@@ -26,4 +28,10 @@ public interface Mybookrepo extends JpaRepository<Mybook, Integer> {
     @Query
     ("Select c from Mybook c where c.userDetail.id=:userID")
     List<Mybook>findByUserDetailId(@Param("userID") Integer userID);
+    
+    @Query
+    ("Select d from Mybook d where d.book.id=:bookID")
+    List<Mybook>findByBookId(@Param("bookID") Integer bookID);
+    
+     
 }

@@ -91,5 +91,11 @@ public class BookController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+    
+     @GetMapping("/check/{bookid}")
+    public ResponseEntity<ResultDto<?>> checkStatus(@PathVariable int bookid) {
+        ResultDto<?> result = pv.checkStatus(bookid);
+        return ResponseEntity.ok(result);
+    }
 } 
 

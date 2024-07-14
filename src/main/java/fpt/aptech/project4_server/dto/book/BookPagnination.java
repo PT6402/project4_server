@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookPagnination {
-
+    private int bookid;
     private String name;
     private double rating;
     private int ratingQuantity;
