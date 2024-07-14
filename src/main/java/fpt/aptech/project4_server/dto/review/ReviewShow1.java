@@ -4,6 +4,8 @@
  */
 package fpt.aptech.project4_server.dto.review;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +20,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReviewShow1 {
+
     private String content;
     private double rating;
-   private int id;
+    private int id;
     private int userDetailId;
     private String Username;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createDate;
 }
