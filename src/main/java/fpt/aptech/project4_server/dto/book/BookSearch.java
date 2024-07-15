@@ -18,12 +18,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookPagnination {
-    private int bookid;
+public class BookSearch {
+     private int bookid;
     private String name;
     private double rating;
     private int ratingQuantity;
-
-    @Lob
+        @Lob
     private byte[]ImageCove;
 }

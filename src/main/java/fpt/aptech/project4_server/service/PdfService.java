@@ -4,11 +4,13 @@
  */
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.dto.author.AuthorSearch;
 import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.book.BookPagnination;
+import fpt.aptech.project4_server.dto.book.BookSearch;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
 import fpt.aptech.project4_server.dto.book.BooklistUserRes;
 import fpt.aptech.project4_server.dto.book.Paginations;
@@ -17,6 +19,7 @@ import fpt.aptech.project4_server.dto.category.CateUserRes;
 import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
 import fpt.aptech.project4_server.dto.packageread.PackageShowbook;
 import fpt.aptech.project4_server.dto.review.ReviewShow1;
+import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
@@ -394,7 +397,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                                                        .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -467,8 +470,8 @@ public class PdfService {
                 } else {
                     books = bookrepo.findAll();
                 }
-                System.out.println("rating nhap vao"+" "+bf.getRating());
-           
+                System.out.println("rating nhap vao" + " " + bf.getRating());
+
                 if (bf.getRating() != null) {
                     books = books.stream()
                             .filter(book -> book.getRating() >= bf.getRating() && book.getRating() < (bf.getRating() + 1))
@@ -679,4 +682,32 @@ public class PdfService {
         bookrepo.delete(book);
     }
 
+//    public ResultDto<?> searchByName(String nameSearch) {
+//        try {
+//            List<Book> books = bookrepo.findByName(nameSearch);
+//            List<BookSearch> authorSearchList = books.stream()
+//                    .map(book -> {
+//                        AuthorSearch dto = new AuthorSearch();
+//                        dto.setId(author.getId());
+//                        dto.setFileImage(author.getImage_data()); // Giả sử `getImageData` trả về byte[]
+//                        dto.setName(author.getName());
+//                        return dto;
+//                    })
+//                    .collect(Collectors.toList());
+//
+//            ResultDto<List<AuthorSearch>> response = ResultDto.<List<AuthorSearch>>builder()
+//                    .status(true)
+//                    .message("ok")
+//                    .model(authorSearchList)
+//                    .build();
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } catch (Exception e) {
+//            ResultDto<List<AuthorSearch>> response = ResultDto.<List<AuthorSearch>>builder()
+//                    .status(false)
+//                    .message("Failed to retrieve author")
+//                    .build();
+//            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//        
+//    }
 }
