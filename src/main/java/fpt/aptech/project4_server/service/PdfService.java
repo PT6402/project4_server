@@ -397,7 +397,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                                                        .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -523,7 +523,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
 
@@ -682,32 +682,38 @@ public class PdfService {
         bookrepo.delete(book);
     }
 
-//    public ResultDto<?> searchByName(String nameSearch) {
-//        try {
-//            List<Book> books = bookrepo.findByName(nameSearch);
-//            List<BookSearch> authorSearchList = books.stream()
-//                    .map(book -> {
-//                        AuthorSearch dto = new AuthorSearch();
-//                        dto.setId(author.getId());
-//                        dto.setFileImage(author.getImage_data()); // Giả sử `getImageData` trả về byte[]
-//                        dto.setName(author.getName());
-//                        return dto;
-//                    })
-//                    .collect(Collectors.toList());
-//
-//            ResultDto<List<AuthorSearch>> response = ResultDto.<List<AuthorSearch>>builder()
-//                    .status(true)
-//                    .message("ok")
-//                    .model(authorSearchList)
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//        } catch (Exception e) {
-//            ResultDto<List<AuthorSearch>> response = ResultDto.<List<AuthorSearch>>builder()
-//                    .status(false)
-//                    .message("Failed to retrieve author")
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//        
-//    }
+    public ResultDto<?> searchByName(String nameSearch) {
+        try {
+            List<Book> books = bookrepo.findByName(nameSearch);
+            List<BookSearch> bookSearchList = books.stream()
+                    .map(book -> {
+                        ImagesBook image = getImage(book.getFilePdf());
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                        return BookSearch.builder()
+                                .bookid(book.getId())
+                                .name(book.getName())
+                                .rating(book.getRating())
+                                .ratingQuantity(book.getRatingQuantity())
+                                .ImageCove(fileImage).build();
+
+                    })
+                    .collect(Collectors.toList());
+
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("OK")
+                    .model(bookSearchList)
+                    .build();
+            return response;
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message(e.getMessage())
+                    .build();
+            return response;
+        }
+
+    }
 }

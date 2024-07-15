@@ -64,9 +64,19 @@ public class BookController {
 
       @GetMapping("/showpage")
     public ResponseEntity<?> BookPage(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit){
-        return pv.Pagnination(id, limit);
+        return pv.Pagnination(id, limit); 
+        
     }
     
+    @GetMapping("/search")
+    public ResponseEntity<ResultDto<?>> BookSearch(@RequestParam("name") String name){
+         ResultDto<?> response = pv.searchByName(name);
+        if (response.isStatus()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
     @PostMapping("/showpage")
     public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer page,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
         return pv.Filter(page, limit,bookfilter);
