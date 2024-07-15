@@ -13,20 +13,25 @@ import java.util.List;
  * @author macos
  */
 public class WLUserRes {
+
     private String bookname;
     private int bookid;
-    private List<Author> bookAuthor;
+    private double rating;
+    private int ratingQuantity;
+    private int wishId;
     @Lob
     private byte[] fileImage;
-   public WLUserRes(String bookname, int bookid, List<Author> bookAuthor, byte[] fileImage) {
+
+    public WLUserRes(String bookname, int bookid, double rating, int ratingQuantity, int wishId, byte[] fileImage) {
         this.bookname = bookname;
         this.bookid = bookid;
-        this.bookAuthor = bookAuthor;
+        this.rating = rating;
+        this.ratingQuantity = ratingQuantity;
+        this.wishId = wishId;
         this.fileImage = fileImage;
     }
 
     // Getter and setters (omitted for brevity, but you need to have them)
-
     // Default constructor (required by some frameworks like Spring)
     public WLUserRes() {
     }
@@ -48,12 +53,28 @@ public class WLUserRes {
         this.bookid = bookid;
     }
 
-   public List<Author> getBookAuthor() {
-        return bookAuthor;
+    public int getWishId() {
+        return wishId;
     }
 
-    public void setBookAuthor(List<Author> bookAuthor) {
-        this.bookAuthor = bookAuthor;
+    public void setWishId(int wishId) {
+        this.wishId = wishId;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getRatingQuantity() {
+        return ratingQuantity;
+    }
+
+    public void setRatingQuantity(int bookid) {
+        this.ratingQuantity = ratingQuantity;
     }
 
     public byte[] getFileImage() {
@@ -63,5 +84,5 @@ public class WLUserRes {
     public void setFileImage(byte[] fileImage) {
         this.fileImage = fileImage;
     }
-     
+
 }

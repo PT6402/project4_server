@@ -103,7 +103,9 @@ public class WishlistService {
                         WLUserRes wlUserRes = new WLUserRes();
                         wlUserRes.setBookname(wishlist.getBook().getName());
                         wlUserRes.setBookid(wishlist.getBook().getId());
-                       wlUserRes.setBookAuthor(wishlist.getBook().getAuthors());
+                       wlUserRes.setRating(wishlist.getBook().getRating());
+                       wlUserRes.setRatingQuantity(wishlist.getBook().getRatingQuantity());
+                       wlUserRes.setWishId(wishlist.getId());
                         // Lấy hình ảnh từ danh sách imagebook có cover = 1
                         byte[] coverImage = wishlist.getBook().getFilePdf().getImagesbook().stream()
                                 .filter(c -> c.isCover())
