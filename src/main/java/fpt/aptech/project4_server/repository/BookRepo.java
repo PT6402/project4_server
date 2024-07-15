@@ -16,6 +16,9 @@ public interface BookRepo extends JpaRepository<Book, Integer> {
     
     @Query("SELECT d FROM Book d WHERE d.statusMybook= true ")
     List<Book> findBooksToDelete();
+    
+      @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")
+    List<Book> findByAuthorId(@Param("authorId") int authorId);
 }
 
 

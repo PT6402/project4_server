@@ -7,6 +7,7 @@ package fpt.aptech.project4_server.service;
 import fpt.aptech.project4_server.dto.mybook.MBUserRes;
 import fpt.aptech.project4_server.dto.wishlist.WLUserRes;
 import fpt.aptech.project4_server.entities.book.Book;
+import fpt.aptech.project4_server.entities.book.Review;
 
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.entities.user.Wishlist;
@@ -130,6 +131,33 @@ public class WishlistService {
                     .message("Failed to fetch Mybooks: " + e.getMessage())
                     .build();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    public ResponseEntity<ResultDto<Void>> deleteWishlist(int id) {
+        try {
+            Optional<Wishlist> wishlistOptional = WLrepo.findById(id);
+            if (wishlistOptional.isPresent()) {
+                WLrepo.deleteById(id);
+
+                ResultDto<Void> response = ResultDto.<Void>builder()
+                        .status(true)
+                        .message("Wishlist deleted successfully")
+                        .build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                ResultDto<Void> response = ResultDto.<Void>builder()
+                        .status(false)
+                        .message("Review not found")
+                        .build();
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            ResultDto<Void> response = ResultDto.<Void>builder()
+                    .status(false)
+                    .message("Failed to delete wishlist")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
