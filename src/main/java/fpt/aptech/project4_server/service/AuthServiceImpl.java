@@ -101,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
             var result = AutheRes.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .userDetailId(newUserDetail.getId())
                     .email(userSaved.getEmail())
                     .fullname(newUserDetailSaved.getFullname())
                     .role(userSaved.getRole())
@@ -117,6 +118,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<ResultDto<?>> authenticate(AuthReq req) {
         // check exist account
+
         User user = userRepo.findByEmail(req.getEmail()).orElse(null);
         if (user == null) {
             ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
@@ -161,6 +163,8 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .typeLogin(user.getTypeLogin())
                 .fullname(userDetailRepo.findByUser(user).orElse(null).getFullname())
+                .userDetailId(userDetailRepo.findByUser(user).orElse(
+                        null).getId())
                 .role(user.getRole())
                 .build();
 
