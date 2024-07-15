@@ -24,6 +24,8 @@ public class BookPagnination {
     private double rating;
     private int ratingQuantity;
 
+  
     @Lob
-    private byte[]ImageCove;
+    private byte[] ImageCove;
+
 }
