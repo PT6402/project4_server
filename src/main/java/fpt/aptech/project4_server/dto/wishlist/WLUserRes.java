@@ -4,7 +4,9 @@
  */
 package fpt.aptech.project4_server.dto.wishlist;
 
+import fpt.aptech.project4_server.entities.book.Author;
 import jakarta.persistence.Lob;
+import java.util.List;
 
 /**
  *
@@ -13,10 +15,10 @@ import jakarta.persistence.Lob;
 public class WLUserRes {
     private String bookname;
     private int bookid;
-    private String bookAuthor;
+    private List<Author> bookAuthor;
     @Lob
     private byte[] fileImage;
-   public WLUserRes(String bookname, int bookid, String bookAuthor, byte[] fileImage) {
+   public WLUserRes(String bookname, int bookid, List<Author> bookAuthor, byte[] fileImage) {
         this.bookname = bookname;
         this.bookid = bookid;
         this.bookAuthor = bookAuthor;
@@ -46,11 +48,11 @@ public class WLUserRes {
         this.bookid = bookid;
     }
 
-    public String getBookAuthor() {
+   public List<Author> getBookAuthor() {
         return bookAuthor;
     }
 
-    public void setBookAuthor(String bookAuthor) {
+    public void setBookAuthor(List<Author> bookAuthor) {
         this.bookAuthor = bookAuthor;
     }
 
