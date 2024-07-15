@@ -49,6 +49,7 @@ public class CateService {
 
         var newCate = Category.builder()
                 .name(cateres.getName())
+                .description(cateres.getDescription())
                 .Imagedata(imageData)
                 .build();
 

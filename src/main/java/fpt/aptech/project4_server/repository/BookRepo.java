@@ -11,17 +11,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface BookRepo extends JpaRepository<Book, Integer> {
+
     @Query("SELECT b FROM Book b JOIN b.categories c WHERE c.id = :cateId")
     List<Book> findByCateId(@Param("cateId") Integer cateId);
-    
+
     @Query("SELECT d FROM Book d WHERE d.statusMybook= true ")
     List<Book> findBooksToDelete();
-    
-      @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")
+
+    @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")
     List<Book> findByAuthorId(@Param("authorId") int authorId);
+
+     @Query("SELECT e FROM Book e WHERE e.name=:name ")
+    List<Book> findByAuthorId(@Param("name") String name);
+
 }
-
-
-    
-   
-
