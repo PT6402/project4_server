@@ -1,8 +1,11 @@
 package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.author.AuthorAdminCreateRes;
+import fpt.aptech.project4_server.dto.author.AuthorSearch;
+import fpt.aptech.project4_server.dto.book.BookUserRes;
 import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.service.AuthorService;
+import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ public class AuthorController {
 
     @Autowired
     AuthorService authorService;
+   
   
     @GetMapping
     public ResponseEntity<ResultDto<List<Author>>> getAuthors() {
@@ -47,6 +51,16 @@ public class AuthorController {
     @PutMapping("/{id}")
     public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id, @RequestBody Author authorDetails) {
         return authorService.updateAuthor(id, authorDetails);
+    }
+    
+   @GetMapping("/search")
+    public ResponseEntity<ResultDto<List<AuthorSearch>>> searchAuthor(@RequestParam("name") String name) throws IOException {
+        return authorService.searchByNameAuthor(name);
+    }
+    
+     @GetMapping("/booksByAuthor")
+    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthor(@RequestParam("authorId") int authorId) {
+        return authorService.getBooksByAuthorId(authorId);
     }
 
 //    @DeleteMapping("/authors/{id}")

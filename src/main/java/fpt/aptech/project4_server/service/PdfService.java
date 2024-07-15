@@ -211,82 +211,86 @@ public class PdfService {
     //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
 
-    try {
-        Optional<Book> optionalBook = bookrepo.findById(bookId);
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(bookId);
 
+            if (optionalBook.isPresent()) {
+                Book book = optionalBook.get();
 
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
+                // Lấy hình ảnh cover từ getImage
+                ImagesBook image = getImage(book.getFilePdf());
+                byte[] fileImage = image != null ? image.getImage_data() : null;
 
-            // Lấy hình ảnh cover từ getImage
-            ImagesBook image = getImage(book.getFilePdf());
-            byte[] fileImage = image != null ? image.getImage_data() : null;
+                // Chuyển đổi danh sách Category thành danh sách CategoryRes
+                List<CateShow> categoryResList = book.getCategories().stream()
+                        .map(category -> new CateShow(category.getId(), category.getName()))
+                        .collect(Collectors.toList());
 
-            // Chuyển đổi danh sách Category thành danh sách CategoryRes
-            List<CateShow> categoryResList = book.getCategories().stream()
-                    .map(category -> new CateShow(category.getId(), category.getName()))
-                    .collect(Collectors.toList());
+                // Chuyển đổi danh sách Author thành danh sách AuthorRes
+                List<AuthorUserRes> authorResList = book.getAuthors().stream()
+                        .map(author -> new AuthorUserRes(author.getId(), author.getName()))
+                        .collect(Collectors.toList());
 
-            // Chuyển đổi danh sách Author thành danh sách AuthorRes
-            List<AuthorUserRes> authorResList = book.getAuthors().stream()
-                    .map(author -> new AuthorUserRes(author.getId(), author.getName()))
-                    .collect(Collectors.toList());
-            
-            List<ReviewShow1> reviewList = book.getReview().stream()
-                    .map(review -> new ReviewShow1(review.getContent(), review.getRating(), review.getId(), review.getUserDetail().getId(), review.getUserDetail().getFullname()))
-                    .collect(Collectors.toList());
+                List<ReviewShow1> reviewList = book.getReview().stream()
+                        .map(review -> new ReviewShow1(
+                        review.getContent(),
+                        review.getRating(),
+                        review.getId(),
+                        review.getUserDetail().getId(),
+                        review.getUserDetail().getFullname(),
+                        review.getCreateAt()))
+                        .collect(Collectors.toList());
 
-            List<PackageRead> packageReadList = Prepo.findAll();
-            int maxDayQuantity = packageReadList.stream()
-                    .mapToInt(PackageRead::getDayQuantity)
-                    .max()
-                    .orElse(1);
-            List<PackageShowbook> packageList = Prepo.findAll().stream()
-                    .map(packageRead -> {
-                        BigDecimal price = BigDecimal.valueOf(book.getPrice());
+                List<PackageRead> packageReadList = Prepo.findAll();
+                int maxDayQuantity = packageReadList.stream()
+                        .mapToInt(PackageRead::getDayQuantity)
+                        .max()
+                        .orElse(1);
+                List<PackageShowbook> packageList = Prepo.findAll().stream()
+                        .map(packageRead -> {
+                            BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
-                        double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-                                .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
-                                .doubleValue();
-                        return new PackageShowbook(
-                                packageRead.getPackageName(),
-                                packageRead.getDayQuantity(),
-                                rentPrice
-                        );
-                    })
-                    .collect(Collectors.toList());
+                            double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                                    .doubleValue();
+                            return new PackageShowbook(
+                                    packageRead.getPackageName(),
+                                    packageRead.getDayQuantity(),
+                                    rentPrice
+                            );
+                        })
+                        .collect(Collectors.toList());
 
-            BookUserRes bookUserRes = BookUserRes.builder()
-                    .id(book.getId())
-                    .name(book.getName())
-                    .pageQuantity(book.getPageQuantity())
-                    .packlist(packageList)
-                    .edition(book.getEdition())
-                    .publisherDescription(book.getPublisherDescription())
-                    .rating(book.getRating())
-                    .ratingQuantity(book.getRatingQuantity())
-                    .fileimage(fileImage)
-                    .catelist(categoryResList)
-                    .authorlist(authorResList)
-                    .reviewlist(reviewList)
-                    .build();
+                BookUserRes bookUserRes = BookUserRes.builder()
+                        .id(book.getId())
+                        .name(book.getName())
+                        .pageQuantity(book.getPageQuantity())
+                        .packlist(packageList)
+                        .edition(book.getEdition())
+                        .publisherDescription(book.getPublisherDescription())
+                        .rating(book.getRating())
+                        .ratingQuantity(book.getRatingQuantity())
+                        .fileimage(fileImage)
+                        .catelist(categoryResList)
+                        .authorlist(authorResList)
+                        .reviewlist(reviewList)
+                        .build();
 
-            // Tạo ResponseDto thành công
-            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(bookUserRes).build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            // Nếu không tìm thấy sách với id được cung cấp
-            ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                // Tạo ResponseDto thành công
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(bookUserRes).build();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                // Nếu không tìm thấy sách với id được cung cấp
+                ResultDto<?> response = ResultDto.builder().status(false).message("Book not found").build();
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+        } catch (Exception e) {
+            // Xử lý lỗi
+            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-
-    } catch (Exception e) {
-        // Xử lý lỗi
-        ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-}
-
 
     public ImagesBook getImage(FilePdf file) {
         System.out.println(file.getId());
@@ -463,11 +467,11 @@ public class PdfService {
                 } else {
                     books = bookrepo.findAll();
                 }
-
-                // Lọc những cuốn sách có rating từ 0 đến rating của BookFilter nếu rating không null
+                System.out.println("rating nhap vao"+" "+bf.getRating());
+           
                 if (bf.getRating() != null) {
                     books = books.stream()
-                            .filter(book -> book.getRating() >= 0 && book.getRating() <= bf.getRating())
+                            .filter(book -> book.getRating() >= bf.getRating() && book.getRating() < (bf.getRating() + 1))
                             .collect(Collectors.toList());
                 }
             }
@@ -542,7 +546,6 @@ public class PdfService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-
 
     @Transactional
     public ResultDto<?> deleteBookById(int bookId) {
@@ -675,6 +678,5 @@ public class PdfService {
 
         bookrepo.delete(book);
     }
-
 
 }

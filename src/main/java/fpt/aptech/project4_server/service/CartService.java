@@ -41,9 +41,9 @@ public class CartService {
     @Autowired
     private UserDetailRepo userDetailRepo;
 
-    public ResponseEntity<ResultDto<?>> addBookToCart(int userId, int bookId) {
+    public ResponseEntity<ResultDto<?>> addBookToCart(int userdetailId, int bookId) {
         try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userdetailId);
             Optional<Book> bookOptional = bookRepository.findById(bookId);
 
             if (userDetailOptional.isEmpty() || bookOptional.isEmpty()) {
@@ -54,7 +54,7 @@ public class CartService {
             }
 
             UserDetail userDetail = userDetailOptional.get();
-            Optional<Cart> cartOptional = cartRepository.findByUserDetailId(userId);
+            Optional<Cart> cartOptional = cartRepository.findByUserDetailId(userdetailId);
 
             Cart cart;
             if (cartOptional.isPresent()) {
@@ -145,6 +145,7 @@ public class CartService {
 
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
+                  
                     .message("Cart retrieved successfully")
                     .model(cart)
                     .build(), HttpStatus.OK);
