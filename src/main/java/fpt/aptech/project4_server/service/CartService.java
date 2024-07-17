@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.dto.book.BookSearch;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.PackageRead;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -105,7 +107,6 @@ public class CartService {
                         .build(), HttpStatus.NOT_FOUND);
             }
 
-            cart.getCartItems().removeIf(cartItem -> cartItem.getBook().getId() == bookId);
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
@@ -134,20 +135,24 @@ public class CartService {
             }
 
             UserDetail userDetail = userDetailOptional.get();
-            Cart cart = userDetail.getCart();
-
+            var cart = cartRepository.findByUserDetailId(userDetail.getId()).orElse(null);
             if (cart == null) {
-                return new ResponseEntity<>(ResultDto.builder()
-                        .status(false)
-                        .message("Cart is empty")
-                        .build(), HttpStatus.NOT_FOUND);
+                throw new Exception("oh no");
             }
+            // Cart cart = userDetail.getCart();
+            List<BookSearch> list = cart.getBooks().stream().map(c -> BookSearch.builder().bookid(c.getId()).build())
+                    .toList();
+            // if (cart == null) {
+            // return new ResponseEntity<>(ResultDto.builder()
+            // .status(false)
+            // .message("Cart is empty")
+            // .build(), HttpStatus.NOT_FOUND);
+            // }
 
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
-                  
                     .message("Cart retrieved successfully")
-                    .model(cart)
+                    .model(list)
                     .build(), HttpStatus.OK);
 
         } catch (Exception e) {
@@ -180,7 +185,6 @@ public class CartService {
                         .build(), HttpStatus.NOT_FOUND);
             }
 
-            cart.getCartItems().clear();
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
