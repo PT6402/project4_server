@@ -23,7 +23,7 @@ public class Cart extends BaseEntity {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems;
-
+    
     @ManyToMany
     @JoinTable(
             name = "cart_books",

@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.controller;
 
+import fpt.aptech.project4_server.dto.cart.CartAddRes;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.service.CartService;
 import fpt.aptech.project4_server.service.OrderService;
@@ -20,9 +21,9 @@ public class CartController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping("/add/{userdetailId}/{bookId}")
-    public ResponseEntity<ResultDto<?>> addBookToCart(@PathVariable int userdetailId, @PathVariable int bookId) {
-        return cartService.addBookToCart(userdetailId, bookId);
+    @PostMapping("/add/{userdetailId}")
+    public ResponseEntity<ResultDto<?>> addBookToCart(@PathVariable int userdetailId,@RequestBody CartAddRes cartres) {
+        return cartService.addBookToCart(userdetailId, cartres);
     }
 
     @DeleteMapping("/remove/{userId}/{bookId}")
@@ -30,8 +31,12 @@ public class CartController {
         return cartService.removeBookFromCart(userId, bookId);
     }
 
-    @GetMapping("/view/{userId}")
-    public ResponseEntity<ResultDto<?>> viewCart(@PathVariable int userId) {
+//    @GetMapping("/view/{userId}")
+//    public ResponseEntity<ResultDto<?>> viewCart(@PathVariable int userId) {
+//        return cartService.viewCart(userId);
+//    }
+    @GetMapping("/view")
+    public ResponseEntity<ResultDto<?>> viewCart(@RequestParam int userId) {
         return cartService.viewCart(userId);
     }
 
