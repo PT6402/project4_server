@@ -1,6 +1,8 @@
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.dto.book.BookCart;
 import fpt.aptech.project4_server.dto.book.BookSearch;
+import fpt.aptech.project4_server.dto.cart.CartAddRes;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.PackageRead;
@@ -13,6 +15,9 @@ import fpt.aptech.project4_server.repository.CartRepository;
 import fpt.aptech.project4_server.repository.PackageReadRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,11 +47,13 @@ public class CartService {
 
     @Autowired
     private UserDetailRepo userDetailRepo;
+    @Autowired
+    private PackageReadRepository Prepo;
 
-    public ResponseEntity<ResultDto<?>> addBookToCart(int userdetailId, int bookId) {
+    public ResponseEntity<ResultDto<?>> addBookToCart(int userdetailId, CartAddRes cartres) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userdetailId);
-            Optional<Book> bookOptional = bookRepository.findById(bookId);
+            Optional<Book> bookOptional = bookRepository.findById(cartres.getBookId());
 
             if (userDetailOptional.isEmpty() || bookOptional.isEmpty()) {
                 return new ResponseEntity<>(ResultDto.builder()
@@ -56,6 +63,17 @@ public class CartService {
             }
 
             UserDetail userDetail = userDetailOptional.get();
+
+            boolean bookExistsInMybook = userDetailOptional.get().getMybook().stream()
+                    .anyMatch(mybook -> mybook.getBook().getId() == cartres.getBookId());
+
+            if (bookExistsInMybook) {
+                return new ResponseEntity<>(ResultDto.builder()
+                        .status(false)
+                        .message("Book already exists in your collection")
+                        .build(), HttpStatus.BAD_REQUEST);
+            }
+
             Optional<Cart> cartOptional = cartRepository.findByUserDetailId(userdetailId);
 
             Cart cart;
@@ -67,12 +85,48 @@ public class CartService {
                 cart.setBooks(new ArrayList<>());
                 userDetail.setCart(cart);
             }
+            boolean bookExistsInCart = cart.getCartItems().stream()
+                    .anyMatch(item -> item.getBook().getId() == cartres.getBookId());
 
-            cart.getBooks().add(bookOptional.get());
+            if (bookExistsInCart) {
+                return new ResponseEntity<>(ResultDto.builder()
+                        .status(false)
+                        .message("Book already exists in cart")
+                        .build(), HttpStatus.BAD_REQUEST);
+            }
+            CartItem item = new CartItem();
+            item.setBook(bookOptional.get());
+            item.setCart(cart);
+
+            BigDecimal price = BigDecimal.valueOf(bookOptional.get().getPrice());
+            if (cartres.getIbuy() == true) {
+                item.setPrice(price.doubleValue());
+                Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
+                item.setPackageName(null);
+                item.setDayQuantity(null);
+            } else {
+                Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
+                List<PackageRead> packageReadList = Prepo.findAll();
+                int maxDayQuantity = packageReadList.stream()
+                        .mapToInt(PackageRead::getDayQuantity)
+                        .max()
+                        .orElse(1);
+                double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
+                        .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(PackageOptional.get().getDayQuantity()))
+                        .setScale(0, RoundingMode.HALF_UP)
+                        .doubleValue();
+                item.setPrice(rentPrice);
+
+                item.setPackageName(PackageOptional.get().getPackageName());
+                item.setDayQuantity(PackageOptional.get().getDayQuantity());
+            }
+
+            cart.getCartItems().add(item); // Thêm cart item vào danh sách cart items của cart
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
-                    .status(true)
+                    .status(true).model(cart)
                     .message("Book added to cart")
                     .build(), HttpStatus.OK);
 
@@ -107,6 +161,23 @@ public class CartService {
                         .build(), HttpStatus.NOT_FOUND);
             }
 
+            // Tìm và xóa CartItem có bookId từ danh sách CartItems của Cart
+            List<CartItem> cartItems = cart.getCartItems();
+            Optional<CartItem> cartItemOptional = cartItems.stream()
+                    .filter(item -> item.getBook().getId() == bookId)
+                    .findFirst();
+
+            if (cartItemOptional.isEmpty()) {
+                return new ResponseEntity<>(ResultDto.builder()
+                        .status(false)
+                        .message("Book not found in cart")
+                        .build(), HttpStatus.NOT_FOUND);
+            }
+
+            // Xóa CartItem khỏi danh sách CartItems của Cart
+            cartItems.remove(cartItemOptional.get());
+
+            // Lưu lại Cart sau khi xóa
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
@@ -123,6 +194,7 @@ public class CartService {
         }
     }
 
+    //
     public ResponseEntity<ResultDto<?>> viewCart(int userId) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
@@ -164,27 +236,31 @@ public class CartService {
         }
     }
 
-    public ResponseEntity<ResultDto<?>> clearCart(int userId) {
+    public ResponseEntity<ResultDto<?>> clearCart(int cartId) {
         try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            Optional<Cart> cartOptional = cartRepository.findById(cartId);
 
-            if (userDetailOptional.isEmpty()) {
+            if (cartOptional.isEmpty()) {
                 return new ResponseEntity<>(ResultDto.builder()
                         .status(false)
-                        .message("User not found")
+                        .message("Cart not found")
                         .build(), HttpStatus.NOT_FOUND);
             }
 
-            UserDetail userDetail = userDetailOptional.get();
-            Cart cart = userDetail.getCart();
+            Cart cart = cartOptional.get();
+            List<CartItem> cartItems = cart.getCartItems();
 
-            if (cart == null) {
+            if (cartItems.isEmpty()) {
                 return new ResponseEntity<>(ResultDto.builder()
                         .status(false)
                         .message("Cart is already empty")
                         .build(), HttpStatus.NOT_FOUND);
             }
 
+            // Xóa tất cả CartItem trong danh sách CartItems của Cart
+            cartItems.clear();
+
+            // Lưu lại Cart sau khi xóa
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
@@ -200,4 +276,5 @@ public class CartService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

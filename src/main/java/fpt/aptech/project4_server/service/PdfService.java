@@ -272,6 +272,7 @@ public class PdfService {
                 BookUserRes bookUserRes = BookUserRes.builder()
                         .id(book.getId())
                         .name(book.getName())
+                        .priceBuy(book.getPrice())
                         .pageQuantity(book.getPageQuantity())
                         .packlist(packageList)
                         .priceBuy(book.getPrice())
