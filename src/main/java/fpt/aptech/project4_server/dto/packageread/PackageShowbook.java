@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PackageShowbook {
-    private int packId;
+
+    private int id;
+
     private String packageName;
     private int dayQuantity;
     private Double rentPrice;

@@ -31,4 +31,6 @@ public class CartItem extends BaseEntity {
     private String packageName;
     private Integer dayQuantity;
     private Double Price;
+    private Integer packId;
+    private Boolean ibuy;
 }

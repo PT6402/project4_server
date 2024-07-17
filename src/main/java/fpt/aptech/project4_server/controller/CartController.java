@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.cart.CartAddRes;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
+import fpt.aptech.project4_server.dto.cart.CartUpdate;
 import fpt.aptech.project4_server.service.CartService;
 import fpt.aptech.project4_server.service.OrderService;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -45,8 +46,8 @@ public class CartController {
         return cartService.clearCart(userId);
     }
 
-//    @PostMapping("/checkout/{userId}")
-//    public ResponseEntity<ResultDto<?>> checkoutCart(@PathVariable int userId) {
-//        return orderService.checkoutCart(userId);
-//    }
+    @PutMapping("/update")
+    public ResponseEntity<ResultDto<?>> updateCart(@RequestBody CartUpdate cartUp) {
+        return cartService.updateCart(cartUp);
+    }
 }
