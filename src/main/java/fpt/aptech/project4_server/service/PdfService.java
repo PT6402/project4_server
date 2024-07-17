@@ -501,9 +501,14 @@ public class PdfService {
                             .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
-
+                List<BookPagnination> listNew = new ArrayList<>();
+                for (int i = 0; i < bookPagninations.size(); i++) {
+                    if (!listNew.contains(bookPagninations.get(i))) {
+                        listNew.add(bookPagninations.get(i));
+                    }
+                }
                 Paginations pag = new Paginations();
-                pag.setPaglist(bookPagninations);
+                pag.setPaglist(listNew);
                 if (totalBooks < limit) {
                     pag.setTotalPage(1);
                 } else if (limit % totalBooks == 0) {
@@ -518,6 +523,7 @@ public class PdfService {
                 int start = Math.min((page - 1) * limit, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 paginatedBooks = books.subList(start, end);
+
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
@@ -530,9 +536,15 @@ public class PdfService {
                             .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
+                List<BookPagnination> listNew = new ArrayList<>();
+                for (int i = 0; i < bookPagninations.size(); i++) {
+                    if (!listNew.contains(bookPagninations.get(i))) {
+                        listNew.add(bookPagninations.get(i));
+                    }
+                }
 
                 Paginations pag = new Paginations();
-                pag.setPaglist(bookPagninations);
+                pag.setPaglist(listNew);
                 if (totalBooks < limit) {
                     pag.setTotalPage(1);
                 } else if (limit % totalBooks == 0) {
