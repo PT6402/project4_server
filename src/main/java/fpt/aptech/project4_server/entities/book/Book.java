@@ -49,18 +49,15 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<Review> review;
 
-   
-
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinTable(
             name = "Author_Book",
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-
     private List<Author> authors;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinTable(
             name = "Category_Book",
             joinColumns = @JoinColumn(name = "book_id"),

@@ -24,7 +24,7 @@ public class BookUserRes {
     private int id;
     private String name;
     List<PackageShowbook> packlist;
-    
+    private double priceBuy;
     private int pageQuantity;
     private String edition;
     private String publisherDescription;

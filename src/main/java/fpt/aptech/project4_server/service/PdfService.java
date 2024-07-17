@@ -177,39 +177,42 @@ public class PdfService {
         }
     }
 
-    public ResponseEntity<ResultDto<?>> BooklistUserShow() {
-        try {
 
-            var listbook = bookrepo.findAll().stream().map(c -> {
-                ImagesBook image = getImage(c.getFilePdf());
-                byte[] fileImage = image != null ? image.getImage_data() : null;
-                List<CateShow> catshowlist = c.getCategories().stream()
-                        .map(category -> new CateShow(category.getId(), category.getName()))
-                        .toList();
-                List<AuthorShow> authorshowlist = c.getAuthors().stream()
-                        .map(author -> new AuthorShow(author.getId(), author.getName()))
-                        .toList();
-                return BooklistUserRes.builder()
-                        .id(c.getId())
-                        .name(c.getName())
-                        // .price(c.getPrice())
-                        .rating(c.getRating())
-                        .ratingQuantity(c.getRatingQuantity())
-                        .fileimage(fileImage)
-                        .catelist(catshowlist)
-                        .authorlist(authorshowlist)
-                        .build();
-            }).collect(Collectors.toList());
+//    public ResponseEntity<ResultDto<?>> BooklistUserShow() {
+//        try {
+//
+//            var listbook = bookrepo.findAll().stream().map(c -> {
+//                ImagesBook image = getImage(c.getFilePdf());
+//                byte[] fileImage = image != null ? image.getImage_data() : null;
+//                List<CateShow> catshowlist = c.getCategories().stream()
+//                        .map(category -> new CateShow(category.getId(), category.getName()))
+//                        .toList();
+//                List<AuthorShow> authorshowlist = c.getAuthors().stream()
+//                        .map(author -> new AuthorShow(author.getId(), author.getName()))
+//                        .toList();
+//                return BooklistUserRes.builder()
+//                        .id(c.getId())
+//                        .name(c.getName())
+//                        //                        .price(c.getPrice())
+//                        .rating(c.getRating())
+//                        .ratingQuantity(c.getRatingQuantity())
+//                        .fileimage(fileImage)
+//                        .catelist(catshowlist)
+//                        .authorlist(authorshowlist)
+//                        .build();
+//            }).collect(Collectors.toList());
+//
+//            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//
+//        } catch (Exception e) {
+//
+//            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//    }
 
-            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch (Exception e) {
-
-            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-    }
 
     //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
@@ -253,9 +256,11 @@ public class PdfService {
                         .map(packageRead -> {
                             BigDecimal price = BigDecimal.valueOf(book.getPrice());
 
-                            double rentPrice = price.divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
-                                    .setScale(0, RoundingMode.HALF_UP)
+
+                            double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
+                                    .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getPackageName(),
@@ -269,6 +274,7 @@ public class PdfService {
                         .name(book.getName())
                         .pageQuantity(book.getPageQuantity())
                         .packlist(packageList)
+                        .priceBuy(book.getPrice())
                         .edition(book.getEdition())
                         .publisherDescription(book.getPublisherDescription())
                         .rating(book.getRating())
@@ -501,23 +507,27 @@ public class PdfService {
                             .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
-
+                List<BookPagnination> listNew = new ArrayList<>();
+                for (int i = 0; i < bookPagninations.size(); i++) {
+                    if (!listNew.contains(bookPagninations.get(i))) {
+                        listNew.add(bookPagninations.get(i));
+                    }
+                }
                 Paginations pag = new Paginations();
-                pag.setPaglist(bookPagninations);
+                pag.setPaglist(listNew);
                 if (totalBooks < limit) {
                     pag.setTotalPage(1);
                 } else if (limit % totalBooks == 0) {
                     pag.setTotalPage(limit / totalBooks);
                 } else {
                     pag.setTotalPage(limit / totalBooks + 1);
-                }
-
-                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                }ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 int start = Math.min((page - 1) * limit, totalBooks);
                 int end = Math.min(page * limit, totalBooks);
                 paginatedBooks = books.subList(start, end);
+
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
@@ -530,9 +540,15 @@ public class PdfService {
                             .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
+                List<BookPagnination> listNew = new ArrayList<>();
+                for (int i = 0; i < bookPagninations.size(); i++) {
+                    if (!listNew.contains(bookPagninations.get(i))) {
+                        listNew.add(bookPagninations.get(i));
+                    }
+                }
 
                 Paginations pag = new Paginations();
-                pag.setPaglist(bookPagninations);
+                pag.setPaglist(listNew);
                 if (totalBooks < limit) {
                     pag.setTotalPage(1);
                 } else if (limit % totalBooks == 0) {
