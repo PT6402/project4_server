@@ -126,7 +126,8 @@ public class CartService {
             cartRepository.save(cart);
 
             return new ResponseEntity<>(ResultDto.builder()
-                    .status(true).model(cart)
+                    .status(true)
+                    // .model(cart)
                     .message("Book added to cart")
                     .build(), HttpStatus.OK);
 
@@ -212,7 +213,8 @@ public class CartService {
                 throw new Exception("oh no");
             }
             // Cart cart = userDetail.getCart();
-            List<BookSearch> list = cart.getBooks().stream().map(c -> BookSearch.builder().bookid(c.getId()).build())
+            List<BookSearch> list = cart.getCartItems().stream()
+                    .map(c -> BookSearch.builder().bookid(c.getBook().getId()).build())
                     .toList();
             // if (cart == null) {
             // return new ResponseEntity<>(ResultDto.builder()
