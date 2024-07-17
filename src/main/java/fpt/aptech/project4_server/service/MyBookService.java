@@ -19,7 +19,9 @@ import fpt.aptech.project4_server.repository.PackageReadRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -134,7 +136,23 @@ public class MyBookService {
                         MBUserRes mbUserRes = new MBUserRes();
                         mbUserRes.setBookname(mybook.getBook().getName());
                         mbUserRes.setBookid(mybook.getBook().getId());
-                        mbUserRes.setBookAuthor(mybook.getBook().getAuthors().stream().findFirst().orElse(null).getName()); // Assuming one author per book for simplicity
+                        mbUserRes.setMybookid(mybook.getId()); // Assuming one author per book for simplicity
+                        mbUserRes.setExpiredDate(mybook.getExpiredDate());
+                        Long daysDif=ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate());
+                        if(mybook.getExpiredDate()==null){
+                             mbUserRes.setDays(0);
+                              mbUserRes.setStatus(0);
+                        }else if(daysDif>3){
+                              mbUserRes.setDays((int)Math.abs(daysDif));
+                              mbUserRes.setStatus(1);
+                        }else if(daysDif<0){
+                            mbUserRes.setDays(0);
+                              mbUserRes.setStatus(3);
+                        }else{
+                              mbUserRes.setDays((int)Math.abs(daysDif));
+                              mbUserRes.setStatus(2);
+                        }
+                      
 
                         // Lấy hình ảnh từ danh sách imagebook có cover = 1
                         byte[] coverImage = mybook.getBook().getFilePdf().getImagesbook().stream()

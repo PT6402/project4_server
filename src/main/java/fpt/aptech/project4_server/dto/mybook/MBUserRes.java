@@ -5,6 +5,7 @@
 package fpt.aptech.project4_server.dto.mybook;
 
 import jakarta.persistence.Lob;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -13,14 +14,22 @@ import jakarta.persistence.Lob;
 public class MBUserRes {
     private String bookname;
     private int bookid;
-    private String bookAuthor;
+    private int mybookid;
+    private int status;
+     private LocalDateTime expiredDate;
+     private int days;
+//    private String bookAuthor;
     @Lob
     private byte[] fileImage;
     
-    public MBUserRes(String bookname, int bookid, String bookAuthor, byte[] fileImage) {
+    public MBUserRes(String bookname, int bookid, String bookAuthor,int mybookid,int status,LocalDateTime expiredDate,int days, byte[] fileImage) {
         this.bookname = bookname;
         this.bookid = bookid;
-        this.bookAuthor = bookAuthor;
+        this.mybookid=mybookid;
+        this.status=status;
+        this.expiredDate=expiredDate;
+        this.days=days;
+//        this.bookAuthor = bookAuthor;
         this.fileImage = fileImage;
     }
 
@@ -46,14 +55,45 @@ public class MBUserRes {
     public void setBookid(int bookid) {
         this.bookid = bookid;
     }
-
-    public String getBookAuthor() {
-        return bookAuthor;
+    
+     public int getMybookid() {
+        return mybookid;
     }
 
-    public void setBookAuthor(String bookAuthor) {
-        this.bookAuthor = bookAuthor;
+    public void setMybookid(int mybookid) {
+        this.mybookid = mybookid;
     }
+    
+     public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+     public int getDays() {
+        return days;
+    }
+
+    public void setDays(int days) {
+        this.days = days;
+    }
+    
+     public LocalDateTime getExpiredDate() {
+        return expiredDate;
+    }
+
+    public void setExpiredDate(LocalDateTime exp) {
+        this.expiredDate = exp;
+    }
+
+//    public String getBookAuthor() {
+//        return bookAuthor;
+//    }
+
+//    public void setBookAuthor(String bookAuthor) {
+//        this.bookAuthor = bookAuthor;
+//    }
 
     public byte[] getFileImage() {
         return fileImage;
