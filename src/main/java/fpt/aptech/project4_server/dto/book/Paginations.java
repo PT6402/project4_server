@@ -21,5 +21,5 @@ import lombok.NoArgsConstructor;
 public class Paginations {
     private int totalPage;
     List<BookPagnination> Paglist;
-    
+
 }

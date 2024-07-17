@@ -109,9 +109,11 @@ public class CartService {
                 Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
                 item.setPackageName(null);
                 item.setDayQuantity(null);
+
                 item.setPackId(0);
 
                 item.setIbuy(cartres.getIbuy());
+
             } else {
                 Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
                 List<PackageRead> packageReadList = Prepo.findAll();
@@ -121,12 +123,14 @@ public class CartService {
                         .orElse(1);
                 double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
                         .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+
                         .multiply(BigDecimal.valueOf(PackageOptional.get().getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
                         .doubleValue();
                 item.setPrice(rentPrice);
                 item.setPackId(cartres.getPackId());
                 item.setPackageName(PackageOptional.get().getPackageName());
                 item.setIbuy(cartres.getIbuy());
+
                 item.setDayQuantity(PackageOptional.get().getDayQuantity());
             }
 
@@ -135,6 +139,7 @@ public class CartService {
 
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
+
                     .message("Book added to cart")
                     .build(), HttpStatus.OK);
 
@@ -202,7 +207,7 @@ public class CartService {
         }
     }
 
-//    
+
     public ResponseEntity<ResultDto<?>> viewCart(int userId) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
@@ -223,6 +228,7 @@ public class CartService {
                         .message("Cart not found")
                         .build(), HttpStatus.NOT_FOUND);
             }
+
 
             Cart cart = cartOptional.get();
             List<CartItemShow> cartItems = cart.getCartItems().stream().map(item -> {
@@ -261,6 +267,7 @@ public class CartService {
                         .build();
             }).toList();
 
+
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
                     .message("cart empty")
@@ -286,6 +293,7 @@ public class CartService {
                         .message("Cart not found")
                         .build(), HttpStatus.NOT_FOUND);
             }
+
 
             Cart cart = cartOptional.get();
             List<CartItem> cartItems = cart.getCartItems();
@@ -380,6 +388,7 @@ public class CartService {
             return new ResponseEntity<>(ResultDto.builder()
                     .status(false)
                     .message("Updated Fail")
+
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

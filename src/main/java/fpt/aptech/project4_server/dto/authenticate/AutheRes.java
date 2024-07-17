@@ -17,6 +17,7 @@ public class AutheRes {
     private String fullname;
     private String email;
     private TypeRole role;
+    private int userDetailId;
 
     @JsonProperty(value = "type_login")
     private TypeLogin typeLogin;
