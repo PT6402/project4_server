@@ -140,15 +140,19 @@ public class MyBookService {
                         mbUserRes.setExpiredDate(mybook.getExpiredDate());
                         Long daysDif=ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate());
                         if(mybook.getExpiredDate()==null){
+                            //mua
                              mbUserRes.setDays(0);
                               mbUserRes.setStatus(0);
                         }else if(daysDif>3){
+                            //con han
                               mbUserRes.setDays((int)Math.abs(daysDif));
                               mbUserRes.setStatus(1);
                         }else if(daysDif<0){
+                            //het han
                             mbUserRes.setDays(0);
                               mbUserRes.setStatus(3);
                         }else{
+                            //sap het han
                               mbUserRes.setDays((int)Math.abs(daysDif));
                               mbUserRes.setStatus(2);
                         }

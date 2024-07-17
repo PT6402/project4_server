@@ -258,6 +258,7 @@ public class PdfService {
                                     .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
                             return new PackageShowbook(
+                                    packageRead.getId(),
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
                                     rentPrice
