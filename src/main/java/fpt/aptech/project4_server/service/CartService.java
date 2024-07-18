@@ -124,7 +124,8 @@ public class CartService {
                 double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
                         .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
 
-                        .multiply(BigDecimal.valueOf(PackageOptional.get().getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(PackageOptional.get().getDayQuantity()))
+                        .setScale(0, RoundingMode.HALF_UP)
                         .doubleValue();
                 item.setPrice(rentPrice);
                 item.setPackId(cartres.getPackId());
@@ -207,7 +208,6 @@ public class CartService {
         }
     }
 
-
     public ResponseEntity<ResultDto<?>> viewCart(int userId) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
@@ -229,7 +229,6 @@ public class CartService {
                         .build(), HttpStatus.NOT_FOUND);
             }
 
-
             Cart cart = cartOptional.get();
             List<CartItemShow> cartItems = cart.getCartItems().stream().map(item -> {
 
@@ -244,15 +243,15 @@ public class CartService {
 
                             double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
                                     .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
+                                    .setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
 
                             return new PackageShowbook(
                                     packageRead.getId(),
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
-                                    rentPrice
-                            );
+                                    rentPrice);
                         })
                         .collect(Collectors.toList());
 
@@ -264,9 +263,9 @@ public class CartService {
                         .ibuy(item.getIbuy())
                         .priceBuy(item.getBook().getPrice())
                         .packlist(packageList)
+                        .imageData(item.getBook().getFilePdf().getImagesbook().get(0).getImage_data())
                         .build();
             }).toList();
-
 
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
@@ -293,7 +292,6 @@ public class CartService {
                         .message("Cart not found")
                         .build(), HttpStatus.NOT_FOUND);
             }
-
 
             Cart cart = cartOptional.get();
             List<CartItem> cartItems = cart.getCartItems();
@@ -338,12 +336,11 @@ public class CartService {
 
             CartItem cartItem = cartItemOptional.get();
 
-          
             if (cartUp.getPackId() == 0) {
                 cartItem.setIbuy(Boolean.TRUE);
                 cartItem.setPrice(cartItem.getBook().getPrice());
-                cartItem.setDayQuantity(null); 
-                cartItem.setPackageName(null); 
+                cartItem.setDayQuantity(null);
+                cartItem.setPackageName(null);
                 cartItem.setPackId(0);
             } else {
                 Optional<PackageRead> packOptional = packageReadRepository.findById(cartUp.getPackId());

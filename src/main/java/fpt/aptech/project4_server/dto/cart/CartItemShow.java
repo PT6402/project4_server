@@ -24,8 +24,9 @@ public class CartItemShow {
     private int bookId;
     private String bookName;
     private Double priceBuy;
-//    private Double priceRent;
+    // private Double priceRent;
     private int packId;
     private Boolean ibuy;
     private List<PackageShowbook> packlist;
+    private byte[] imageData;
 }
