@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Base64;
+
 @Builder
 @Data
 @AllArgsConstructor
@@ -16,5 +18,5 @@ public class CateUserRes {
     private String name;
     private String description;
     @Lob
-    private byte[]  Imagedata;
+    private byte[] Imagedata;
 }
