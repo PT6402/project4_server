@@ -11,10 +11,13 @@ import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
 import fpt.aptech.project4_server.entities.book.Review;
 import fpt.aptech.project4_server.entities.user.Mybook;
+import fpt.aptech.project4_server.entities.user.Order;
+import fpt.aptech.project4_server.entities.user.OrderDetail;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.BookRepo;
 import fpt.aptech.project4_server.repository.CPRepo;
 import fpt.aptech.project4_server.repository.Mybookrepo;
+import fpt.aptech.project4_server.repository.OrderRepository;
 import fpt.aptech.project4_server.repository.PackageReadRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -41,6 +44,8 @@ public class MyBookService {
     @Autowired
     Mybookrepo MBrepo;
     @Autowired
+    OrderRepository orderrepo;
+    @Autowired
     UserDetailRepo UDrepo;
     @Autowired
     BookRepo Brepo;
@@ -49,68 +54,106 @@ public class MyBookService {
     @Autowired
     PackageReadRepository PRrepo;
 
-    public ResponseEntity<ResultDto<?>> createMybook(int bookid, int userdetailid,int packagereadid) {
-        try {
-            UserDetail userDetail = UDrepo.findById(userdetailid)
-                    .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
 
-            Book book = Brepo.findById(bookid)
-                    .orElseThrow(() -> new IllegalArgumentException("Book not found"));
-            System.out.println(book.getId());
-            // Kiểm tra trùng lặp sách trong Mybook của UserDetail
-            Optional<Mybook> existingMybook = MBrepo.findByUserDetailAndBook(userDetail.getId(), book.getId());
-            if (existingMybook.isPresent()) {
-                ResultDto<?> response = ResultDto.builder()
-                        .status(false)
-                        .message("Book already associated with Mybook")
-                        .build();
-                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-            }
-             // Truy xuất PackageRead
-            PackageRead packageRead = PRrepo.findById(packagereadid)
-                    .orElseThrow(() -> new IllegalArgumentException("PackageRead not found"));
+   public ResponseEntity<ResultDto<?>> createMybook(int orderId, int userDetailId) {
+    try {
+        // Lấy UserDetail từ userDetailId
+        UserDetail userDetail = UDrepo.findById(userDetailId)
+                .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
 
-            // Tính toán expired_date
-            LocalDateTime createAt = LocalDateTime.now();
-            LocalDateTime expiredDate = createAt.plusDays(packageRead.getDayQuantity());
+        // Lấy Order từ orderId
+        Order order = orderrepo.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-            // Tạo mới CurrentPage với current_page_index = 0
-            CurrentPage currentPage = new CurrentPage();
+        // Lặp qua từng OrderDetail trong Order và xử lý từng sách
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+            Book book = orderDetail.getBook();
+
+            // Lấy packageReadId từ OrderDetail
+            Integer packageReadId = orderDetail.getPackId();
+            System.out.println("heloooooo"+packageReadId);
+           
+            if (packageReadId != null && packageReadId > 0) {
+                // Truy xuất PackageRead từ packageReadId
+                PackageRead packageRead = PRrepo.findById(packageReadId).get();
+                       
+
+                // Tính toán expired_date
+                LocalDateTime createAt = LocalDateTime.now();
+               LocalDateTime expiredDate = createAt.plusDays(packageRead.getDayQuantity());
+                CurrentPage currentPage = new CurrentPage();
             currentPage.setCurrenPageIndex(0);
-            currentPage.setImagePageData(book.getFilePdf().getFile_data());
+            currentPage.setImagePageData(book.getFilePdf().getFile_data()); // Assuming this field exists
             CPrepo.save(currentPage);
 
             // Tạo Mybook mới và lưu vào cơ sở dữ liệu
             Mybook mybook = Mybook.builder()
                     .userDetail(userDetail)
                     .book(book)
-                   .currentpage(currentPage)
-                    .createAt(createAt)
+                    .currentpage(currentPage)
+                    .createAt(LocalDateTime.now())
                     .ExpiredDate(expiredDate)
                     .build();
 
             MBrepo.save(mybook);
+            }else{
+                LocalDateTime expiredDate =null;
+                 CurrentPage currentPage = new CurrentPage();
+            currentPage.setCurrenPageIndex(0);
+            currentPage.setImagePageData(book.getFilePdf().getFile_data()); // Assuming this field exists
+            CPrepo.save(currentPage);
 
-            ResultDto<?> response = ResultDto.builder()
-                    .status(true)
-                    .message("Create successfully")
+            // Tạo Mybook mới và lưu vào cơ sở dữ liệu
+            Mybook mybook = Mybook.builder()
+                    .userDetail(userDetail)
+                    .book(book)
+                    .currentpage(currentPage)
+                    .createAt(LocalDateTime.now())
+                    .ExpiredDate(expiredDate)
                     .build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch (IllegalArgumentException e) {
-            ResultDto<?> response = ResultDto.builder()
-                    .status(false)
-                    .message(e.getMessage())
-                    .build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            ResultDto<?> response = ResultDto.builder()
-                    .status(false)
-                    .message("An unexpected error occurred: " + e.getMessage())
-                    .build();
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            MBrepo.save(mybook);
+            }
+
+//            // Tạo mới CurrentPage với current_page_index = 0
+//            CurrentPage currentPage = new CurrentPage();
+//            currentPage.setCurrenPageIndex(0);
+//            currentPage.setImagePageData(book.getFilePdf().getFile_data()); // Assuming this field exists
+//            CPrepo.save(currentPage);
+//
+//            // Tạo Mybook mới và lưu vào cơ sở dữ liệu
+//            Mybook mybook = Mybook.builder()
+//                    .userDetail(userDetail)
+//                    .book(book)
+//                    .currentpage(currentPage)
+//                    .createAt(LocalDateTime.now())
+//                    .ExpiredDate(expiredDate)
+//                    .build();
+//
+//            MBrepo.save(mybook);
         }
+
+        ResultDto<?> response = ResultDto.builder()
+                .status(true)
+                .message("Create successfully")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    } catch (IllegalArgumentException e) {
+        ResultDto<?> response = ResultDto.builder()
+                .status(false)
+                .message(e.getMessage())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+        ResultDto<?> response = ResultDto.builder()
+                .status(false)
+                .message("An unexpected error occurred: " + e.getMessage())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
+
 
     //show list mybook
     public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
@@ -125,12 +168,6 @@ public class MyBookService {
             }
             List<Mybook> mybooks = MBrepo.findByUserDetailId(userdetailid);
 
-//       ResultDto<List<Mybook>> response = ResultDto.<List<Mybook>>builder()
-//                    .status(true)
-//                    .message("Success")
-//                    .model(mybooks)
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.OK);
             List<MBUserRes> mbUserResList = mybooks.stream()
                     .map(mybook -> {
                         MBUserRes mbUserRes = new MBUserRes();
@@ -138,25 +175,24 @@ public class MyBookService {
                         mbUserRes.setBookid(mybook.getBook().getId());
                         mbUserRes.setMybookid(mybook.getId()); // Assuming one author per book for simplicity
                         mbUserRes.setExpiredDate(mybook.getExpiredDate());
-                        Long daysDif=ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate());
-                        if(mybook.getExpiredDate()==null){
+                        Long daysDif = ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate());
+                        if (mybook.getExpiredDate() == null) {
                             //mua
-                             mbUserRes.setDays(0);
-                              mbUserRes.setStatus(0);
-                        }else if(daysDif>3){
+                            mbUserRes.setDays(0);
+                            mbUserRes.setStatus(0);
+                        } else if (daysDif > 3) {
                             //con han
-                              mbUserRes.setDays((int)Math.abs(daysDif));
-                              mbUserRes.setStatus(1);
-                        }else if(daysDif<0){
+                            mbUserRes.setDays((int) Math.abs(daysDif));
+                            mbUserRes.setStatus(1);
+                        } else if (daysDif < 0) {
                             //het han
                             mbUserRes.setDays(0);
-                              mbUserRes.setStatus(3);
-                        }else{
+                            mbUserRes.setStatus(3);
+                        } else {
                             //sap het han
-                              mbUserRes.setDays((int)Math.abs(daysDif));
-                              mbUserRes.setStatus(2);
+                            mbUserRes.setDays((int) Math.abs(daysDif));
+                            mbUserRes.setStatus(2);
                         }
-                      
 
                         // Lấy hình ảnh từ danh sách imagebook có cover = 1
                         byte[] coverImage = mybook.getBook().getFilePdf().getImagesbook().stream()

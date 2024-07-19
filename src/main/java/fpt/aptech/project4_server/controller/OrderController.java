@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
+import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.service.OrderService;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -18,14 +19,15 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping
-    public ResponseEntity<ResultDto<?>> createOrder(@RequestBody OrderCreateRequest orderRequest) {
-        return orderService.createOrder(orderRequest);
+    @PostMapping("/check")
+    public ResponseEntity<ResultDto<?>> checkpayment(@RequestBody PaymentCheck paycheck) {
+        System.out.println(paycheck.getToken());
+        return orderService.checkPayment(paycheck);
     }
 
-    @PostMapping("/checkout/{userId}")
-    public ResponseEntity<ResultDto<?>> checkoutCart(@PathVariable int userId, @RequestBody List<String> packageNames) {
-        return orderService.checkoutCart(userId, packageNames);
+    @PostMapping("/checkout/{userId}/{cartId}")
+    public ResponseEntity<ResultDto<?>> checkoutCart(@PathVariable int userId, @PathVariable int cartId) {
+        return orderService.checkoutCart(userId, cartId);
     }
 
     @PutMapping("/{orderId}")

@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemShow {
+    private int cartId;
     private int cartItemId;
     private int bookId;
     private String bookName;

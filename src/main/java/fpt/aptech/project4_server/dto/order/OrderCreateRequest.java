@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderCreateRequest {
     private int userId;
-    private List<CartItemAddRequest> cartItems;
+  private List<CartItemAddRequest> cartItems;
 }

@@ -27,24 +27,26 @@ import java.util.stream.Collectors;
 @Table(name = "tbOrder")
 public class Order extends BaseEntity {
 
-    @ManyToMany
-    @JoinTable(
-            name = "order_user_detail",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_detail_id")
-    )
-    @JsonIgnore
-    private List<UserDetail> userDetails;
+    @ManyToOne
+    @JoinColumn(name = "userDetail_id")
+    private UserDetail userDetail;
+    
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @CreationTimestamp
+    @Column(name = "total_price")
+    private double totalPrice;
+
+    @Column(name = "date_order")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(nullable = false, updatable = false)
     private LocalDateTime dateOrder;
 
+    @Column(name = "payment_status")
     private int paymentStatus;
 
+    // getters and setters
 }
+
+

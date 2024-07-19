@@ -32,7 +32,7 @@ public class OrderDetail extends BaseEntity {
     private Book book;
 
     private Integer dayQuantity;
-
-    private Double rentPrice;
+    private Integer packId;
+    private Double Price;
 
 }

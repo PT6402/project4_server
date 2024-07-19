@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.entities.user.UserDetail;
 import java.util.Date;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,7 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface JwtService {
 
     String generateAccessToken(UserDetails userDetails);
-
+    
+String generatePaymentToken(UserDetail userDetail);
     String generateRefreshToken(UserDetails userDetails);
 
     String generateResetPass(UserDetails userDetails);

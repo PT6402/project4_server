@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import lombok.Data;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -33,7 +34,6 @@ public class Book extends BaseEntity {
     private Boolean statusMybook;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-
     @JsonIgnore
     private List<Page> pages;
 
@@ -76,4 +76,9 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<CartItem> cartItems;
 
+    
+     @Override
+    public int hashCode() {
+        return Objects.hash(id, name); // Thay đổi theo các thuộc tính cần thiết
+    }
 }
