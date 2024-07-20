@@ -1,15 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
- */
 package fpt.aptech.project4_server.controller;
 
 import static com.fasterxml.jackson.databind.util.ClassUtil.name;
+
 import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.service.CateService;
 import jakarta.websocket.server.PathParam;
+
 import java.io.IOException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- *
- * @author macos
- */
 @RestController
 @RequestMapping("api/v1/cate")
 
@@ -53,8 +48,13 @@ public class CateController {
 
     @PutMapping("/update/{id}")
 
-    public ResponseEntity<?> updateCategory(@PathVariable Integer id,@ModelAttribute CateAdCreateRes cate) {
+    public ResponseEntity<?> updateCategory(@PathVariable Integer id, @ModelAttribute CateAdCreateRes cate) {
 
         return categoryService.UpdateCate(id, cate);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategory(@PathVariable Integer id) {
+        return categoryService.getCategory(id);
     }
 }

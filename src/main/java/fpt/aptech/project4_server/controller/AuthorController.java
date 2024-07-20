@@ -7,12 +7,15 @@ import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.service.AuthorService;
 import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,8 +25,7 @@ public class AuthorController {
 
     @Autowired
     AuthorService authorService;
-   
-  
+
     @GetMapping
     public ResponseEntity<ResultDto<List<Author>>> getAuthors() {
         return authorService.getAuthors();
@@ -36,7 +38,7 @@ public class AuthorController {
 
     @PostMapping
     public ResponseEntity<ResultDto<?>> saveAuthor(@RequestParam("name") String name,
-                                                   @RequestParam("fileImage") MultipartFile fileImage) throws IOException{
+                                                   @RequestParam("fileImage") MultipartFile fileImage) throws IOException {
         AuthorAdminCreateRes authorRes = AuthorAdminCreateRes.builder()
                 .name(name)
                 .fileImage(fileImage)
@@ -48,17 +50,18 @@ public class AuthorController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id, @RequestBody Author authorDetails) {
         return authorService.updateAuthor(id, authorDetails);
     }
-    
-   @GetMapping("/search")
+
+    @GetMapping("/search")
     public ResponseEntity<ResultDto<List<AuthorSearch>>> searchAuthor(@RequestParam("name") String name) throws IOException {
         return authorService.searchByNameAuthor(name);
     }
-    
-     @GetMapping("/booksByAuthor")
+
+    @GetMapping("/booksByAuthor")
     public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthor(@RequestParam("authorId") int authorId) {
         return authorService.getBooksByAuthorId(authorId);
     }

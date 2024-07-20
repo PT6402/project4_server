@@ -26,7 +26,6 @@ public class Category extends BaseEntity{
     @Lob
     private byte[] Imagedata;
 
-    
     @ManyToMany(mappedBy = "categories")
     @JsonIgnore
     private List<Book> books;
