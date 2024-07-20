@@ -68,7 +68,8 @@ public class OrderService {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
             System.out.println(userDetailOptional.get().getId());
             if (userDetailOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(),
+                        HttpStatus.NOT_FOUND);
             }
 
             UserDetail userDetail = userDetailOptional.get();
@@ -76,7 +77,9 @@ public class OrderService {
             // Lấy Cart dựa vào cartId
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             if (cartOptional.isEmpty() || cartOptional.get().getCartItems().isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("Cart is empty or not found").build(), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(
+                        ResultDto.builder().status(false).message("Cart is empty or not found").build(),
+                        HttpStatus.BAD_REQUEST);
             }
 
             Cart cart = cartOptional.get();
@@ -125,9 +128,12 @@ public class OrderService {
                     .model(paymentResponse)
                     .build(), HttpStatus.CREATED);
         } catch (StripeException e) {
-            return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
-            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -149,10 +155,13 @@ public class OrderService {
                         .message("Payment paid and updated successfully")
                         .build(), HttpStatus.CREATED);
             } else {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment not be paid or fail").build(), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(
+                        ResultDto.builder().status(false).message("Payment not be paid or fail").build(),
+                        HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -253,58 +262,63 @@ public class OrderService {
     }
 
     public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(int userId) {
-    try {
-        Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+        try {
+            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
 
-        if (userDetailOptional.isEmpty()) {
+            if (userDetailOptional.isEmpty()) {
+                return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
+                        .status(false)
+                        .message("User not found")
+                        .build(), HttpStatus.NOT_FOUND);
+            }
+
+            List<Order> orders = userDetailOptional.get().getOrders();
+
+            List<OrderAndDetailDto> orderDtos = orders.stream()
+                    .map(order -> {
+                        List<OrderDetailDto> orderDetailDtos = order.getOrderDetails().stream()
+                                .map(orderDetail -> {
+                                    Book book = orderDetail.getBook();
+                                    ImagesBook image = getImage(book.getFilePdf());
+                                    byte[] fileImage = image != null ? image.getImage_data() : null;
+                                    String packageName = "";
+                                    Optional<PackageRead> pack = packageReadRepository
+                                            .findById(orderDetail.getPackId());
+                                    if (pack.isPresent()) {
+                                        packageName = pack.get().getPackageName();
+                                    }
+                                    return new OrderDetailDto(
+                                            orderDetail.getId(),
+                                            book.getName(),
+                                            book.getId(),
+                                            orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
+                                                                                                                     // lý
+                                                                                                                     // giá
+                                                                                                                     // trị
+                                                                                                                     // null
+                                            orderDetail.getPackId(),
+                                            orderDetail.getPrice(),
+                                            packageName,
+                                            fileImage);
+                                })
+                                .collect(Collectors.toList());
+                        return new OrderAndDetailDto(order.getId(), order.getCreateAt(), orderDetailDtos,
+                                order.getPaymentStatus());
+                    })
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
+                    .status(true)
+                    .message("Success")
+                    .model(orderDtos)
+                    .build(), HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra console để kiểm tra
             return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
                     .status(false)
-                    .message("User not found")
-                    .build(), HttpStatus.NOT_FOUND);
+                    .message("Failed to retrieve orders")
+                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        List<Order> orders = userDetailOptional.get().getOrders();
-
-        List<OrderAndDetailDto> orderDtos = orders.stream()
-                .map(order -> {
-                    List<OrderDetailDto> orderDetailDtos = order.getOrderDetails().stream()
-                            .map(orderDetail -> {
-                                Book book = orderDetail.getBook();
-                                ImagesBook image = getImage(book.getFilePdf());
-                                byte[] fileImage = image != null ? image.getImage_data() : null;
-                                 String packageName = "";
-                                 Optional<PackageRead> pack=packageReadRepository.findById(orderDetail.getPackId());
-                                 if (pack.isPresent()) {
-                                   packageName = pack.get().getPackageName();
-                                }
-                                return new OrderDetailDto(
-                                        orderDetail.getId(),
-                                        book.getName(),
-                                        book.getId(),
-                                        orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử lý giá trị null
-                                        orderDetail.getPackId(),
-                                        orderDetail.getPrice(),
-                                        packageName,
-                                        fileImage
-                                );
-                            })
-                            .collect(Collectors.toList());
-                    return new OrderAndDetailDto(order.getId(),order.getCreateAt(), orderDetailDtos);
-                })
-                .collect(Collectors.toList());
-
-        return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
-                .status(true)
-                .message("Success")
-                .model(orderDtos)
-                .build(), HttpStatus.OK);
-
-    } catch (Exception e) {
-        e.printStackTrace(); // In lỗi ra console để kiểm tra
-        return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
-                .status(false)
-                .message("Failed to retrieve orders")
-                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
 }

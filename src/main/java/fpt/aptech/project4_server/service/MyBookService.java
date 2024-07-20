@@ -28,11 +28,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
-
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,48 +56,17 @@ public class MyBookService {
     @Autowired
     PackageReadRepository PRrepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(MyBookService.class);
 
-private static final Logger logger = LoggerFactory.getLogger(MyBookService.class);
-   public ResponseEntity<ResultDto<?>> createMybook(int orderId, int userDetailId) {
-    try {
-        // Lấy UserDetail từ userDetailId
-        UserDetail userDetail = UDrepo.findById(userDetailId)
-                .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
+    public ResponseEntity<ResultDto<?>> createMybook(int orderId, int userDetailId) {
+        try {
+            // Lấy UserDetail từ userDetailId
+            UserDetail userDetail = UDrepo.findById(userDetailId)
+                    .orElseThrow(() -> new IllegalArgumentException("UserDetail not found"));
 
-        // Lấy Order từ orderId
-        Order order = orderrepo.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-        // Lặp qua từng OrderDetail trong Order và xử lý từng sách
-        for (OrderDetail orderDetail : order.getOrderDetails()) {
-            Book book = orderDetail.getBook();
-
-            // Lấy packageReadId từ OrderDetail
-            Integer packageReadId = orderDetail.getPackId();
-            System.out.println("heloooooo"+packageReadId);
-           
-            if (packageReadId != null && packageReadId > 0) {
-                // Truy xuất PackageRead từ packageReadId
-                PackageRead packageRead = PRrepo.findById(packageReadId).get();
-                       
-
-                // Tính toán expired_date
-                LocalDateTime createAt = LocalDateTime.now();
-               LocalDateTime expiredDate = createAt.plusDays(packageRead.getDayQuantity());
-                CurrentPage currentPage = new CurrentPage();
-            currentPage.setCurrenPageIndex(0);
-            currentPage.setImagePageData(book.getFilePdf().getFile_data()); // Assuming this field exists
-            CPrepo.save(currentPage);
-
-            // Tạo Mybook mới và lưu vào cơ sở dữ liệu
-            Mybook mybook = Mybook.builder()
-                    .userDetail(userDetail)
-                    .book(book)
-                    .currentpage(currentPage)
-                    .createAt(LocalDateTime.now())
-                    .ExpiredDate(expiredDate)
-                    .build();
-
+            // Lấy Order từ orderId
+            Order order = orderrepo.findById(orderId)
+                    .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
             // Lặp qua từng OrderDetail trong Order và xử lý từng sách
             for (OrderDetail orderDetail : order.getOrderDetails()) {
@@ -151,29 +117,13 @@ private static final Logger logger = LoggerFactory.getLogger(MyBookService.class
                     MBrepo.save(mybook);
                 }
 
-                // // Tạo mới CurrentPage với current_page_index = 0
-                // CurrentPage currentPage = new CurrentPage();
-                // currentPage.setCurrenPageIndex(0);
-                // currentPage.setImagePageData(book.getFilePdf().getFile_data()); // Assuming
-                // this field exists
-                // CPrepo.save(currentPage);
-                //
-                // // Tạo Mybook mới và lưu vào cơ sở dữ liệu
-                // Mybook mybook = Mybook.builder()
-                // .userDetail(userDetail)
-                // .book(book)
-                // .currentpage(currentPage)
-                // .createAt(LocalDateTime.now())
-                // .ExpiredDate(expiredDate)
-                // .build();
-                //
-                // MBrepo.save(mybook);
             }
 
-
-
-        }
-
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("Create successfully")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (IllegalArgumentException e) {
             ResultDto<?> response = ResultDto.builder()
@@ -191,79 +141,7 @@ private static final Logger logger = LoggerFactory.getLogger(MyBookService.class
     }
 
     // show list mybook
-    // public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
-    // try {
-    // Optional<UserDetail> optionalUD = UDrepo.findById(userdetailid);
-    // if (optionalUD.isEmpty()) {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND)
-    // .body(ResultDto.builder()
-    // .status(false)
-    // .message("UserDetail not found")
-    // .build());
-    // }
-    // List<Mybook> mybooks = MBrepo.findByUserDetailId(userdetailid);
-
-    // List<MBUserRes> mbUserResList = mybooks.stream()
-    // .map(mybook -> {
-    // MBUserRes mbUserRes = new MBUserRes();
-    // mbUserRes.setBookname(mybook.getBook().getName());
-    // mbUserRes.setBookid(mybook.getBook().getId());
-    // mbUserRes.setMybookid(mybook.getId()); // Assuming one author per book for
-    // simplicity
-    // mbUserRes.setExpiredDate(mybook.getExpiredDate());
-    // Long daysDif = ChronoUnit.DAYS.between(LocalDateTime.now(),
-    // mybook.getExpiredDate());
-    // if (mybook.getExpiredDate() == null) {
-    // //mua
-    // mbUserRes.setDays(0);
-    // mbUserRes.setStatus(0);
-    // } else if (daysDif > 3) {
-    // //con han
-    // mbUserRes.setDays((int) Math.abs(daysDif));
-    // mbUserRes.setStatus(1);
-    // } else if (daysDif < 0) {
-    // //het han
-    // mbUserRes.setDays(0);
-    // mbUserRes.setStatus(3);
-    // } else {
-    // //sap het han
-    // mbUserRes.setDays((int) Math.abs(daysDif));
-    // mbUserRes.setStatus(2);
-    // }
-
-    // // Lấy hình ảnh từ danh sách imagebook có cover = 1
-    // byte[] coverImage = mybook.getBook().getFilePdf().getImagesbook().stream()
-    // .filter(c -> c.isCover())
-    // .map(c -> c.getImage_data())
-    // .findFirst()
-    // .orElse(null);
-
-    // mbUserRes.setFileImage(coverImage);
-
-    // return mbUserRes;
-    // })
-    // .toList();
-
-    // ResultDto<List<MBUserRes>> response = ResultDto.<List<MBUserRes>>builder()
-    // .status(true)
-    // .message("Success")
-    // .model(mbUserResList)
-    // .build();
-    // return new ResponseEntity<>(response, HttpStatus.OK);
-
-    // } catch (Exception e) {
-    // ResultDto<?> response = ResultDto.builder()
-    // .status(false)
-    // .message("Failed to fetch Mybooks: " + e.getMessage())
-    // .build();
-    // return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
-    // }
-
-
-    //show list mybook
-     public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
-
+    public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
         try {
             Optional<UserDetail> optionalUD = UDrepo.findById(userdetailid);
             if (optionalUD.isEmpty()) {
@@ -283,8 +161,9 @@ private static final Logger logger = LoggerFactory.getLogger(MyBookService.class
                         mbUserRes.setMybookid(mybook.getId());
                         mbUserRes.setExpiredDate(mybook.getExpiredDate());
 
-                        Long daysDif = mybook.getExpiredDate() != null ? ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate()) : null;
-                        
+                        Long daysDif = mybook.getExpiredDate() != null
+                                ? ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate())
+                                : null;
 
                         if (mybook.getExpiredDate() == null) {
                             mbUserRes.setDays(0);
@@ -320,9 +199,7 @@ private static final Logger logger = LoggerFactory.getLogger(MyBookService.class
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
-
             logger.error("Error fetching Mybooks for userDetailId {}: {}", userdetailid, e.getMessage(), e);
-
             ResultDto<?> response = ResultDto.builder()
                     .status(false)
                     .message("Failed to fetch Mybooks: " + e.getMessage())

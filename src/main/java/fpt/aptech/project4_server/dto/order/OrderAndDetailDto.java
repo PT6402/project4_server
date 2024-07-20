@@ -17,17 +17,28 @@ import lombok.NoArgsConstructor;
  * @author macos
  */
 public class OrderAndDetailDto {
+    private int paymentStatus;
+
+    public int getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(int paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
 
     private int orderId;
-     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime creatDate;
     private List<OrderDetailDto> orderDetails;
 
     // Constructor
-    public OrderAndDetailDto(int orderId,LocalDateTime creatDate, List<OrderDetailDto> orderDetails) {
+    public OrderAndDetailDto(int orderId, LocalDateTime creatDate, List<OrderDetailDto> orderDetails,
+            int paymentStatus) {
         this.orderId = orderId;
-        this.creatDate=creatDate;
+        this.creatDate = creatDate;
         this.orderDetails = orderDetails;
+        this.paymentStatus = paymentStatus;
     }
 
     // Getters and Setters
