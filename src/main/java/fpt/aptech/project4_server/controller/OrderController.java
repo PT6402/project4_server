@@ -1,6 +1,8 @@
 package fpt.aptech.project4_server.controller;
 
+import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
+import fpt.aptech.project4_server.dto.order.OrderDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.entities.user.Order;
@@ -41,7 +43,7 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ResultDto<List<Order>>> getOrdersByUserId(@PathVariable int userId) {
+    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(@PathVariable int userId) {
         return orderService.getOrdersByUserId(userId);
     }
 }

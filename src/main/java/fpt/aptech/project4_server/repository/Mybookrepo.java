@@ -35,13 +35,6 @@ public interface Mybookrepo extends JpaRepository<Mybook, Integer> {
     List<Mybook>findByBookId(@Param("bookID") Integer bookID);
     
     
-//  @Query("SELECT new fpt.aptech.project4_server.dto.statistic.BookStatistic(b.id, b.name, " +
-//           "COUNT(m), " +
-//           "SUM(CASE WHEN m.expiredDate IS NULL THEN 1 ELSE 0 END), " +
-//           "SUM(CASE WHEN m.expiredDate IS NOT NULL THEN 1 ELSE 0 END)) " +
-//           "FROM Mybook m " +
-//           "JOIN m.book b " +
-//           "GROUP BY b.id, b.name")
-//    List<BookStatistic> getBookStatistics();
+
      
 }
