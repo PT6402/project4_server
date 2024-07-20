@@ -20,16 +20,44 @@ public class PackageService {
     @Autowired
     private PackageReadRepository packageReadRepository;
 
+//    public ResponseEntity<ResultDto<?>> createPackage(PackageAdCreateRes packRes) {
+//        PackageRead newPackage = new PackageRead();
+//        newPackage.setPackageName(packRes.getPackageName());
+//        newPackage.setDayQuantity(packRes.getDayQuantity());
+//
+//        packageReadRepository.save(newPackage);
+//
+//        ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+
     public ResponseEntity<ResultDto<?>> createPackage(PackageAdCreateRes packRes) {
+        // Check if a package with the same name and day quantity already exists
+        Optional<PackageRead> existingPackageByName = packageReadRepository.findByPackageName(packRes.getPackageName());
+        Optional<PackageRead> existingPackageByDayQuantity = packageReadRepository.findByDayQuantity(packRes.getDayQuantity());
+
+        if (existingPackageByName.isPresent() || existingPackageByDayQuantity.isPresent()) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Package with the same name and day quantity already exists")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+
+        // Create a new package
         PackageRead newPackage = new PackageRead();
         newPackage.setPackageName(packRes.getPackageName());
         newPackage.setDayQuantity(packRes.getDayQuantity());
 
         packageReadRepository.save(newPackage);
 
-        ResultDto<?> response = ResultDto.builder().status(true).message("Create successfully").build();
+        ResultDto<?> response = ResultDto.builder()
+                .status(true)
+                .message("Create successfully")
+                .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     public ResponseEntity<ResultDto<?>> updatePackage(int packageId, PackageAdCreateRes packRes) {
         Optional<PackageRead> packageOptional = packageReadRepository.findById(packageId);
@@ -70,6 +98,7 @@ public class PackageService {
         try {
             List<PackageShowbook> packages = packageReadRepository.findAll().stream()
                     .map(packageRead -> PackageShowbook.builder()
+                            .id(packageRead.getId())
                             .packageName(packageRead.getPackageName())
                             .dayQuantity(packageRead.getDayQuantity())
                             .rentPrice(calculateRentPrice(packageRead))

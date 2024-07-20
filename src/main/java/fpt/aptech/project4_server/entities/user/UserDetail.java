@@ -35,6 +35,7 @@ public class UserDetail extends BaseEntity {
 
     @Column(name = "fullname", columnDefinition = "nvarchar(200)")
     private String fullname;
+
     @Lob
     private byte[] avartar;
     private Integer current_book_id;
