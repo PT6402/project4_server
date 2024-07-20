@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface PackageReadRepository extends JpaRepository<PackageRead, Integer> {
     Optional<PackageRead> findByPackageName(String packageName);
+    Optional<PackageRead> findByDayQuantity(int dayQuantity);
 }
