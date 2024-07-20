@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,9 +35,15 @@ public class FilePdf extends BaseEntity {
     
     @OneToOne
     @JoinColumn(name = "book_id")
+    @JsonIgnore
     private Book book;
     
     @OneToMany(mappedBy = "pdf",cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     private List<ImagesBook> imagesbook;
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, file_name); // Thay đổi theo các thuộc tính cần thiết
+    }
 }

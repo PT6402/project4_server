@@ -55,7 +55,7 @@ public class UserDetail extends BaseEntity {
     @OneToMany(mappedBy = "userDetail")
     private List<Feedback> feedbacks;
 
-    @ManyToMany(mappedBy = "userDetails")
+    @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Order> orders;
 

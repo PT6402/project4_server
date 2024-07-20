@@ -56,102 +56,107 @@ public class CartService {
     private PackageReadRepository Prepo;
 
     public ResponseEntity<ResultDto<?>> addBookToCart(int userdetailId, CartAddRes cartres) {
-        try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userdetailId);
-            Optional<Book> bookOptional = bookRepository.findById(cartres.getBookId());
+    try {
+        Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userdetailId);
+        Optional<Book> bookOptional = bookRepository.findById(cartres.getBookId());
 
-            if (userDetailOptional.isEmpty() || bookOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder()
-                        .status(false)
-                        .message("User or Book not found")
-                        .build(), HttpStatus.NOT_FOUND);
-            }
-
-            UserDetail userDetail = userDetailOptional.get();
-
-            boolean bookExistsInMybook = userDetailOptional.get().getMybook().stream()
-                    .anyMatch(mybook -> mybook.getBook().getId() == cartres.getBookId());
-
-            if (bookExistsInMybook) {
-                return new ResponseEntity<>(ResultDto.builder()
-                        .status(false)
-                        .message("Book already exists in your collection")
-                        .build(), HttpStatus.BAD_REQUEST);
-            }
-
-            Optional<Cart> cartOptional = cartRepository.findByUserDetailId(userdetailId);
-
-            Cart cart;
-            if (cartOptional.isPresent()) {
-                cart = cartOptional.get();
-            } else {
-                cart = new Cart();
-                cart.setUserDetail(userDetail);
-                cart.setBooks(new ArrayList<>());
-                userDetail.setCart(cart);
-            }
-            boolean bookExistsInCart = cart.getCartItems().stream()
-                    .anyMatch(item -> item.getBook().getId() == cartres.getBookId());
-
-            if (bookExistsInCart) {
-                return new ResponseEntity<>(ResultDto.builder()
-                        .status(false)
-                        .message("Book already exists in cart")
-                        .build(), HttpStatus.BAD_REQUEST);
-            }
-            CartItem item = new CartItem();
-            item.setBook(bookOptional.get());
-            item.setCart(cart);
-
-            BigDecimal price = BigDecimal.valueOf(bookOptional.get().getPrice());
-            if (cartres.getIbuy() == true) {
-                item.setPrice(price.doubleValue());
-                Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
-                item.setPackageName(null);
-                item.setDayQuantity(null);
-
-                item.setPackId(0);
-
-                item.setIbuy(cartres.getIbuy());
-
-            } else {
-                Optional<PackageRead> PackageOptional = Prepo.findById(cartres.getPackId());
-                List<PackageRead> packageReadList = Prepo.findAll();
-                int maxDayQuantity = packageReadList.stream()
-                        .mapToInt(PackageRead::getDayQuantity)
-                        .max()
-                        .orElse(1);
-                double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
-                        .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-
-                        .multiply(BigDecimal.valueOf(PackageOptional.get().getDayQuantity()))
-                        .setScale(0, RoundingMode.HALF_UP)
-                        .doubleValue();
-                item.setPrice(rentPrice);
-                item.setPackId(cartres.getPackId());
-                item.setPackageName(PackageOptional.get().getPackageName());
-                item.setIbuy(cartres.getIbuy());
-
-                item.setDayQuantity(PackageOptional.get().getDayQuantity());
-            }
-
-            cart.getCartItems().add(item); // Thêm cart item vào danh sách cart items của cart
-            cartRepository.save(cart);
-
-            return new ResponseEntity<>(ResultDto.builder()
-                    .status(true)
-
-                    .message("Book added to cart")
-                    .build(), HttpStatus.OK);
-
-        } catch (Exception e) {
-            logger.severe("Failed to add book to cart: " + e.getMessage());
+        if (userDetailOptional.isEmpty() || bookOptional.isEmpty()) {
             return new ResponseEntity<>(ResultDto.builder()
                     .status(false)
-                    .message("Failed to add book to cart")
-                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+                    .message("User or Book not found")
+                    .build(), HttpStatus.NOT_FOUND);
         }
+
+        UserDetail userDetail = userDetailOptional.get();
+        Optional<Cart> cartOptional = cartRepository.findByUserDetailId(userdetailId);
+
+        Cart cart;
+        if (cartOptional.isPresent()) {
+            cart = cartOptional.get();
+        } else {
+            cart = new Cart();
+            cart.setUserDetail(userDetail);
+            cart.setCartItems(new ArrayList<>()); // Khởi tạo cartItems thành danh sách rỗng
+            userDetail.setCart(cart);
+        }
+
+        boolean bookExistsInMybook = userDetail.getMybook().stream()
+                .anyMatch(mybook -> mybook.getBook().getId() == cartres.getBookId());
+
+        if (bookExistsInMybook) {
+            return new ResponseEntity<>(ResultDto.builder()
+                    .status(false)
+                    .message("Book already exists in your collection")
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
+
+        boolean bookExistsInCart = cart.getCartItems().stream()
+                .anyMatch(item -> item.getBook().getId() == cartres.getBookId());
+
+        if (bookExistsInCart) {
+            return new ResponseEntity<>(ResultDto.builder()
+                    .status(false)
+                    .message("Book already exists in cart")
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
+
+        CartItem item = new CartItem();
+        item.setBook(bookOptional.get());
+        item.setCart(cart);
+
+        BigDecimal price = BigDecimal.valueOf(bookOptional.get().getPrice());
+        if (cartres.getIbuy()) {
+            item.setPrice(price.doubleValue());
+            item.setPackageName(null);
+            item.setDayQuantity(null);
+            item.setPackId(0);
+            item.setIbuy(cartres.getIbuy());
+        } else {
+            Optional<PackageRead> packageOptional = Prepo.findById(cartres.getPackId());
+            if (packageOptional.isEmpty()) {
+                return new ResponseEntity<>(ResultDto.builder()
+                        .status(false)
+
+                        .message("Package not found")
+                        .build(), HttpStatus.NOT_FOUND);
+
+            }
+            PackageRead packageRead = packageOptional.get();
+            List<PackageRead> packageReadList = Prepo.findAll();
+            int maxDayQuantity = packageReadList.stream()
+                    .mapToInt(PackageRead::getDayQuantity)
+                    .max()
+                    .orElse(1);
+            double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
+                    .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                    .doubleValue();
+            item.setPrice(rentPrice);
+            item.setPackId(cartres.getPackId());
+            item.setPackageName(packageRead.getPackageName());
+            item.setIbuy(cartres.getIbuy());
+            item.setDayQuantity(packageRead.getDayQuantity());
+        }
+
+        cart.getCartItems().add(item); // Thêm cart item vào danh sách cart items của cart
+        cartRepository.save(cart);
+
+
+        return new ResponseEntity<>(ResultDto.builder()
+                .status(true)
+                .message("Book added to cart")
+                .build(), HttpStatus.OK);
+
+
+    } catch (Exception e) {
+        logger.severe("Failed to add book to cart: " + e.getMessage());
+        return new ResponseEntity<>(ResultDto.builder()
+                .status(false)
+                .message("Failed to add book to cart")
+                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
+
 
     public ResponseEntity<ResultDto<?>> removeBookFromCart(int userId, int bookId) {
         try {
@@ -256,6 +261,7 @@ public class CartService {
                         .collect(Collectors.toList());
 
                 return CartItemShow.builder()
+                        .cartId(item.getCart().getId())
                         .cartItemId(item.getId())
                         .bookId(item.getBook().getId())
                         .bookName(item.getBook().getName())

@@ -1,5 +1,6 @@
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.entities.user.UserDetail;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +41,13 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateAccessToken(UserDetails userDetails) {
         return generateToken(userDetails, accessTokenExpiration);
+    }
+    
+    @Override
+    public String generatePaymentToken(UserDetail userDetail) {
+        UserDetails userDetails=(UserDetails)
+        userDetail.getUser();
+        return generateToken(userDetails ,refreshTokenExpiration);
     }
 
     @Override

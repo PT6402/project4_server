@@ -4,6 +4,7 @@ import com.stripe.exception.StripeException;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
+import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.PackageRead;
 import fpt.aptech.project4_server.entities.user.Cart;
@@ -14,6 +15,7 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.response.PaymentResponse;
 import fpt.aptech.project4_server.util.ResultDto;
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 
@@ -36,8 +38,13 @@ public class OrderService {
     private OrderDetailRepository orderDetailRepository;
 
     @Autowired
+    private JwtService jservice;
+    @Autowired
     private UserDetailRepo userDetailRepo;
-
+    @Autowired
+    private MyBookService MBservice;
+    @Autowired
+    private CartService cartservice;
     @Autowired
     private CartRepository cartRepository;
 
@@ -50,54 +57,63 @@ public class OrderService {
     @Autowired
     private PackageReadRepository packageReadRepository;
 
-    public ResponseEntity<ResultDto<?>> createOrder(OrderCreateRequest orderRequest) {
+    public ResponseEntity<ResultDto<?>> checkoutCart(int userId, int cartId) {
         try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(orderRequest.getUserId());
+            // Kiểm tra xem user có tồn tại hay không
+            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            System.out.println(userDetailOptional.get().getId());
             if (userDetailOptional.isEmpty()) {
                 return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(), HttpStatus.NOT_FOUND);
             }
 
             UserDetail userDetail = userDetailOptional.get();
 
+            // Lấy Cart dựa vào cartId
+            Optional<Cart> cartOptional = cartRepository.findById(cartId);
+            if (cartOptional.isEmpty() || cartOptional.get().getCartItems().isEmpty()) {
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("Cart is empty or not found").build(), HttpStatus.BAD_REQUEST);
+            }
+
+            Cart cart = cartOptional.get();
+            List<CartItem> cartItems = cart.getCartItems();
             List<OrderDetail> orderDetails = new ArrayList<>();
-            for (CartItemAddRequest cartItemRequest : orderRequest.getCartItems()) {
-                Optional<Book> bookOptional = bookRepository.findById(cartItemRequest.getBookId());
-                if (bookOptional.isEmpty()) {
-                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Book not found: " + cartItemRequest.getBookId()).build(), HttpStatus.NOT_FOUND);
-                }
+            double totalPrice = 0.0;
 
-                Optional<PackageRead> packageOptional = packageReadRepository.findByPackageName(cartItemRequest.getPackageName());
-                if (packageOptional.isEmpty()) {
-                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Package not found: " + cartItemRequest.getPackageName()).build(), HttpStatus.NOT_FOUND);
-                }
+            // Tạo Order mới
+            Order order = Order.builder()
+                    .userDetail(userDetail)
+                    .paymentStatus(0)
+                    .orderDetails(orderDetails)
+                    .dateOrder(LocalDateTime.now())
+                    .build();
 
-                Book book = bookOptional.get();
-                PackageRead packageRead = packageOptional.get();
-                double rentPrice = calculateRentPrice(book.getPrice(), packageRead.getDayQuantity());
+            for (CartItem cartItem : cartItems) {
+                Book book = cartItem.getBook();
+                double price = cartItem.getPrice(); // Lấy giá trực tiếp từ CartItem
+                totalPrice += price;
 
                 OrderDetail orderDetail = new OrderDetail();
+                orderDetail.setOrder(order);
                 orderDetail.setBook(book);
-                orderDetail.setDayQuantity(packageRead.getDayQuantity());
-                orderDetail.setRentPrice(rentPrice);
+                orderDetail.setDayQuantity(cartItem.getDayQuantity());
+                orderDetail.setPrice(price); // Lấy giá từ CartItem
+                orderDetail.setPackId(cartItem.getPackId());
                 orderDetails.add(orderDetail);
             }
 
-            Order order = Order.builder()
-                    .userDetails(List.of(userDetail))
-                    .paymentStatus(0)
-                    .orderDetails(orderDetails)
-                    .build();
-
+            order.setOrderDetails(orderDetails);
+            order.setTotalPrice(totalPrice);
             Order savedOrder = orderRepository.save(order);
 
+            // Lưu OrderDetail sau khi Order đã được lưu
             for (OrderDetail orderDetail : orderDetails) {
                 orderDetail.setOrder(savedOrder);
                 orderDetailRepository.save(orderDetail);
             }
 
-            // Create payment link
+            // Tạo link thanh toán
             PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
-
+            cartservice.clearCart(cartId);
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
                     .message("Order created successfully")
@@ -110,65 +126,26 @@ public class OrderService {
         }
     }
 
-    private double calculateRentPrice(double basePrice, int dayQuantity) {
-        return (basePrice / 45) * dayQuantity;
-    }
-
-    public ResponseEntity<ResultDto<?>> checkoutCart(int userId, List<String> packageNames) {
+    public ResponseEntity<ResultDto<?>> checkPayment(PaymentCheck paycheck) {
         try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
-            if (userDetailOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(), HttpStatus.NOT_FOUND);
+            String namecheck = jservice.extractUsername(paycheck.getToken());
+
+            System.out.println(namecheck);
+            Optional<UserDetail> usercheck = userDetailRepo.findById(paycheck.getUserDetailId());
+            String name = usercheck.get().getUser().getEmail();
+            System.out.println(name);
+            Optional<Order> updateorder = orderRepository.findById(paycheck.getOrderId());
+            if (namecheck.equals(usercheck.get().getUser().getEmail())) {
+                updateorder.get().setPaymentStatus(1);
+                orderRepository.save(updateorder.get());
+                MBservice.createMybook(paycheck.getOrderId(), paycheck.getUserDetailId());
+                return new ResponseEntity<>(ResultDto.builder()
+                        .status(true)
+                        .message("Payment paid and updated successfully")
+                        .build(), HttpStatus.CREATED);
+            } else {
+                return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment not be paid or fail").build(), HttpStatus.NOT_FOUND);
             }
-
-            UserDetail userDetail = userDetailOptional.get();
-            Cart cart = userDetail.getCart();
-
-            if (cart == null || cart.getBooks().isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("Cart is empty").build(), HttpStatus.BAD_REQUEST);
-            }
-
-            Order order = Order.builder()
-                    .userDetails(List.of(userDetail))
-                    .paymentStatus(0)
-                    .orderDetails(new ArrayList<>())
-                    .build();
-
-            List<OrderDetail> orderDetails = new ArrayList<>();
-            for (int i = 0; i < cart.getBooks().size(); i++) {
-                Book book = cart.getBooks().get(i);
-                String packageName = packageNames.get(i);
-
-                Optional<PackageRead> packageOptional = packageReadRepository.findByPackageName(packageName);
-                if (packageOptional.isEmpty()) {
-                    return new ResponseEntity<>(ResultDto.builder().status(false).message("Package not found: " + packageName).build(), HttpStatus.NOT_FOUND);
-                }
-
-                PackageRead packageRead = packageOptional.get();
-                double rentPrice = calculateRentPrice(book.getPrice(), packageRead.getDayQuantity());
-
-                OrderDetail orderDetail = new OrderDetail();
-                orderDetail.setOrder(order);
-                orderDetail.setBook(book);
-                orderDetail.setDayQuantity(packageRead.getDayQuantity());
-                orderDetail.setRentPrice(rentPrice);
-
-                orderDetails.add(orderDetail);
-            }
-
-            order.setOrderDetails(orderDetails);
-            Order savedOrder = orderRepository.save(order);
-
-            // Create payment link
-            PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
-
-            return new ResponseEntity<>(ResultDto.builder()
-                    .status(true)
-                    .message("Order created successfully")
-                    .model(paymentResponse)
-                    .build(), HttpStatus.CREATED);
-        } catch (StripeException e) {
-            return new ResponseEntity<>(ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
