@@ -2,10 +2,14 @@ package fpt.aptech.project4_server.service;
 
 import com.stripe.exception.StripeException;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
+import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
+import fpt.aptech.project4_server.dto.order.OrderDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.entities.book.Book;
+import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
 import fpt.aptech.project4_server.entities.user.Cart;
 import fpt.aptech.project4_server.entities.user.CartItem;
@@ -33,7 +37,8 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
-
+    @Autowired
+    private ImageBookRepo IBrepo;
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
@@ -232,30 +237,74 @@ public class OrderService {
         }
     }
 
-    public ResponseEntity<ResultDto<List<Order>>> getOrdersByUserId(int userId) {
-        try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+    public ImagesBook getImage(FilePdf file) {
+        System.out.println(file.getId());
+        var listIB = IBrepo.findAll();
 
-            if (userDetailOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.<List<Order>>builder()
-                        .status(false)
-                        .message("User not found")
-                        .build(), HttpStatus.NOT_FOUND);
+        for (ImagesBook c : listIB) {
+            if (c.getPdf().getId() == file.getId()) {
+                if (c.isCover()) {
+                    return c;
+                }
             }
-
-            List<Order> orders = userDetailOptional.get().getOrders();
-
-            return new ResponseEntity<>(ResultDto.<List<Order>>builder()
-                    .status(true)
-                    .message("Success")
-                    .model(orders)
-                    .build(), HttpStatus.OK);
-
-        } catch (Exception e) {
-            return new ResponseEntity<>(ResultDto.<List<Order>>builder()
-                    .status(false)
-                    .message("Failed to retrieve orders")
-                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return null;
+
     }
+
+    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(int userId) {
+    try {
+        Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+
+        if (userDetailOptional.isEmpty()) {
+            return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
+                    .status(false)
+                    .message("User not found")
+                    .build(), HttpStatus.NOT_FOUND);
+        }
+
+        List<Order> orders = userDetailOptional.get().getOrders();
+
+        List<OrderAndDetailDto> orderDtos = orders.stream()
+                .map(order -> {
+                    List<OrderDetailDto> orderDetailDtos = order.getOrderDetails().stream()
+                            .map(orderDetail -> {
+                                Book book = orderDetail.getBook();
+                                ImagesBook image = getImage(book.getFilePdf());
+                                byte[] fileImage = image != null ? image.getImage_data() : null;
+                                 String packageName = "";
+                                 Optional<PackageRead> pack=packageReadRepository.findById(orderDetail.getPackId());
+                                 if (pack.isPresent()) {
+                                   packageName = pack.get().getPackageName();
+                                }
+                                return new OrderDetailDto(
+                                        orderDetail.getId(),
+                                        book.getName(),
+                                        book.getId(),
+                                        orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử lý giá trị null
+                                        orderDetail.getPackId(),
+                                        orderDetail.getPrice(),
+                                        packageName,
+                                        fileImage
+                                );
+                            })
+                            .collect(Collectors.toList());
+                    return new OrderAndDetailDto(order.getId(),order.getCreateAt(), orderDetailDtos);
+                })
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
+                .status(true)
+                .message("Success")
+                .model(orderDtos)
+                .build(), HttpStatus.OK);
+
+    } catch (Exception e) {
+        e.printStackTrace(); // In lỗi ra console để kiểm tra
+        return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
+                .status(false)
+                .message("Failed to retrieve orders")
+                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
 }
