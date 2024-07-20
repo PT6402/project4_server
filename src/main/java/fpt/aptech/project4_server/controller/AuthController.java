@@ -59,4 +59,9 @@ public class AuthController {
         return authService.refreshToken(request, response, typeDevice);
     }
 
+    @GetMapping("/reload")
+    public ResponseEntity<?> reloadPage(HttpServletRequest request) {
+        return authService.reloadPage(request);
+    }
+
 }
