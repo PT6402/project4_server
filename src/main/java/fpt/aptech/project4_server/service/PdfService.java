@@ -81,14 +81,14 @@ public class PdfService {
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
-//       List<ImagesBook> imageslist = new ImagesBook();
+        // List<ImagesBook> imageslist = new ImagesBook();
 
         filePdf.setFile_name(file.getOriginalFilename());
         filePdf.setFile_type(file.getContentType());
         filePdf.setFile_data(file.getBytes());
 
-//        filePdf = pdfrepo.save(filePdf);
-//        images = IBrepo.save(images);
+        // filePdf = pdfrepo.save(filePdf);
+        // images = IBrepo.save(images);
         convertPdfToImages(filePdf);
 
         return pdfrepo.save(filePdf);
@@ -117,7 +117,7 @@ public class PdfService {
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);
                 images.setImage_data(imageInByte);
-                images.setCover(page == 0);  // Chỉ đặt cover là true cho hình đầu tiên
+                images.setCover(page == 0); // Chỉ đặt cover là true cho hình đầu tiên
                 images.setPdf(filePdf);
 
                 imagesList.add(images);
@@ -177,39 +177,41 @@ public class PdfService {
         }
     }
 
-//    public ResponseEntity<ResultDto<?>> BooklistUserShow() {
-//        try {
-//
-//            var listbook = bookrepo.findAll().stream().map(c -> {
-//                ImagesBook image = getImage(c.getFilePdf());
-//                byte[] fileImage = image != null ? image.getImage_data() : null;
-//                List<CateShow> catshowlist = c.getCategories().stream()
-//                        .map(category -> new CateShow(category.getId(), category.getName()))
-//                        .toList();
-//                List<AuthorShow> authorshowlist = c.getAuthors().stream()
-//                        .map(author -> new AuthorShow(author.getId(), author.getName()))
-//                        .toList();
-//                return BooklistUserRes.builder()
-//                        .id(c.getId())
-//                        .name(c.getName())
-//                        //                        .price(c.getPrice())
-//                        .rating(c.getRating())
-//                        .ratingQuantity(c.getRatingQuantity())
-//                        .fileimage(fileImage)
-//                        .catelist(catshowlist)
-//                        .authorlist(authorshowlist)
-//                        .build();
-//            }).collect(Collectors.toList());
-//
-//            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listbook).build();
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//
-//        } catch (Exception e) {
-//
-//            ResultDto<?> response = ResultDto.builder().status(false).message("Fail to show").build();
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//    }
+    // public ResponseEntity<ResultDto<?>> BooklistUserShow() {
+    // try {
+    //
+    // var listbook = bookrepo.findAll().stream().map(c -> {
+    // ImagesBook image = getImage(c.getFilePdf());
+    // byte[] fileImage = image != null ? image.getImage_data() : null;
+    // List<CateShow> catshowlist = c.getCategories().stream()
+    // .map(category -> new CateShow(category.getId(), category.getName()))
+    // .toList();
+    // List<AuthorShow> authorshowlist = c.getAuthors().stream()
+    // .map(author -> new AuthorShow(author.getId(), author.getName()))
+    // .toList();
+    // return BooklistUserRes.builder()
+    // .id(c.getId())
+    // .name(c.getName())
+    // // .price(c.getPrice())
+    // .rating(c.getRating())
+    // .ratingQuantity(c.getRatingQuantity())
+    // .fileimage(fileImage)
+    // .catelist(catshowlist)
+    // .authorlist(authorshowlist)
+    // .build();
+    // }).collect(Collectors.toList());
+    //
+    // ResultDto<?> response =
+    // ResultDto.builder().status(true).message("ok").model(listbook).build();
+    // return new ResponseEntity<>(response, HttpStatus.OK);
+    //
+    // } catch (Exception e) {
+    //
+    // ResultDto<?> response = ResultDto.builder().status(false).message("Fail to
+    // show").build();
+    // return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    // }
+    // }
 
     //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
@@ -236,12 +238,12 @@ public class PdfService {
 
                 List<ReviewShow1> reviewList = book.getReview().stream()
                         .map(review -> new ReviewShow1(
-                        review.getContent(),
-                        review.getRating(),
-                        review.getId(),
-                        review.getUserDetail().getId(),
-                        review.getUserDetail().getFullname(),
-                        review.getCreateAt()))
+                                review.getContent(),
+                                review.getRating(),
+                                review.getId(),
+                                review.getUserDetail().getId(),
+                                review.getUserDetail().getFullname(),
+                                review.getCreateAt()))
                         .collect(Collectors.toList());
 
                 List<PackageRead> packageReadList = Prepo.findAll();
@@ -255,14 +257,15 @@ public class PdfService {
 
                             double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
                                     .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
+                                    .setScale(0, RoundingMode.HALF_UP)
+
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getId(),
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
-                                    rentPrice
-                            );
+                                    rentPrice);
                         })
                         .collect(Collectors.toList());
 
@@ -333,10 +336,10 @@ public class PdfService {
             }
 
             Book existingBook = optionalBook.get();
-//                  FilePdf filePdf = new FilePdf();
-//                   filePdf.setFile_name(bookres.getFile().getOriginalFilename());
-//            filePdf.setFile_type(bookres.getFile().getContentType());
-//            filePdf.setFile_data(bookres.getFile().getBytes());
+            // FilePdf filePdf = new FilePdf();
+            // filePdf.setFile_name(bookres.getFile().getOriginalFilename());
+            // filePdf.setFile_type(bookres.getFile().getContentType());
+            // filePdf.setFile_data(bookres.getFile().getBytes());
             PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
 
             existingBook.setId(id);
@@ -362,12 +365,12 @@ public class PdfService {
 
                 var savepdf = pdfrepo.save(filePdfupdate);
                 List<ImagesBook> imagelist = convertPdfToImages(savepdf);
-//          
+                //
                 IBrepo.saveAll(imagelist);
 
             }
 
-//              
+            //
             ResultDto<?> response = ResultDto.builder().status(true).message("Update successfully")
                     .model(existingBook)
                     .build();
@@ -401,7 +404,9 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
+
                             .ImageCove(fileImage)
+
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -430,7 +435,7 @@ public class PdfService {
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-                            //                            .ImageCove(fileImage)
+                            .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -517,7 +522,8 @@ public class PdfService {
                     pag.setTotalPage(limit / totalBooks);
                 } else {
                     pag.setTotalPage(limit / totalBooks + 1);
-                }ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+                }
+                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 int start = Math.min((page - 1) * limit, totalBooks);
@@ -609,7 +615,8 @@ public class PdfService {
                     scheduledBookDeletion.setExpiredDate((LocalDateTime) model);
                 } else {
                     // Nếu không có ngày hết hạn thì có thể xử lý mặc định ở đây
-                    // Ví dụ: scheduledBookDeletion.setExpiredDate(LocalDateTime.now().plusDays(30));
+                    // Ví dụ:
+                    // scheduledBookDeletion.setExpiredDate(LocalDateTime.now().plusDays(30));
                     // Hoặc trả về lỗi nếu không có ngày hết hạn
                     ResultDto<?> response = ResultDto.builder()
                             .status(false)
@@ -636,7 +643,7 @@ public class PdfService {
         }
     }
 
-// Hàm kiểm tra và cập nhật trạng thái của sách
+    // Hàm kiểm tra và cập nhật trạng thái của sách
     public ResultDto<?> checkStatus(int bookId) {
 
         Optional<Book> optionalBook = bookrepo.findById(bookId);
@@ -678,7 +685,7 @@ public class PdfService {
         }
     }
 
-// Hàm xử lý xóa các liên kết và sách
+    // Hàm xử lý xóa các liên kết và sách
     private void handleBookDeletion(Book book) {
         // Xóa liên kết với các bảng khác nếu cần
         if (book.getFilePdf() != null) {

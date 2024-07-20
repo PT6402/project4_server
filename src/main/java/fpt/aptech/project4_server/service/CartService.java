@@ -116,8 +116,10 @@ public class CartService {
             if (packageOptional.isEmpty()) {
                 return new ResponseEntity<>(ResultDto.builder()
                         .status(false)
+
                         .message("Package not found")
                         .build(), HttpStatus.NOT_FOUND);
+
             }
             PackageRead packageRead = packageOptional.get();
             List<PackageRead> packageReadList = Prepo.findAll();
@@ -139,10 +141,12 @@ public class CartService {
         cart.getCartItems().add(item); // Thêm cart item vào danh sách cart items của cart
         cartRepository.save(cart);
 
+
         return new ResponseEntity<>(ResultDto.builder()
                 .status(true)
                 .message("Book added to cart")
                 .build(), HttpStatus.OK);
+
 
     } catch (Exception e) {
         logger.severe("Failed to add book to cart: " + e.getMessage());
@@ -209,7 +213,6 @@ public class CartService {
         }
     }
 
-//    
     public ResponseEntity<ResultDto<?>> viewCart(int userId) {
         try {
             Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
@@ -245,15 +248,15 @@ public class CartService {
 
                             double rentPrice = price.divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
                                     .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity())).setScale(0, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
+                                    .setScale(0, RoundingMode.HALF_UP)
                                     .doubleValue();
 
                             return new PackageShowbook(
                                     packageRead.getId(),
                                     packageRead.getPackageName(),
                                     packageRead.getDayQuantity(),
-                                    rentPrice
-                            );
+                                    rentPrice);
                         })
                         .collect(Collectors.toList());
 
@@ -266,6 +269,7 @@ public class CartService {
                         .ibuy(item.getIbuy())
                         .priceBuy(item.getBook().getPrice())
                         .packlist(packageList)
+                        .imageData(item.getBook().getFilePdf().getImagesbook().get(0).getImage_data())
                         .build();
             }).toList();
 
@@ -338,12 +342,11 @@ public class CartService {
 
             CartItem cartItem = cartItemOptional.get();
 
-          
             if (cartUp.getPackId() == 0) {
                 cartItem.setIbuy(Boolean.TRUE);
                 cartItem.setPrice(cartItem.getBook().getPrice());
-                cartItem.setDayQuantity(null); 
-                cartItem.setPackageName(null); 
+                cartItem.setDayQuantity(null);
+                cartItem.setPackageName(null);
                 cartItem.setPackId(0);
             } else {
                 Optional<PackageRead> packOptional = packageReadRepository.findById(cartUp.getPackId());
@@ -388,6 +391,7 @@ public class CartService {
             return new ResponseEntity<>(ResultDto.builder()
                     .status(false)
                     .message("Updated Fail")
+
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

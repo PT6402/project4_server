@@ -27,4 +27,6 @@ public interface AuthService {
     ResponseEntity<ResultDto<?>> refreshToken(HttpServletRequest request, HttpServletResponse response,
             TypeDevice typeDevice);
 
+    ResponseEntity<ResultDto<?>> reloadPage(HttpServletRequest request);
+
 }

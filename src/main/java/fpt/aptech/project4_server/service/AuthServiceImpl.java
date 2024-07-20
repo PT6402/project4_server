@@ -101,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
             var result = AutheRes.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .userDetailId(newUserDetail.getId())
                     .email(userSaved.getEmail())
                     .fullname(newUserDetailSaved.getFullname())
                     .role(userSaved.getRole())
@@ -117,6 +118,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<ResultDto<?>> authenticate(AuthReq req) {
         // check exist account
+
         User user = userRepo.findByEmail(req.getEmail()).orElse(null);
         if (user == null) {
             ResultDto<?> response = ResultDto.builder().message("user not found").status(false).build();
@@ -161,6 +163,8 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .typeLogin(user.getTypeLogin())
                 .fullname(userDetailRepo.findByUser(user).orElse(null).getFullname())
+                .userDetailId(userDetailRepo.findByUser(user).orElse(
+                        null).getId())
                 .role(user.getRole())
                 .build();
 
@@ -348,6 +352,43 @@ public class AuthServiceImpl implements AuthService {
         return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
     }
 
+    @Override
+    public ResponseEntity<ResultDto<?>> reloadPage(HttpServletRequest request) {
+        try {
+            String refreshToken;
+            String userEmail;
+            final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                ResultDto<?> result = ResultDto.builder().message("header Authorization or Bearer not found ")
+                        .status(false)
+                        .build();
+                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            }
+
+            refreshToken = authHeader.substring(7);
+            userEmail = jwtService.extractUsername(refreshToken);
+            var user = this.userRepo.findByEmail(userEmail).orElseThrow();
+            String accessToken = jwtService.generateResetPass(user);
+            var result = AutheRes.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .email(user.getEmail())
+                    .typeLogin(user.getTypeLogin())
+                    .fullname(userDetailRepo.findByUser(user).orElse(null).getFullname())
+                    .userDetailId(userDetailRepo.findByUser(user).orElse(
+                            null).getId())
+                    .role(user.getRole())
+                    .build();
+
+            ResultDto<?> response = ResultDto.builder().message("reload success").status(true).model(result).build();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResultDto<?> result = ResultDto.builder().message(e.getMessage())
+                    .status(false).build();
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+    }
     //
 
     private boolean isValidAccessTokenGG(String access_token_google) {

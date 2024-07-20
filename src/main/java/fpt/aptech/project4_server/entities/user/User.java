@@ -59,7 +59,7 @@ public class User implements UserDetails {
     private List<Token> tokens;
 
     @OneToOne(mappedBy = "user")
-  
+
     private UserDetail userDetail;
 
     @CreationTimestamp

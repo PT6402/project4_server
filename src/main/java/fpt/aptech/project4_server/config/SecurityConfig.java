@@ -60,6 +60,8 @@ public class SecurityConfig {
             "/api/v1/feedback/**",
             "/api/v1/coupon/**",
             "api/v1/package/**",
+
+            "api/v1/admin/**"
     };
 
 
