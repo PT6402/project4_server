@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderDetailDto {
+
     private int id;
 //    private int orderId;
     private String bookName;
@@ -19,7 +20,7 @@ public class OrderDetailDto {
     private int packId;
     private Double price;
     private String packName;
-       @Lob
+    @Lob
     private byte[] ImageCove;
-       
+
 }
