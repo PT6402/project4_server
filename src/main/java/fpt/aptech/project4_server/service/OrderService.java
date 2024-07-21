@@ -360,7 +360,7 @@ public class OrderService {
                                 })
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
-                                order.getPaymentStatus(),order.getUserDetail().getUser().getUsername(),order.getUserDetail().getUser().getEmail());
+                                order.getPaymentStatus(),order.getUserDetail().getFullname(),order.getUserDetail().getUser().getEmail());
                     })
                     .collect(Collectors.toList());
 
