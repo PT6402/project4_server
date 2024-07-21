@@ -324,9 +324,11 @@ public class OrderService {
         }
     }
 
+
     public ResponseEntity<ResultDto<List<OrderAdmin>>> getOrdersAdmin() {
         try {
 //            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+
             List<Order> orders = orderRepository.findAll();
 
             List<OrderAdmin> orderDtos = orders.stream()
@@ -347,10 +349,7 @@ public class OrderService {
                                             book.getName(),
                                             book.getId(),
                                             orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
-                                            // lý
-                                            // giá
-                                            // trị
-                                            // null
+
                                             orderDetail.getPackId(),
                                             orderDetail.getPrice(),
                                             packageName,
@@ -358,7 +357,9 @@ public class OrderService {
                                 })
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
-                                order.getPaymentStatus(), order.getUserDetail().getFullname(), order.getUserDetail().getUser().getEmail());
+
+                                order.getPaymentStatus(),order.getUserDetail().getFullname(), order.getUserDetail().getUser().getEmail());
+
                     })
                     .collect(Collectors.toList());
 
@@ -376,6 +377,7 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(int orderId) {
         try {
@@ -436,4 +438,5 @@ public class OrderService {
         }
     }
     
+
 }

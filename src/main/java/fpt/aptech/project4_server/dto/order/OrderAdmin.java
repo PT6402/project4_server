@@ -1,9 +1,11 @@
+
 package fpt.aptech.project4_server.dto.order;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 public class OrderAdmin {
 
@@ -41,8 +43,10 @@ public class OrderAdmin {
 
     // Constructor
     public OrderAdmin(int orderId, LocalDateTime creatDate, List<OrderDetailDto> orderDetails,
+
                       int paymentStatus, String UserName, String email) {
         this.UserName = UserName;
+
         this.email = email;
         this.orderId = orderId;
         this.creatDate = creatDate;
