@@ -30,7 +30,7 @@ public class Order extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "userDetail_id")
     private UserDetail userDetail;
-    
+
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

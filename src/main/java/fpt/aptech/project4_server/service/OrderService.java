@@ -19,6 +19,7 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.response.PaymentResponse;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -292,10 +293,10 @@ public class OrderService {
                                             book.getName(),
                                             book.getId(),
                                             orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
-                                                                                                                     // lý
-                                                                                                                     // giá
-                                                                                                                     // trị
-                                                                                                                     // null
+                                            // lý
+                                            // giá
+                                            // trị
+                                            // null
                                             orderDetail.getPackId(),
                                             orderDetail.getPrice(),
                                             packageName,

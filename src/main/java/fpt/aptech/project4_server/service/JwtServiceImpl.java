@@ -1,6 +1,7 @@
 package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.entities.user.UserDetail;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,12 +43,12 @@ public class JwtServiceImpl implements JwtService {
     public String generateAccessToken(UserDetails userDetails) {
         return generateToken(userDetails, accessTokenExpiration);
     }
-    
+
     @Override
     public String generatePaymentToken(UserDetail userDetail) {
-        UserDetails userDetails=(UserDetails)
-        userDetail.getUser();
-        return generateToken(userDetails ,refreshTokenExpiration);
+        UserDetails userDetails = (UserDetails)
+                userDetail.getUser();
+        return generateToken(userDetails, refreshTokenExpiration);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class JwtServiceImpl implements JwtService {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException | MalformedJwtException | UnsupportedJwtException | SecurityException
-                | IllegalArgumentException e) {
+                 | IllegalArgumentException e) {
             log.info(e.getMessage());
             return null;
         }
