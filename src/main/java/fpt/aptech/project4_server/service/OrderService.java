@@ -20,6 +20,7 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.response.PaymentResponse;
 import fpt.aptech.project4_server.util.ResultDto;
+
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -293,10 +294,10 @@ public class OrderService {
                                             book.getName(),
                                             book.getId(),
                                             orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
-                                                                                                                     // lý
-                                                                                                                     // giá
-                                                                                                                     // trị
-                                                                                                                     // null
+                                            // lý
+                                            // giá
+                                            // trị
+                                            // null
                                             orderDetail.getPackId(),
                                             orderDetail.getPrice(),
                                             packageName,
@@ -322,12 +323,11 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
+
     public ResponseEntity<ResultDto<List<OrderAdmin>>> getOrdersAdmin() {
         try {
 //            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
-
-           
 
             List<Order> orders = orderRepository.findAll();
 
@@ -349,10 +349,7 @@ public class OrderService {
                                             book.getName(),
                                             book.getId(),
                                             orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
-                                                                                                                     // lý
-                                                                                                                     // giá
-                                                                                                                     // trị
-                                                                                                                     // null
+
                                             orderDetail.getPackId(),
                                             orderDetail.getPrice(),
                                             packageName,
@@ -360,7 +357,9 @@ public class OrderService {
                                 })
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
-                                order.getPaymentStatus(),order.getUserDetail().getFullname(),order.getUserDetail().getUser().getEmail());
+
+                                order.getPaymentStatus(),order.getUserDetail().getFullname(), order.getUserDetail().getUser().getEmail());
+
                     })
                     .collect(Collectors.toList());
 
@@ -378,4 +377,66 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(int orderId) {
+        try {
+            Optional<Order> orderOptional = orderRepository.findById(orderId);
+
+            if (orderOptional.isEmpty()) {
+                return new ResponseEntity<>(ResultDto.<OrderAdmin>builder()
+                        .status(false)
+                        .message("Order not found")
+                        .build(), HttpStatus.NOT_FOUND);
+            }
+
+            Order order = orderOptional.get();
+            List<OrderDetailDto> orderDetailDtos = order.getOrderDetails().stream()
+                    .map(orderDetail -> {
+                        Book book = orderDetail.getBook();
+                        ImagesBook image = getImage(book.getFilePdf());
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
+                        String packageName = "";
+                        Optional<PackageRead> pack = packageReadRepository
+                                .findById(orderDetail.getPackId());
+                        if (pack.isPresent()) {
+                            packageName = pack.get().getPackageName();
+                        }
+                        return new OrderDetailDto(
+                                orderDetail.getId(),
+                                book.getName(),
+                                book.getId(),
+                                orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0,
+                                orderDetail.getPackId(),
+                                orderDetail.getPrice(),
+                                packageName,
+                                fileImage);
+                    })
+                    .collect(Collectors.toList());
+
+            OrderAdmin orderAdmin = new OrderAdmin(
+                    order.getId(),
+                    order.getCreateAt(),
+                    orderDetailDtos,
+                    order.getPaymentStatus(),
+                    order.getUserDetail().getFullname(),
+                    order.getUserDetail().getUser().getEmail()
+            );
+
+            return new ResponseEntity<>(ResultDto.<OrderAdmin>builder()
+                    .status(true)
+                    .message("Success")
+                    .model(orderAdmin)
+                    .build(), HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(ResultDto.<OrderAdmin>builder()
+                    .status(false)
+                    .message("Failed to retrieve order details")
+                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+
 }

@@ -47,9 +47,17 @@ public class OrderController {
     public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(@PathVariable int userId) {
         return orderService.getOrdersByUserId(userId);
     }
-    
-     @GetMapping("/admin")
+
+
+    @GetMapping("/admin")
     public ResponseEntity<ResultDto<List<OrderAdmin>>> getOrdersAdmin() {
         return orderService.getOrdersAdmin();
     }
+
+    @GetMapping("/admin/{orderId}")
+    public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(@PathVariable int orderId) {
+        return orderService.getOrderDetailsForAdmin(orderId);
+    }
+
+
 }
