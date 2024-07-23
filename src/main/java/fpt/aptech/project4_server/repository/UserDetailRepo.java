@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import fpt.aptech.project4_server.entities.auth.User;
 import fpt.aptech.project4_server.entities.user.UserDetail;
-import fpt.aptech.project4_server.entities.user.User;
 
 @Repository
 public interface UserDetailRepo extends JpaRepository<UserDetail, Integer> {

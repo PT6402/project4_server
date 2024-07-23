@@ -8,6 +8,7 @@ import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
 import fpt.aptech.project4_server.dto.order.OrderDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
+import fpt.aptech.project4_server.dto.payment.PaymentResponse;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
@@ -18,7 +19,7 @@ import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.entities.user.OrderDetail;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
-import fpt.aptech.project4_server.response.PaymentResponse;
+import fpt.aptech.project4_server.service.jwt.JwtService;
 import fpt.aptech.project4_server.util.ResultDto;
 
 import java.time.LocalDateTime;
@@ -141,14 +142,14 @@ public class OrderService {
 
     public ResponseEntity<ResultDto<?>> checkPayment(PaymentCheck paycheck) {
         try {
-            String namecheck = jservice.extractUsername(paycheck.getToken());
+            int userId = jservice.getUserIdByToken(paycheck.getToken());
 
-            System.out.println(namecheck);
+            System.out.println(userId);
             Optional<UserDetail> usercheck = userDetailRepo.findById(paycheck.getUserDetailId());
             String name = usercheck.get().getUser().getEmail();
             System.out.println(name);
             Optional<Order> updateorder = orderRepository.findById(paycheck.getOrderId());
-            if (namecheck.equals(usercheck.get().getUser().getEmail())) {
+            if (userId == usercheck.get().getUser().getId()) {
                 updateorder.get().setPaymentStatus(1);
                 orderRepository.save(updateorder.get());
                 MBservice.createMybook(paycheck.getOrderId(), paycheck.getUserDetailId());
@@ -324,10 +325,9 @@ public class OrderService {
         }
     }
 
-
     public ResponseEntity<ResultDto<List<OrderAdmin>>> getOrdersAdmin() {
         try {
-//            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            // Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
 
             List<Order> orders = orderRepository.findAll();
 
@@ -358,7 +358,8 @@ public class OrderService {
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
 
-                                order.getPaymentStatus(),order.getUserDetail().getFullname(), order.getUserDetail().getUser().getEmail());
+                                order.getPaymentStatus(), order.getUserDetail().getFullname(),
+                                order.getUserDetail().getUser().getEmail());
 
                     })
                     .collect(Collectors.toList());
@@ -377,7 +378,6 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(int orderId) {
         try {
@@ -420,8 +420,7 @@ public class OrderService {
                     orderDetailDtos,
                     order.getPaymentStatus(),
                     order.getUserDetail().getFullname(),
-                    order.getUserDetail().getUser().getEmail()
-            );
+                    order.getUserDetail().getUser().getEmail());
 
             return new ResponseEntity<>(ResultDto.<OrderAdmin>builder()
                     .status(true)
@@ -437,6 +436,5 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
 
 }

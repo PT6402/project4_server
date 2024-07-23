@@ -1,0 +1,58 @@
+server:
+  port: 9090
+stripe:
+  api:
+    key: sk_test_51PZTRYRu31VY3Rleelb0OumlQTU4VoRa6fgmbi1BGAcd2hXVuAynCzOEFV4kKs3guqcjqvc0ZD6QfeLItv4bVXN300mHpuE1mg
+spring:
+  application:
+    name: project4_server
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=Project4DB;TrustServerCertificate=true
+    username: sa
+    password: Phattran.123
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: 915802494373-qo0dcq94ne13eggj5tpalc7dnah6p897.apps.googleusercontent.com
+            clientSecret: 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
+            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+  mail:
+    host: smtp.gmail.com
+    username: phgm6402@gmail.com
+    password: bucmcxlvyptkimry
+    port: 587
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            auth: true
+
+app:
+  auth:
+    token_secret: 04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
+    refresh_token_expired: 864000000 #7 day
+    access_token_expired: 864000000
+    reset_pass_token_expired: 864000000
+  oauth2:
+    authorized_redirec_uris:
+      - http://localhost:3000
+  cors:
+    max_age_secs: 3600
+    allowed_origins:
+      - http://localhost:3000
+      - http://localhost:9090
+debug: true
