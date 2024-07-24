@@ -4,24 +4,17 @@
  */
 package fpt.aptech.project4_server.service;
 
-import fpt.aptech.project4_server.dto.author.AuthorSearch;
-import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.book.BookPagnination;
 import fpt.aptech.project4_server.dto.book.BookSearch;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
-import fpt.aptech.project4_server.dto.book.BooklistUserRes;
 import fpt.aptech.project4_server.dto.book.Paginations;
 import fpt.aptech.project4_server.dto.category.CateShow;
-import fpt.aptech.project4_server.dto.category.CateUserRes;
-import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
 import fpt.aptech.project4_server.dto.packageread.PackageShowbook;
 import fpt.aptech.project4_server.dto.review.ReviewShow1;
-import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Book;
-import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
@@ -34,13 +27,9 @@ import jakarta.transaction.Transactional;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +41,9 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -76,8 +63,6 @@ public class PdfService {
     private Mybookrepo MBrepo;
     @Autowired
     private ScheduleDeleteRepository SDrepo;
-    @Value("${upload.path}")
-    private String fileUpload;
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
@@ -110,9 +95,6 @@ public class PdfService {
 
                 // Lưu hình ảnh vào file hệ thống
                 String imageName = filePdf.getFile_name() + "_page_" + (page + 1) + ".jpg";
-                Path imagePath = Paths.get(fileUpload, imageName);
-                Files.createDirectories(imagePath.getParent());
-                Files.write(imagePath, imageInByte);
 
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);

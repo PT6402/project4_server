@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentCheck {
     private int orderId;
-    private int userDetailId;
     @Lob
     private String token;
 }

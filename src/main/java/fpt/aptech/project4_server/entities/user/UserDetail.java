@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.book.Feedback;
 import fpt.aptech.project4_server.entities.book.Review;
 import fpt.aptech.project4_server.entities.BaseEntity;
+import fpt.aptech.project4_server.entities.auth.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -23,14 +24,14 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-//@Data
+// @Data
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tbUserDetail")
 @SuperBuilder
-//@EqualsAndHashCode(callSuper = true)
+// @EqualsAndHashCode(callSuper = true)
 public class UserDetail extends BaseEntity {
 
     @Column(name = "fullname", columnDefinition = "nvarchar(200)")
@@ -47,11 +48,9 @@ public class UserDetail extends BaseEntity {
     @OneToOne(mappedBy = "userDetail")
     private Cart cart;
 
-
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Review> reviews;
-
 
     @OneToMany(mappedBy = "userDetail")
     private List<Feedback> feedbacks;
@@ -60,11 +59,10 @@ public class UserDetail extends BaseEntity {
     @JsonIgnore
     private List<Order> orders;
 
-
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Mybook> mybook;
-    
+
     @OneToMany(mappedBy = "userDetail")
     @JsonIgnore
     private List<Wishlist> wishlist;
