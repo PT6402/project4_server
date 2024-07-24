@@ -81,9 +81,6 @@ public class PdfService {
     @Autowired
     private PublisherRepository Pubrepo;
 
-    @Value("${upload.path}")
-    private String fileUpload;
-
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
         // List<ImagesBook> imageslist = new ImagesBook();
@@ -115,9 +112,6 @@ public class PdfService {
 
                 // Lưu hình ảnh vào file hệ thống
                 String imageName = filePdf.getFile_name() + "_page_" + (page + 1) + ".jpg";
-                Path imagePath = Paths.get(fileUpload, imageName);
-                Files.createDirectories(imagePath.getParent());
-                Files.write(imagePath, imageInByte);
 
                 ImagesBook images = new ImagesBook();
                 images.setImage_name(imageName);
