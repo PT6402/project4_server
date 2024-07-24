@@ -4,20 +4,28 @@
  */
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.dto.author.AuthorSearch;
+import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.book.BookFilter;
 import fpt.aptech.project4_server.dto.book.BookPagnination;
 import fpt.aptech.project4_server.dto.book.BookSearch;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
+import fpt.aptech.project4_server.dto.book.BooklistUserRes;
 import fpt.aptech.project4_server.dto.book.Paginations;
 import fpt.aptech.project4_server.dto.category.CateShow;
+import fpt.aptech.project4_server.dto.category.CateUserRes;
+import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
 import fpt.aptech.project4_server.dto.packageread.PackageShowbook;
 import fpt.aptech.project4_server.dto.review.ReviewShow1;
+import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Book;
+import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
+import fpt.aptech.project4_server.entities.book.Publisher;
 import fpt.aptech.project4_server.entities.book.ScheduleBookDeletion;
 import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.repository.*;
@@ -27,9 +35,13 @@ import jakarta.transaction.Transactional;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +53,11 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -63,6 +77,9 @@ public class PdfService {
     private Mybookrepo MBrepo;
     @Autowired
     private ScheduleDeleteRepository SDrepo;
+
+    @Autowired
+    private PublisherRepository Pubrepo;
 
     public FilePdf uploadAndConvertPdf(MultipartFile file) throws IOException {
         FilePdf filePdf = new FilePdf();
@@ -125,6 +142,12 @@ public class PdfService {
                     return new ResponseEntity<ResultDto<?>>(response, HttpStatus.CONFLICT);
                 }
             }
+            Optional<Publisher> publisherOpt = Pubrepo.findById(bookad.getPubId());
+            if (!publisherOpt.isPresent()) {
+                ResultDto<?> response = ResultDto.builder().status(false).message("Publisher not found").build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+            Publisher publisher = publisherOpt.get();
             FilePdf filePdf = new FilePdf();
             filePdf.setFile_name(bookad.getFile().getOriginalFilename());
             filePdf.setFile_type(bookad.getFile().getContentType());
@@ -134,7 +157,7 @@ public class PdfService {
             newbook.setEdition(bookad.getEdition());
             newbook.setPrice(bookad.getPrice());
             newbook.setName(bookad.getName());
-            newbook.setPublisherDescription(bookad.getPublisherDescription());
+            newbook.setDescription(bookad.getDescription());
 
             newbook.setPageQuantity(document.getNumberOfPages());
             newbook.setRating(0);
@@ -142,6 +165,7 @@ public class PdfService {
             // Lưu thông tin của sách
             newbook.setCategories(bookad.getCatelist());
             newbook.setAuthors(bookad.getAuthorlist());
+            newbook.setPublisher(publisher);
             newbook.setStatusMybook(false);
             Book savedBook = bookrepo.save(newbook);
 
@@ -159,43 +183,6 @@ public class PdfService {
         }
     }
 
-    // public ResponseEntity<ResultDto<?>> BooklistUserShow() {
-    // try {
-    //
-    // var listbook = bookrepo.findAll().stream().map(c -> {
-    // ImagesBook image = getImage(c.getFilePdf());
-    // byte[] fileImage = image != null ? image.getImage_data() : null;
-    // List<CateShow> catshowlist = c.getCategories().stream()
-    // .map(category -> new CateShow(category.getId(), category.getName()))
-    // .toList();
-    // List<AuthorShow> authorshowlist = c.getAuthors().stream()
-    // .map(author -> new AuthorShow(author.getId(), author.getName()))
-    // .toList();
-    // return BooklistUserRes.builder()
-    // .id(c.getId())
-    // .name(c.getName())
-    // // .price(c.getPrice())
-    // .rating(c.getRating())
-    // .ratingQuantity(c.getRatingQuantity())
-    // .fileimage(fileImage)
-    // .catelist(catshowlist)
-    // .authorlist(authorshowlist)
-    // .build();
-    // }).collect(Collectors.toList());
-    //
-    // ResultDto<?> response =
-    // ResultDto.builder().status(true).message("ok").model(listbook).build();
-    // return new ResponseEntity<>(response, HttpStatus.OK);
-    //
-    // } catch (Exception e) {
-    //
-    // ResultDto<?> response = ResultDto.builder().status(false).message("Fail to
-    // show").build();
-    // return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    // }
-    // }
-
-    //
     public ResponseEntity<ResultDto<?>> BookSingleUserShow(int bookId) {
 
         try {
@@ -241,7 +228,6 @@ public class PdfService {
                                     .divide(BigDecimal.valueOf(maxDayQuantity), 5, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(packageRead.getDayQuantity()))
                                     .setScale(0, RoundingMode.HALF_UP)
-
                                     .doubleValue();
                             return new PackageShowbook(
                                     packageRead.getId(),
@@ -259,12 +245,13 @@ public class PdfService {
                         .packlist(packageList)
                         .priceBuy(book.getPrice())
                         .edition(book.getEdition())
-                        .publisherDescription(book.getPublisherDescription())
+                        .description(book.getDescription())
                         .rating(book.getRating())
                         .ratingQuantity(book.getRatingQuantity())
                         .fileimage(fileImage)
                         .catelist(categoryResList)
                         .authorlist(authorResList)
+                        .Pubname(book.getPublisher().getName())
                         .reviewlist(reviewList)
                         .build();
 
@@ -329,7 +316,7 @@ public class PdfService {
             existingBook.setPrice(bookres.getPrice());
             existingBook.setPageQuantity(document.getNumberOfPages());
             existingBook.setEdition(bookres.getEdition());
-            existingBook.setPublisherDescription(bookres.getPublisherDescription());
+            existingBook.setDescription(bookres.getDescription());
             existingBook.setAuthors(bookres.getAuthorlist());
             existingBook.setCategories(bookres.getCatelist());
             var updateBook = bookrepo.save(existingBook);
@@ -371,6 +358,7 @@ public class PdfService {
             List<Book> allBooks = bookrepo.findAll();
             int totalBooks = allBooks.size();
             System.out.println(totalBooks);
+
             // Tính toán chỉ số bắt đầu và kết thúc cho trang hiện tại
             if (page == 1) {
                 int start = Math.min(page - 1, totalBooks);
@@ -380,15 +368,21 @@ public class PdfService {
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
+                    List<AuthorShow> authors = c.getAuthors().stream().map(author -> {
+                        AuthorShow authorShow = new AuthorShow();
+                        authorShow.setId(author.getId());
+                        authorShow.setName(author.getName());
+                        return authorShow;
+                    }).collect(Collectors.toList());
 
                     return BookPagnination.builder()
                             .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
-
+                            .price(c.getPrice())
+                            .authors(authors)
                             .ImageCove(fileImage)
-
                             .build();
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
@@ -411,12 +405,19 @@ public class PdfService {
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                     ImagesBook image = getImage(c.getFilePdf());
                     byte[] fileImage = image != null ? image.getImage_data() : null;
-
+                    List<AuthorShow> authors = c.getAuthors().stream().map(author -> {
+                        AuthorShow authorShow = new AuthorShow();
+                        authorShow.setId(author.getId());
+                        authorShow.setName(author.getName());
+                        return authorShow;
+                    }).collect(Collectors.toList());
                     return BookPagnination.builder()
                             .bookid(c.getId())
                             .name(c.getName())
                             .rating(c.getRating())
                             .ratingQuantity(c.getRatingQuantity())
+                            .price(c.getPrice())
+                            .authors(authors)
                             .ImageCove(fileImage)
                             .build();
                 }).collect(Collectors.toList());
@@ -698,6 +699,7 @@ public class PdfService {
                         return BookSearch.builder()
                                 .bookid(book.getId())
                                 .name(book.getName())
+                                .price(book.getPrice())
                                 .rating(book.getRating())
                                 .ratingQuantity(book.getRatingQuantity())
                                 .ImageCove(fileImage).build();
@@ -720,5 +722,36 @@ public class PdfService {
             return response;
         }
 
+    }
+
+    public ResultDto<?> searchByPrice(Integer StaPrice, Integer EndPrice) {
+        try {
+            List<Book> books = bookrepo.findByPrice(StaPrice, EndPrice);
+            List<BookSearch> bookSearchList = books.stream()
+                    .map(book -> {
+                        ImagesBook image = getImage(book.getFilePdf());
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
+                        return BookSearch.builder()
+                                .bookid(book.getId())
+                                .name(book.getName())
+                                .price(book.getPrice())
+                                .rating(book.getRating())
+                                .ratingQuantity(book.getRatingQuantity())
+                                .ImageCove(fileImage).build();
+                    }).collect(Collectors.toList());
+
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("OK")
+                    .model(bookSearchList)
+                    .build();
+            return response;
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message(e.getMessage())
+                    .build();
+            return response;
+        }
     }
 }

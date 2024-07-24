@@ -1,6 +1,7 @@
 package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.statistic.BookStatistic;
+import fpt.aptech.project4_server.dto.statistic.*;
 import fpt.aptech.project4_server.service.MyBookService;
 import fpt.aptech.project4_server.service.StatisticService;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -34,4 +35,30 @@ public class StatisticController {
         }
     }
 
+    @GetMapping("/topbuy")
+    public ResponseEntity<ResultDto<List<TopBuy>>> getTopBuy() {
+        try {
+            List<TopBuy> topBuys = statService.getTopBuy();
+            return ResponseEntity.ok(new ResultDto<>(topBuys, "Success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResultDto<>(null, "Error: " + e.getMessage(), false));
+        }
+    }
+
+    @GetMapping("/toprent")
+    public ResponseEntity<ResultDto<List<TopRent>>> getTopRent() {
+        try {
+            List<TopRent> topRents = statService.getTopRent();
+            return ResponseEntity.ok(new ResultDto<>(topRents, "Success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResultDto<>(null, "Error: " + e.getMessage(), false));
+        }
+    }
+
+    @GetMapping("/toplike")
+    public List<TopLike> getTopLikedBooks() {
+        return statService.getTopLike();
+    }
 }

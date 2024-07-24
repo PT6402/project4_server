@@ -232,13 +232,13 @@ public class AuthorService {
                 .pageQuantity(book.getPageQuantity())
 
                 .edition(book.getEdition())
-                .publisherDescription(book.getPublisherDescription())
+                .description(book.getDescription())
                 .rating(book.getRating())
                 .ratingQuantity(book.getRatingQuantity())
                 .fileimage(fileImage)
                 .catelist(categoryResList)
                 .authorlist(authorResList)
-
+                .Pubname(book.getPublisher().getName())
                 .build();
     }
 

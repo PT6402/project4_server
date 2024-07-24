@@ -4,6 +4,7 @@
  */
 package fpt.aptech.project4_server.repository;
 
+import fpt.aptech.project4_server.dto.statistic.TopLike;
 import fpt.aptech.project4_server.entities.user.Mybook;
 import fpt.aptech.project4_server.entities.user.Wishlist;
 import java.util.List;
@@ -17,11 +18,14 @@ import org.springframework.data.repository.query.Param;
  * @author macos
  */
 public interface WishlistRepo extends JpaRepository<Wishlist, Integer> {
-     @Query
-     ("Select b from Wishlist b where b.userDetail.id=:userID AND b.book.id=:bookID")       
-    Optional<Wishlist> findByUserDetailAndBook(@Param("userID") Integer userID,@Param("bookID") Integer bookID);
-    
-    @Query
-    ("Select c from Wishlist c where c.userDetail.id=:userID")
-    List<Wishlist>findByUserDetailId(@Param("userID") Integer userID);
+
+    @Query("Select b from Wishlist b where b.userDetail.id=:userID AND b.book.id=:bookID")
+    Optional<Wishlist> findByUserDetailAndBook(@Param("userID") Integer userID, @Param("bookID") Integer bookID);
+
+    @Query("Select c from Wishlist c where c.userDetail.id=:userID")
+    List<Wishlist> findByUserDetailId(@Param("userID") Integer userID);
+
+    @Query("SELECT new fpt.aptech.project4_server.dto.statistic.TopLike(w.book.id, w.book.name, COUNT(w.book.id)) "
+            + "FROM Wishlist w GROUP BY w.book.id, w.book.name ORDER BY COUNT(w.book.id) DESC")
+    List<TopLike> findTopBooksByWishlistCount();
 }

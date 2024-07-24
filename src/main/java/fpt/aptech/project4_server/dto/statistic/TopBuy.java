@@ -2,9 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package fpt.aptech.project4_server.dto.book;
+package fpt.aptech.project4_server.dto.statistic;
 
-import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,12 +17,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookSearch {
-     private int bookid;
-    private String name;
-    private double rating;
-    private int ratingQuantity;
-    private Double price;
-        @Lob
-    private byte[]ImageCove;
+public class TopBuy {
+     private Integer bookId;
+    private String bookName;
+
+    private Long boughtBooks;
 }

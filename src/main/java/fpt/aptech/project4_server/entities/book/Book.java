@@ -27,7 +27,7 @@ public class Book extends BaseEntity {
     private double price;
     private int pageQuantity;
     private String edition;
-    private String publisherDescription;
+    private String description;
     private double rating;
     private int ratingQuantity;
     @Column(name = "status_mybook")
@@ -68,6 +68,10 @@ public class Book extends BaseEntity {
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private FilePdf filePdf;
 
+    @ManyToOne
+    @JoinColumn(name="publisher_id")
+    private Publisher publisher;
+
     @ManyToMany(mappedBy = "books")
     @JsonIgnore
     private List<Cart> carts;
@@ -76,8 +80,7 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<CartItem> cartItems;
 
-    
-     @Override
+    @Override
     public int hashCode() {
         return Objects.hash(id, name); // Thay đổi theo các thuộc tính cần thiết
     }
