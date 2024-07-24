@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.author.AuthorAdminCreateRes;
 import fpt.aptech.project4_server.dto.author.AuthorSearch;
@@ -38,7 +38,7 @@ public class AuthorController {
 
     @PostMapping
     public ResponseEntity<ResultDto<?>> saveAuthor(@RequestParam("name") String name,
-                                                   @RequestParam("fileImage") MultipartFile fileImage) throws IOException {
+            @RequestParam("fileImage") MultipartFile fileImage) throws IOException {
         AuthorAdminCreateRes authorRes = AuthorAdminCreateRes.builder()
                 .name(name)
                 .fileImage(fileImage)
@@ -52,12 +52,14 @@ public class AuthorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id, @RequestBody Author authorDetails) {
+    public ResponseEntity<ResultDto<Author>> updateAuthor(@PathVariable("id") int id,
+            @RequestBody Author authorDetails) {
         return authorService.updateAuthor(id, authorDetails);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResultDto<List<AuthorSearch>>> searchAuthor(@RequestParam("name") String name) throws IOException {
+    public ResponseEntity<ResultDto<List<AuthorSearch>>> searchAuthor(@RequestParam("name") String name)
+            throws IOException {
         return authorService.searchByNameAuthor(name);
     }
 
@@ -66,8 +68,9 @@ public class AuthorController {
         return authorService.getBooksByAuthorId(authorId);
     }
 
-//    @DeleteMapping("/authors/{id}")
-//    public ResponseEntity<ResultDto<Void>> deleteAuthor(@PathVariable("id") int id) {
-//        return authorService.deleteAuthor(id);
-//    }
+    // @DeleteMapping("/authors/{id}")
+    // public ResponseEntity<ResultDto<Void>> deleteAuthor(@PathVariable("id") int
+    // id) {
+    // return authorService.deleteAuthor(id);
+    // }
 }

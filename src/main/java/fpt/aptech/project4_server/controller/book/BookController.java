@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
  */
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
 import fpt.aptech.project4_server.dto.book.BookFilter;
@@ -49,44 +49,42 @@ public class BookController {
         return pv.createNewBook(bookad);
 
     }
-//    
-//
-//    @GetMapping("/showlist")
-//    public ResponseEntity<?> BookLUshow() {
-//        return pv.BooklistUserShow();
-//    }
+    //
+    //
+    // @GetMapping("/showlist")
+    // public ResponseEntity<?> BookLUshow() {
+    // return pv.BooklistUserShow();
+    // }
 
     @GetMapping("/showone/{id}")
     public ResponseEntity<?> Bookshow(@PathVariable int id) {
         return pv.BookSingleUserShow(id);
     }
 
+    @GetMapping("/showpage")
+    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id, @RequestParam("limit") Integer limit) {
+        return pv.Pagnination(id, limit);
 
-      @GetMapping("/showpage")
-    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id,@RequestParam("limit") Integer limit){
-        return pv.Pagnination(id, limit); 
-        
     }
-    
+
     @GetMapping("/search")
-    public ResponseEntity<ResultDto<?>> BookSearch(@RequestParam("name") String name){
-         ResultDto<?> response = pv.searchByName(name);
+    public ResponseEntity<ResultDto<?>> BookSearch(@RequestParam("name") String name) {
+        ResultDto<?> response = pv.searchByName(name);
         if (response.isStatus()) {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-    @PostMapping("/showpage")
-    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer page,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
-        return pv.Filter(page, limit,bookfilter);
-    }
 
-    
+    @PostMapping("/showpage")
+    public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer page, @RequestParam("limit") Integer limit,
+            @RequestBody BookFilter bookfilter) {
+        return pv.Filter(page, limit, bookfilter);
+    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
-
 
         return pv.UpdateBook(id, bookad);
 
@@ -101,11 +99,10 @@ public class BookController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-    
-     @GetMapping("/check/{bookid}")
+
+    @GetMapping("/check/{bookid}")
     public ResponseEntity<ResultDto<?>> checkStatus(@PathVariable int bookid) {
         ResultDto<?> result = pv.checkStatus(bookid);
         return ResponseEntity.ok(result);
     }
-} 
-
+}

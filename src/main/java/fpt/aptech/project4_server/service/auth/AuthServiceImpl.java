@@ -16,6 +16,8 @@ import fpt.aptech.project4_server.entities.auth.AuthProvider;
 import fpt.aptech.project4_server.entities.auth.Role;
 import fpt.aptech.project4_server.entities.auth.Token;
 import fpt.aptech.project4_server.entities.auth.User;
+import fpt.aptech.project4_server.entities.user.UserDetail;
+import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.repository.auth.TokenRepo;
 import fpt.aptech.project4_server.repository.auth.UserRepo;
 import fpt.aptech.project4_server.security.CusUserDetailsService;
@@ -34,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepo userRepo;
     private final TokenRepo tokeRepo;
+    private final UserDetailRepo userDetailRepo;
 
     private final JwtService jwtService;
     private final MailService mailService;
@@ -43,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public ResponseEntity<ResultDto<?>> register(String email, String password) {
+    public ResponseEntity<ResultDto<?>> register(String email, String password, String name) {
         try {
             User checkExist = userRepo.findByEmail(email).orElse(null);
 
@@ -59,7 +62,8 @@ public class AuthServiceImpl implements AuthService {
                     .password(passwordEncoder.encode(password))
                     .build();
 
-            userRepo.save(newUser);
+            var userSaved = userRepo.save(newUser);
+            userDetailRepo.save(UserDetail.builder().fullname(name).user(userSaved).build());
             ResultDto<?> response = ResultDto.builder().message("register mail success").status(true).build();
             return ResponseEntity.ok(response);
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.user;
 
 import fpt.aptech.project4_server.dto.order.OrderAdmin;
 import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
@@ -7,6 +7,8 @@ import fpt.aptech.project4_server.dto.order.OrderDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.entities.user.Order;
+import fpt.aptech.project4_server.security.CurrentUser;
+import fpt.aptech.project4_server.security.UserGlobal;
 import fpt.aptech.project4_server.service.OrderService;
 import fpt.aptech.project4_server.util.ResultDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +25,18 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/check")
-    public ResponseEntity<ResultDto<?>> checkpayment(@RequestBody PaymentCheck paycheck) {
-        System.out.println(paycheck.getToken());
-        return orderService.checkPayment(paycheck);
+    public ResponseEntity<ResultDto<?>> checkpayment(@CurrentUser UserGlobal user, @RequestBody PaymentCheck paycheck) {
+        return orderService.checkPayment(user.getId(), paycheck);
     }
 
-    @PostMapping("/checkout/{userId}/{cartId}")
-    public ResponseEntity<ResultDto<?>> checkoutCart(@PathVariable int userId, @PathVariable int cartId) {
-        return orderService.checkoutCart(userId, cartId);
+    @PostMapping("/checkout/{cartId}")
+    public ResponseEntity<ResultDto<?>> checkoutCart(@CurrentUser UserGlobal user, @PathVariable int cartId) {
+        return orderService.checkoutCart(user.getId(), cartId);
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId, @RequestBody OrderUpdateRequest orderUpdateRequest) {
+    public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId,
+            @RequestBody OrderUpdateRequest orderUpdateRequest) {
         return orderService.updateOrder(orderId, orderUpdateRequest);
     }
 
@@ -43,11 +45,10 @@ public class OrderController {
         return orderService.deleteOrder(orderId);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(@PathVariable int userId) {
-        return orderService.getOrdersByUserId(userId);
+    @GetMapping
+    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(@CurrentUser UserGlobal user) {
+        return orderService.getOrdersByUserId(user.getId());
     }
-
 
     @GetMapping("/admin")
     public ResponseEntity<ResultDto<List<OrderAdmin>>> getOrdersAdmin() {
@@ -58,6 +59,5 @@ public class OrderController {
     public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(@PathVariable int orderId) {
         return orderService.getOrderDetailsForAdmin(orderId);
     }
-
 
 }

@@ -86,7 +86,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
-                        .logoutUrl("api/user/logout")
+                        .logoutUrl("/auth/logout")
                         .addLogoutHandler(logoutHandler));
 
         return http.build();

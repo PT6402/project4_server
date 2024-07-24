@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
     // handle authenticate
-    ResponseEntity<ResultDto<?>> register(String email, String password);
+    ResponseEntity<ResultDto<?>> register(String email, String password, String name);
 
     ResponseEntity<ResultDto<?>> authenticate(String email, String password, HttpServletRequest httpRequest,
             HttpServletResponse response);

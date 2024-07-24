@@ -19,6 +19,7 @@ import fpt.aptech.project4_server.entities.user.Order;
 import fpt.aptech.project4_server.entities.user.OrderDetail;
 import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
+import fpt.aptech.project4_server.service.cart.CartService;
 import fpt.aptech.project4_server.service.jwt.JwtService;
 import fpt.aptech.project4_server.util.ResultDto;
 
@@ -68,14 +69,8 @@ public class OrderService {
     public ResponseEntity<ResultDto<?>> checkoutCart(int userId, int cartId) {
         try {
             // Kiểm tra xem user có tồn tại hay không
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
-            System.out.println(userDetailOptional.get().getId());
-            if (userDetailOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.builder().status(false).message("User not found").build(),
-                        HttpStatus.NOT_FOUND);
-            }
-
-            UserDetail userDetail = userDetailOptional.get();
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
 
             // Lấy Cart dựa vào cartId
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
@@ -124,7 +119,7 @@ public class OrderService {
 
             // Tạo link thanh toán
             PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
-            cartservice.clearCart(cartId);
+            cartservice.clearCart(userId);
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
                     .message("Order created successfully")
@@ -140,19 +135,17 @@ public class OrderService {
         }
     }
 
-    public ResponseEntity<ResultDto<?>> checkPayment(PaymentCheck paycheck) {
+    public ResponseEntity<ResultDto<?>> checkPayment(int userId, PaymentCheck paycheck) {
         try {
-            int userId = jservice.getUserIdByToken(paycheck.getToken());
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
 
-            System.out.println(userId);
-            Optional<UserDetail> usercheck = userDetailRepo.findById(paycheck.getUserDetailId());
-            String name = usercheck.get().getUser().getEmail();
-            System.out.println(name);
+            int userIdToken = jservice.getUserIdByToken(paycheck.getToken());
             Optional<Order> updateorder = orderRepository.findById(paycheck.getOrderId());
-            if (userId == usercheck.get().getUser().getId()) {
+            if (userIdToken == userId) {
                 updateorder.get().setPaymentStatus(1);
                 orderRepository.save(updateorder.get());
-                MBservice.createMybook(paycheck.getOrderId(), paycheck.getUserDetailId());
+                MBservice.createMybook(paycheck.getOrderId(), userDetail.getId());
                 return new ResponseEntity<>(ResultDto.builder()
                         .status(true)
                         .message("Payment paid and updated successfully")
@@ -164,7 +157,7 @@ public class OrderService {
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -266,16 +259,10 @@ public class OrderService {
 
     public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(int userId) {
         try {
-            Optional<UserDetail> userDetailOptional = userDetailRepo.findById(userId);
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
 
-            if (userDetailOptional.isEmpty()) {
-                return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
-                        .status(false)
-                        .message("User not found")
-                        .build(), HttpStatus.NOT_FOUND);
-            }
-
-            List<Order> orders = userDetailOptional.get().getOrders();
+            List<Order> orders = userDetail.getOrders();
 
             List<OrderAndDetailDto> orderDtos = orders.stream()
                     .map(order -> {

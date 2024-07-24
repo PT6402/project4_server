@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/register")
     ResponseEntity<?> register(@RequestBody Map<String, String> req) {
-        return authService.register(req.get("email"), req.get("password"));
+        return authService.register(req.get("email"), req.get("password"),req.get("name"));
     }
 
     @GetMapping("/check-type-login/{email}")

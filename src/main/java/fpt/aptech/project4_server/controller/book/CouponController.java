@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.coupon.CouponCreateRequest;
 import fpt.aptech.project4_server.service.CouponService;

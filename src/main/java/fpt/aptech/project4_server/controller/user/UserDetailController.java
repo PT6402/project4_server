@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.user;
 
 import fpt.aptech.project4_server.dto.user.UserAdminDTO;
 import fpt.aptech.project4_server.service.UserDetailService;

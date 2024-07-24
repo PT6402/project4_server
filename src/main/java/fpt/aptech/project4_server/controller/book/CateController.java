@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.book;
 
 import static com.fasterxml.jackson.databind.util.ClassUtil.name;
 

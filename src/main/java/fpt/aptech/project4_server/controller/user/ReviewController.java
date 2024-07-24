@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.user;
 
 import fpt.aptech.project4_server.dto.review.ReviewCreateDTO;
 import fpt.aptech.project4_server.dto.review.ReviewUpdateDTO;
@@ -39,8 +39,7 @@ public class ReviewController {
 
     @PostMapping("")
     public ResponseEntity<ResultDto<?>> createReview(@RequestBody ReviewCreateDTO reviewRequest) {
-        if(forbidden.containsForbiddenWord(reviewRequest.getContent()))
-        {
+        if (forbidden.containsForbiddenWord(reviewRequest.getContent())) {
             ResultDto<String> result = new ResultDto<>();
             result.setStatus(false);
             result.setMessage("Your review contain forbidden words");
@@ -50,9 +49,9 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResultDto<?>> updateReview(@PathVariable("id") int id, @RequestBody ReviewUpdateDTO reviewUpdateDTO) {
-        if(forbidden.containsForbiddenWord(reviewUpdateDTO.getContent()))
-        {
+    public ResponseEntity<ResultDto<?>> updateReview(@PathVariable("id") int id,
+            @RequestBody ReviewUpdateDTO reviewUpdateDTO) {
+        if (forbidden.containsForbiddenWord(reviewUpdateDTO.getContent())) {
             ResultDto<String> result = new ResultDto<>();
             result.setStatus(false);
             result.setMessage("Your review contain forbidden words");

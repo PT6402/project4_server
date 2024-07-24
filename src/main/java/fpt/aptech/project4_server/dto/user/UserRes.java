@@ -13,6 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class UserRes {
+  private String name;
   private String email;
   private Role role;
 }

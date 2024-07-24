@@ -12,6 +12,8 @@ import org.springframework.util.StringUtils;
 import fpt.aptech.project4_server.entities.auth.AuthProvider;
 import fpt.aptech.project4_server.entities.auth.Role;
 import fpt.aptech.project4_server.entities.auth.User;
+import fpt.aptech.project4_server.entities.user.UserDetail;
+import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.repository.auth.UserRepo;
 import fpt.aptech.project4_server.security.UserGlobal;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CustomOauth2Service extends DefaultOAuth2UserService {
   private final UserRepo userRepo;
+  private final UserDetailRepo userDetailRepo;
 
   @Override
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -51,7 +54,7 @@ public class CustomOauth2Service extends DefaultOAuth2UserService {
           .role(Role.user)
           .provider(AuthProvider.google)
           .build());
-
+      userDetailRepo.save(UserDetail.builder().fullname(oAuth2UserInfo.getName()).user(user).build());
     } else {
       user = userOptional.get();
     }

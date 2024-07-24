@@ -1,4 +1,4 @@
-package fpt.aptech.project4_server.controller;
+package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.packageread.PackageAdCreateRes;
 import fpt.aptech.project4_server.dto.packageread.PackageShowbook;
@@ -23,7 +23,8 @@ public class PackageController {
     }
 
     @PutMapping("/update/{packageId}")
-    public ResponseEntity<ResultDto<?>> updatePackage(@PathVariable int packageId, @RequestBody PackageAdCreateRes packRes) {
+    public ResponseEntity<ResultDto<?>> updatePackage(@PathVariable int packageId,
+            @RequestBody PackageAdCreateRes packRes) {
         return packageService.updatePackage(packageId, packRes);
     }
 
