@@ -213,12 +213,12 @@ public class PdfService {
 
                 List<ReviewShow1> reviewList = book.getReview().stream()
                         .map(review -> new ReviewShow1(
-                        review.getContent(),
-                        review.getRating(),
-                        review.getId(),
-                        review.getUserDetail().getId(),
-                        review.getUserDetail().getFullname(),
-                        review.getCreateAt()))
+                                review.getContent(),
+                                review.getRating(),
+                                review.getId(),
+                                review.getUserDetail().getId(),
+                                review.getUserDetail().getFullname(),
+                                review.getCreateAt()))
                         .collect(Collectors.toList());
 
                 List<PackageRead> packageReadList = Prepo.findAll();
@@ -474,7 +474,7 @@ public class PdfService {
                 if (bf.getRating() != null) {
                     books = books.stream()
                             .filter(book -> book.getRating() >= bf.getRating()
-                            && book.getRating() < (bf.getRating() + 1))
+                                    && book.getRating() < (bf.getRating() + 1))
                             .collect(Collectors.toList());
                 }
             }

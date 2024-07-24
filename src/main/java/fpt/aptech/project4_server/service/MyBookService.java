@@ -141,17 +141,11 @@ public class MyBookService {
     }
 
     // show list mybook
-    public ResponseEntity<ResultDto<?>> ShowMybooklist(int userdetailid) {
+    public ResponseEntity<ResultDto<?>> ShowMybooklist(int userId) {
         try {
-            Optional<UserDetail> optionalUD = UDrepo.findById(userdetailid);
-            if (optionalUD.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ResultDto.builder()
-                                .status(false)
-                                .message("UserDetail not found")
-                                .build());
-            }
-            List<Mybook> mybooks = MBrepo.findByUserDetailId(userdetailid);
+            UserDetail userDetail = UDrepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+            List<Mybook> mybooks = MBrepo.findByUserDetailId(userDetail.getId());
 
             List<MBUserRes> mbUserResList = mybooks.stream()
                     .map(mybook -> {
@@ -199,7 +193,7 @@ public class MyBookService {
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
-            logger.error("Error fetching Mybooks for userDetailId {}: {}", userdetailid, e.getMessage(), e);
+            logger.error("Error fetching Mybooks for userDetailId {}: {}", userId, e.getMessage(), e);
             ResultDto<?> response = ResultDto.builder()
                     .status(false)
                     .message("Failed to fetch Mybooks: " + e.getMessage())

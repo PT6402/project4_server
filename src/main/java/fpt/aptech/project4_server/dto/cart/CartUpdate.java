@@ -20,5 +20,4 @@ import lombok.NoArgsConstructor;
 public class CartUpdate {
     private Integer cartItemId;
     private Integer packId;
-  
 }
