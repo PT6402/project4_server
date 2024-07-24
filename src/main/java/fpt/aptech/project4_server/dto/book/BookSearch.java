@@ -23,6 +23,7 @@ public class BookSearch {
     private String name;
     private double rating;
     private int ratingQuantity;
+    private Double price;
         @Lob
     private byte[]ImageCove;
 }

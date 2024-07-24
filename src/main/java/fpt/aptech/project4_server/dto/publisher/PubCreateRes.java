@@ -2,16 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package fpt.aptech.project4_server.dto.book;
+package fpt.aptech.project4_server.dto.publisher;
 
-import fpt.aptech.project4_server.dto.author.AuthorShow;
-
-import jakarta.persistence.Lob;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -21,15 +18,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookPagnination {
-
-    private int bookid;
+public class PubCreateRes {
     private String name;
-    private double rating;
-    private int ratingQuantity;
-    private List<AuthorShow> authors;
-    private double price;
-    @Lob
-    private byte[] ImageCove;
-
+    private String description;
+    private MultipartFile fileImage;
 }

@@ -27,10 +27,11 @@ public class BookUserRes {
     private double priceBuy;
     private int pageQuantity;
     private String edition;
-    private String publisherDescription;
+    private String description;
     private double rating;
     private int ratingQuantity;
     List<AuthorUserRes> authorlist;
+    private String Pubname;
     List<ReviewShow1> reviewlist;
     @Lob      
     private byte[] fileimage;

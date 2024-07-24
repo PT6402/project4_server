@@ -77,6 +77,17 @@ public class BookController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+    
+    @GetMapping("/filterPrice")
+    public ResponseEntity<ResultDto<?>> BookFilterPrice(@RequestParam("StaPrice") Integer StaPrice,@RequestParam("EndPrice") Integer EndPrice){
+         ResultDto<?> response = pv.searchByPrice(StaPrice, EndPrice);
+        if (response.isStatus()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+    
     @PostMapping("/showpage")
     public ResponseEntity<?> BookPageFilter(@RequestParam("page") Integer page,@RequestParam("limit") Integer limit,@RequestBody BookFilter bookfilter ){
         return pv.Filter(page, limit,bookfilter);

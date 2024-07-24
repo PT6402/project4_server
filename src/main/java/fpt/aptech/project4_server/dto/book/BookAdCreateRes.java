@@ -19,10 +19,19 @@ public class BookAdCreateRes {
     private double price;
     private int pageQuantity;
     private String edition;
-    private String publisherDescription;
+    private String description;
     private double rating;
     private int ratingQuantity;
     List<Author> authorlist;
+     List<Category> catelist;
+     private int pubId;
     private MultipartFile file;
-    List<Category> catelist;
+   
+//       public int getPubId() {
+//        return pubId;
+//    }
+//
+//    public void setPubId(int pubId) {
+//        this.pubId = pubId;
+//    }
 }
