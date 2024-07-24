@@ -2,21 +2,17 @@ package fpt.aptech.project4_server.service;
 
 import fpt.aptech.project4_server.dto.author.AuthorAdminCreateRes;
 import fpt.aptech.project4_server.dto.author.AuthorSearch;
-import fpt.aptech.project4_server.dto.author.AuthorShow;
 import fpt.aptech.project4_server.dto.author.AuthorUserRes;
 import fpt.aptech.project4_server.dto.book.BookUserRes;
-import fpt.aptech.project4_server.dto.book.BooklistUserRes;
 import fpt.aptech.project4_server.dto.category.CateShow;
 import fpt.aptech.project4_server.entities.book.Author;
 import fpt.aptech.project4_server.entities.book.Book;
-import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.repository.AuthorRepository;
 import fpt.aptech.project4_server.repository.BookRepo;
 import fpt.aptech.project4_server.repository.ImageBookRepo;
 import fpt.aptech.project4_server.util.ResultDto;
-import java.io.File;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,9 +22,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AuthorService {
@@ -40,9 +33,6 @@ public class AuthorService {
     BookRepo bookrepo;
     @Autowired
     private ImageBookRepo IBrepo;
-
-    @Value("${upload.path}")
-    private String fileUpload;
 
     public ResponseEntity<ResultDto<List<Author>>> getAuthors() {
         try {
@@ -201,59 +191,56 @@ public class AuthorService {
         }
     }
 
-   public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthorId(int authorId) {
-    try {
-        List<Book> books = bookrepo.findByAuthorId(authorId);
+    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthorId(int authorId) {
+        try {
+            List<Book> books = bookrepo.findByAuthorId(authorId);
 
-        List<BookUserRes> bookUserResList = books.stream()
-                .map(this::convertToBookUserRes)
+            List<BookUserRes> bookUserResList = books.stream()
+                    .map(this::convertToBookUserRes)
+                    .collect(Collectors.toList());
+
+            ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
+                    .status(true)
+                    .message("Successfully retrieved books by author ID")
+                    .model(bookUserResList)
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
+                    .status(false)
+                    .message("Failed to retrieve books by author ID")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private BookUserRes convertToBookUserRes(Book book) {
+        ImagesBook coverImage = getImage(book.getFilePdf());
+        byte[] fileImage = coverImage != null ? coverImage.getImage_data() : null;
+
+        List<CateShow> categoryResList = book.getCategories().stream()
+                .map(category -> new CateShow(category.getId(), category.getName()))
                 .collect(Collectors.toList());
 
-        ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
-                .status(true)
-                .message("Successfully retrieved books by author ID")
-                .model(bookUserResList)
+        List<AuthorUserRes> authorResList = book.getAuthors().stream()
+                .map(author -> new AuthorUserRes(author.getId(), author.getName()))
+                .collect(Collectors.toList());
+
+        return BookUserRes.builder()
+                .id(book.getId())
+                .name(book.getName())
+                .pageQuantity(book.getPageQuantity())
+
+                .edition(book.getEdition())
+                .publisherDescription(book.getPublisherDescription())
+                .rating(book.getRating())
+                .ratingQuantity(book.getRatingQuantity())
+                .fileimage(fileImage)
+                .catelist(categoryResList)
+                .authorlist(authorResList)
+
                 .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    } catch (Exception e) {
-        ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
-                .status(false)
-                .message("Failed to retrieve books by author ID")
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
-
-   private BookUserRes convertToBookUserRes(Book book) {
-    ImagesBook coverImage = getImage(book.getFilePdf());
-    byte[] fileImage = coverImage != null ? coverImage.getImage_data() : null;
-
-    List<CateShow> categoryResList = book.getCategories().stream()
-            .map(category -> new CateShow(category.getId(), category.getName()))
-            .collect(Collectors.toList());
-
-    List<AuthorUserRes> authorResList = book.getAuthors().stream()
-            .map(author -> new AuthorUserRes(author.getId(), author.getName()))
-            .collect(Collectors.toList());
-
- 
-
-
-    return BookUserRes.builder()
-            .id(book.getId())
-            .name(book.getName())
-            .pageQuantity(book.getPageQuantity())
-          
-            .edition(book.getEdition())
-            .publisherDescription(book.getPublisherDescription())
-            .rating(book.getRating())
-            .ratingQuantity(book.getRatingQuantity())
-            .fileimage(fileImage)
-            .catelist(categoryResList)
-            .authorlist(authorResList)
-          
-            .build();
-}
 
     public ImagesBook getImage(FilePdf file) {
         System.out.println(file.getId());

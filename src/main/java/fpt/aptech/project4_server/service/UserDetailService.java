@@ -71,7 +71,7 @@ public class UserDetailService {
         return UserAdminDTO.builder()
                 .name(userDetail.getFullname())
                 .email(userDetail.getUser().getEmail())
-                .typeLogin(userDetail.getUser().getTypeLogin())
+                .typeLogin(userDetail.getUser().getProvider())
                 .role(userDetail.getUser().getRole())
                 .build();
     }
