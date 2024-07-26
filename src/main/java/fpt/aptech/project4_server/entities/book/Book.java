@@ -4,10 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.aptech.project4_server.entities.BaseEntity;
 import fpt.aptech.project4_server.entities.user.*;
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
+
 import lombok.Data;
+
 import java.util.List;
 import java.util.Objects;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -69,7 +73,7 @@ public class Book extends BaseEntity {
     private FilePdf filePdf;
 
     @ManyToOne
-    @JoinColumn(name="publisher_id")
+    @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
     @ManyToMany(mappedBy = "books")
