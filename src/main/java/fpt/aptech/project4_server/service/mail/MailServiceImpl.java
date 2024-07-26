@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.mail.SimpleMailMessage;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -31,6 +32,14 @@ public class MailServiceImpl implements MailService {
         } catch (MessagingException e) {
             return false;
         }
+    }
+    
+   public void sendPlainTextEmail(String to, String subject, String textBody) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(textBody);
+        javaMailSender.send(message);
     }
 
     @Override

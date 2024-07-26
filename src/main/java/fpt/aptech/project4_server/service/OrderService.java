@@ -21,9 +21,11 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.*;
 import fpt.aptech.project4_server.service.cart.CartService;
 import fpt.aptech.project4_server.service.jwt.JwtService;
+import fpt.aptech.project4_server.service.mail.MailServiceImpl;
 import fpt.aptech.project4_server.util.ResultDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 
@@ -45,7 +47,8 @@ public class OrderService {
     private ImageBookRepo IBrepo;
     @Autowired
     private OrderDetailRepository orderDetailRepository;
-
+    @Autowired
+    private MailServiceImpl mailService;
     @Autowired
     private JwtService jservice;
     @Autowired
@@ -139,13 +142,20 @@ public class OrderService {
         try {
             UserDetail userDetail = userDetailRepo.findByUserId(userId)
                     .orElseThrow(() -> new Exception("UserDetail not found"));
-
+//            List<OrderDetail> orderdetail= orderDetailRepository.findByOrderId(paycheck.getOrderId());
             int userIdToken = jservice.getUserIdByToken(paycheck.getToken());
             Optional<Order> updateorder = orderRepository.findById(paycheck.getOrderId());
+            Order order = updateorder.get();
             if (userIdToken == userId) {
                 updateorder.get().setPaymentStatus(1);
-                orderRepository.save(updateorder.get());
+                orderRepository.save(order);
                 MBservice.createMybook(paycheck.getOrderId(), userDetail.getId());
+
+                String to = userDetail.getUser().getEmail();
+                String subject = "Successfully payment confirmation";
+                String textBody = createOrderTextBody(order, userDetail);
+                mailService.sendPlainTextEmail(to, subject, textBody);
+
                 return new ResponseEntity<>(ResultDto.builder()
                         .status(true)
                         .message("Payment paid and updated successfully")
@@ -159,6 +169,28 @@ public class OrderService {
             return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
                     HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private String createOrderTextBody(Order order, UserDetail userDetail) {
+        StringBuilder textBody = new StringBuilder();
+        textBody.append("Successful payment\n\n");
+        textBody.append("Thank you for your trust in us, ").append(userDetail.getFullname()).append(", Your order is paid. Please check 'MyBook' to enjoy the product.\n\n");
+        textBody.append("Order Details\n");
+        textBody.append("Order ID: ").append(order.getId()).append("\n");
+        textBody.append("Created Date: ").append(order.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
+        textBody.append("-----------------------------------------------------\n");
+        textBody.append("Book Name\t\tPrice\n");
+        textBody.append("-----------------------------------------------------\n");
+
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getId());
+        for (OrderDetail item : orderDetails) {
+            textBody.append(item.getBook().getName()).append("\t\t").append(item.getPrice()).append("\n");
+        }
+
+        textBody.append("-----------------------------------------------------\n");
+        textBody.append("Total: ").append(order.getTotalPrice()).append("\n");
+
+        return textBody.toString();
     }
 
     public ResponseEntity<ResultDto<?>> deleteOrder(int orderId) {
@@ -344,7 +376,6 @@ public class OrderService {
                                 })
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
-
                                 order.getPaymentStatus(), order.getUserDetail().getFullname(),
                                 order.getUserDetail().getUser().getEmail());
 
