@@ -3,6 +3,9 @@ package fpt.aptech.project4_server.repository;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,13 +23,16 @@ public interface BookRepo extends JpaRepository<Book, Integer> {
 
     @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")
     List<Book> findByAuthorId(@Param("authorId") int authorId);
-    
-  @Query("SELECT b FROM Book b WHERE b.publisher.id = :publisherId")
+
+    @Query("SELECT b FROM Book b WHERE b.publisher.id = :publisherId")
     List<Book> findBooksByPublisherId(@Param("publisherId") Integer publisherId);
 
-     @Query("SELECT e FROM Book e WHERE e.name LIKE %:name% ")
+    @Query("SELECT e FROM Book e WHERE e.name LIKE %:name% ")
     List<Book> findByName(@Param("name") String name);
 
-      @Query("SELECT f FROM Book f WHERE f.price BETWEEN :StaPrice AND :EndPrice")
-      List<Book> findByPrice (@Param("StaPrice") Integer StaPrice,@Param("EndPrice") Integer EndPrice);
+    @Query("SELECT f FROM Book f WHERE f.price BETWEEN :StaPrice AND :EndPrice")
+    List<Book> findByPrice(@Param("StaPrice") Integer StaPrice, @Param("EndPrice") Integer EndPrice);
+
+    @Query("SELECT b FROM Book b ORDER BY b.createAt DESC")
+    Page<Book> findTop4Books(Pageable pageable);
 }

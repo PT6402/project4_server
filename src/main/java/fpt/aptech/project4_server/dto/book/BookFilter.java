@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BookFilter {
     private Double rating;
-    
+    private Integer from;
+    private Integer to;
     private List<Integer> list;
 }
