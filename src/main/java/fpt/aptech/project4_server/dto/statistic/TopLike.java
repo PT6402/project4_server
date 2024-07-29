@@ -4,6 +4,7 @@
  */
 package fpt.aptech.project4_server.dto.statistic;
 
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TopLike {
-     private Integer bookId;
+
+    private Integer bookId;
     private String bookName;
     private Long likeQty;
+    private double rating;
+    @Lob
+    private byte[] Imagedata;
 }

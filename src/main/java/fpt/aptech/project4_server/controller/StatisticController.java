@@ -2,6 +2,7 @@ package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.statistic.BookStatistic;
 import fpt.aptech.project4_server.dto.statistic.*;
+import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.service.MyBookService;
 import fpt.aptech.project4_server.service.StatisticService;
 import fpt.aptech.project4_server.util.ResultDto;
@@ -57,8 +58,14 @@ public class StatisticController {
         }
     }
 
-    @GetMapping("/toplike")
-    public List<TopLike> getTopLikedBooks() {
-        return statService.getTopLike();
+     @GetMapping("/toplike")
+    public ResponseEntity<List<TopLike>> getTopBooksByWishlistCount() {
+        List<TopLike> topLikes = statService.findTopBooksByWishlistCount();
+        return ResponseEntity.ok(topLikes);
+    }
+
+    @GetMapping("/top4")
+    public List<Book> getTop4BooksByCreateAt() {
+        return statService.getTop4BooksByCreateAt();
     }
 }
