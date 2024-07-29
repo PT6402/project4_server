@@ -22,19 +22,13 @@ import org.springframework.data.repository.query.Param;
  */
 public interface Mybookrepo extends JpaRepository<Mybook, Integer> {
 
-    @Query
-     ("Select b from Mybook b where b.userDetail.id=:userID AND b.book.id=:bookID")       
-    Optional<Mybook> findByUserDetailAndBook(@Param("userID") Integer userID,@Param("bookID") Integer bookID);
-    
-    @Query
-    ("Select c from Mybook c where c.userDetail.id=:userID")
-    List<Mybook>findByUserDetailId(@Param("userID") Integer userID);
-    
-    @Query
-    ("Select d from Mybook d where d.book.id=:bookID")
-    List<Mybook>findByBookId(@Param("bookID") Integer bookID);
-    
-    
+    @Query("Select b from Mybook b where b.userDetail.id=:userID AND b.book.id=:bookID")
+    Optional<Mybook> findByUserDetailAndBook(@Param("userID") int userID, @Param("bookID") int bookID);
 
-     
+    @Query("Select c from Mybook c where c.userDetail.id=:userID")
+    List<Mybook> findByUserDetailId(@Param("userID") Integer userID);
+
+    @Query("Select d from Mybook d where d.book.id=:bookID")
+    List<Mybook> findByBookId(@Param("bookID") Integer bookID);
+
 }

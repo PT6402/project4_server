@@ -446,106 +446,66 @@ public class PdfService {
 
     public ResponseEntity<ResultDto<?>> Filter(int page, int limit, BookFilter bf) {
         try {
-            List<Book> books;
+            List<Book> books = bookrepo.findAll(); // Lấy tất cả sách làm cơ sở ban đầu
 
-            // Kiểm tra nếu không có filter nào được cung cấp
-            if ((bf.getList() == null || bf.getList().isEmpty()) && (bf.getRating() == null)) {
-                books = bookrepo.findAll();
-            } else {
-                // Lấy tất cả các sách có cate_id trong danh sách từ BookFilter nếu danh sách
-                // không rỗng
+            // Kiểm tra nếu bf là null hoặc không có filter nào được cung cấp
+            if (bf != null) {
+                // Lọc theo cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
                 if (bf.getList() != null && !bf.getList().isEmpty()) {
-                    books = new ArrayList<>();
-                    for (Integer cateId : bf.getList()) {
-                        List<Book> booksByCateId = bookrepo.findByCateId(cateId);
-                        books.addAll(booksByCateId);
-                    }
-                } else {
-                    books = bookrepo.findAll();
+                    books = books.stream()
+                            .filter(book -> book.getCategories().stream()
+                                    .anyMatch(cate -> bf.getList().contains(cate.getId())))
+                            .collect(Collectors.toList());
                 }
-                System.out.println("rating nhap vao" + " " + bf.getRating());
 
+                // Lọc theo rating nếu được cung cấp
                 if (bf.getRating() != null) {
                     books = books.stream()
                             .filter(book -> book.getRating() >= bf.getRating()
                                     && book.getRating() < (bf.getRating() + 1))
                             .collect(Collectors.toList());
                 }
+
+                // Lọc theo giá nếu from và to được cung cấp
+                if (bf.getFrom() != null && bf.getTo() != null) {
+                    books = books.stream()
+                            .filter(book -> book.getPrice() >= bf.getFrom() && book.getPrice() <= bf.getTo())
+                            .collect(Collectors.toList());
+                }
             }
 
             int totalBooks = books.size();
             List<Book> paginatedBooks;
-            if (page == 1) {
-                int start = Math.min(page - 1, totalBooks);
-                int end = Math.min(page * limit, totalBooks);
-                paginatedBooks = books.subList(start, end);
-                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImage(c.getFilePdf());
-                    byte[] fileImage = image != null ? image.getImage_data() : null;
+            int start = Math.min((page - 1) * limit, totalBooks);
+            int end = Math.min(page * limit, totalBooks);
+            paginatedBooks = books.subList(start, end);
 
-                    return BookPagnination.builder()
-                            .bookid(c.getId())
-                            .name(c.getName())
-                            .rating(c.getRating())
-                            .ratingQuantity(c.getRatingQuantity())
-                            .ImageCove(fileImage)
-                            .build();
-                }).collect(Collectors.toList());
-                List<BookPagnination> listNew = new ArrayList<>();
-                for (int i = 0; i < bookPagninations.size(); i++) {
-                    if (!listNew.contains(bookPagninations.get(i))) {
-                        listNew.add(bookPagninations.get(i));
-                    }
+            List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                ImagesBook image = getImage(c.getFilePdf());
+                byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                return BookPagnination.builder()
+                        .bookid(c.getId())
+                        .name(c.getName())
+                        .rating(c.getRating())
+                        .ratingQuantity(c.getRatingQuantity())
+                        .ImageCove(fileImage)
+                        .build();
+            }).collect(Collectors.toList());
+
+            List<BookPagnination> listNew = new ArrayList<>();
+            for (BookPagnination bp : bookPagninations) {
+                if (!listNew.contains(bp)) {
+                    listNew.add(bp);
                 }
-                Paginations pag = new Paginations();
-                pag.setPaglist(listNew);
-                if (totalBooks < limit) {
-                    pag.setTotalPage(1);
-                } else if (limit % totalBooks == 0) {
-                    pag.setTotalPage(limit / totalBooks);
-                } else {
-                    pag.setTotalPage(limit / totalBooks + 1);
-                }
-                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            } else {
-                int start = Math.min((page - 1) * limit, totalBooks);
-                int end = Math.min(page * limit, totalBooks);
-                paginatedBooks = books.subList(start, end);
-
-                List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
-                    ImagesBook image = getImage(c.getFilePdf());
-                    byte[] fileImage = image != null ? image.getImage_data() : null;
-
-                    return BookPagnination.builder()
-                            .bookid(c.getId())
-                            .name(c.getName())
-                            .rating(c.getRating())
-                            .ratingQuantity(c.getRatingQuantity())
-                            .ImageCove(fileImage)
-                            .build();
-                }).collect(Collectors.toList());
-                List<BookPagnination> listNew = new ArrayList<>();
-                for (int i = 0; i < bookPagninations.size(); i++) {
-                    if (!listNew.contains(bookPagninations.get(i))) {
-                        listNew.add(bookPagninations.get(i));
-                    }
-                }
-
-                Paginations pag = new Paginations();
-                pag.setPaglist(listNew);
-                if (totalBooks < limit) {
-                    pag.setTotalPage(1);
-                } else if (limit % totalBooks == 0) {
-                    pag.setTotalPage(limit / totalBooks);
-                } else {
-                    pag.setTotalPage(limit / totalBooks + 1);
-                }
-
-                ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
-                return new ResponseEntity<>(response, HttpStatus.OK);
             }
 
+            Paginations pag = new Paginations();
+            pag.setPaglist(listNew);
+            pag.setTotalPage((totalBooks + limit - 1) / limit);
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             ResultDto<?> response = ResultDto.builder()
                     .status(false)

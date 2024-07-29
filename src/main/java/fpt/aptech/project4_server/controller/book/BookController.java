@@ -10,8 +10,10 @@ import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.service.BookService;
 import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
@@ -37,10 +39,12 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("api/v1/book")
+@RequiredArgsConstructor
 public class BookController {
 
-    @Autowired
-    PdfService pv;
+    private final PdfService pv;
+
+    private final BookService adminBookService;
 
     @PostMapping("/create")
 
@@ -116,4 +120,16 @@ public class BookController {
         ResultDto<?> result = pv.checkStatus(bookid);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/admin/books")
+    public ResponseEntity<ResultDto<?>> getBookAll() {
+        return adminBookService.getBooks();
+    }
+
+    // get categories - authors - publisher
+    @GetMapping("/admin/book-properties")
+    public ResponseEntity<ResultDto<?>> getPropertiesList() {
+        return adminBookService.getPropertiesList();
+    }
+
 }

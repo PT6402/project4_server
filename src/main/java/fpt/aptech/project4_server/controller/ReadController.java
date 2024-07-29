@@ -5,6 +5,8 @@
 package fpt.aptech.project4_server.controller;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
+import fpt.aptech.project4_server.security.CurrentUser;
+import fpt.aptech.project4_server.security.UserGlobal;
 import fpt.aptech.project4_server.service.ReadService;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,14 +30,33 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReadController {
     @Autowired
     ReadService rs;
-     @PostMapping("/initial/{index}/{mybookid}")
 
-    public ResponseEntity<?> readInitial(@PathVariable int index,@PathVariable("mybookid") int mybookid) throws IOException {
+    @PostMapping("/initial/{index}/{mybookid}")
 
-   
-         return rs.createCurrentPageInitial(index,mybookid);
-           
+    public ResponseEntity<?> readInitial(@PathVariable int index, @PathVariable("mybookid") int mybookid)
+            throws IOException {
+
+        return rs.createCurrentPageInitial(index, mybookid);
+
     }
-//    
-    
+
+    @GetMapping("/{bookId}")
+    public ResponseEntity<?> readBook(@CurrentUser UserGlobal user, @PathVariable("bookId") int bookId)
+            throws IOException {
+
+        return rs.getPageByCurrentPage(user.getId(), bookId);
+
+    }
+
+    @GetMapping("/{bookId}/{currentPage}")
+    public ResponseEntity<?> readAppendBook(@CurrentUser UserGlobal user, @PathVariable("bookId") int bookId,
+            @PathVariable("currentPage") int currentPage)
+            throws IOException {
+
+        return rs.getAppendPageByCurrentPage(user.getId(), bookId, currentPage);
+
+    }
+
+    //
+
 }
