@@ -444,6 +444,37 @@ public class PdfService {
         }
     }
 
+    public ResultDto<?> searchByPrice(Integer StaPrice, Integer EndPrice) {
+        try {
+            List<Book> books = bookrepo.findByPrice(StaPrice, EndPrice);
+            List<BookSearch> bookSearchList = books.stream()
+                    .map(book -> {
+                        ImagesBook image = getImage(book.getFilePdf());
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
+                        return BookSearch.builder()
+                                .bookid(book.getId())
+                                .name(book.getName())
+                                .price(book.getPrice())
+                                .rating(book.getRating())
+                                .ratingQuantity(book.getRatingQuantity())
+                                .ImageCove(fileImage).build();
+                    }).collect(Collectors.toList());
+
+            ResultDto<?> response = ResultDto.builder()
+                    .status(true)
+                    .message("OK")
+                    .model(bookSearchList)
+                    .build();
+            return response;
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message(e.getMessage())
+                    .build();
+            return response;
+        }
+    }
+
     public ResponseEntity<ResultDto<?>> Filter(int page, int limit, BookFilter bf) {
         try {
             List<Book> books = bookrepo.findAll(); // Lấy tất cả sách làm cơ sở ban đầu
@@ -684,34 +715,4 @@ public class PdfService {
 
     }
 
-    public ResultDto<?> searchByPrice(Integer StaPrice, Integer EndPrice) {
-        try {
-            List<Book> books = bookrepo.findByPrice(StaPrice, EndPrice);
-            List<BookSearch> bookSearchList = books.stream()
-                    .map(book -> {
-                        ImagesBook image = getImage(book.getFilePdf());
-                        byte[] fileImage = image != null ? image.getImage_data() : null;
-                        return BookSearch.builder()
-                                .bookid(book.getId())
-                                .name(book.getName())
-                                .price(book.getPrice())
-                                .rating(book.getRating())
-                                .ratingQuantity(book.getRatingQuantity())
-                                .ImageCove(fileImage).build();
-                    }).collect(Collectors.toList());
-
-            ResultDto<?> response = ResultDto.builder()
-                    .status(true)
-                    .message("OK")
-                    .model(bookSearchList)
-                    .build();
-            return response;
-        } catch (Exception e) {
-            ResultDto<?> response = ResultDto.builder()
-                    .status(false)
-                    .message(e.getMessage())
-                    .build();
-            return response;
-        }
-    }
 }

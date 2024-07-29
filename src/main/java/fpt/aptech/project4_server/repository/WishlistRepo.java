@@ -25,7 +25,13 @@ public interface WishlistRepo extends JpaRepository<Wishlist, Integer> {
     @Query("Select c from Wishlist c where c.userDetail.id=:userID")
     List<Wishlist> findByUserDetailId(@Param("userID") Integer userID);
 
-    @Query("SELECT new fpt.aptech.project4_server.dto.statistic.TopLike(w.book.id, w.book.name, COUNT(w.book.id)) "
-            + "FROM Wishlist w GROUP BY w.book.id, w.book.name ORDER BY COUNT(w.book.id) DESC")
-    List<TopLike> findTopBooksByWishlistCount();
+   
+//    @Query("SELECT new fpt.aptech.project4_server.dto.statistic.TopLike(w.book.id, w.book.name, COUNT(w.book.id), w.book.rating, ib.image_data) "
+//        + "FROM Wishlist w "
+//        + "JOIN w.book.filePdf f "
+//        + "JOIN f.imagesbook ib "
+//        + "WHERE ib.cover = true "
+//        + "GROUP BY w.book.id, w.book.name, w.book.rating, ib.image_data "
+//        + "ORDER BY COUNT(w.book.id) DESC")
+//List<TopLike> findTopBooksByWishlistCount();
 }
