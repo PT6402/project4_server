@@ -33,6 +33,5 @@ public interface BookRepo extends JpaRepository<Book, Integer> {
     @Query("SELECT f FROM Book f WHERE f.price BETWEEN :StaPrice AND :EndPrice")
     List<Book> findByPrice(@Param("StaPrice") Integer StaPrice, @Param("EndPrice") Integer EndPrice);
 
-    @Query("SELECT b FROM Book b ORDER BY b.createAt DESC")
-    Page<Book> findTop4Books(Pageable pageable);
+  List<Book> findAllByOrderByCreateAtDesc(Pageable pageable);
 }

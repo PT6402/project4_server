@@ -158,10 +158,30 @@ public class StatisticService {
         return topLikes.stream().limit(5).collect(Collectors.toList());
     }
 
-    public List<Book> getTop4BooksByCreateAt() {
-        Pageable pageable = PageRequest.of(0, 4);
-        return Brepo.findTop4Books(pageable).getContent();
-    }
+    public List<NewRelease> getTop4BooksByCreateAt() {
+    Pageable pageable = PageRequest.of(0, 4);
+    List<Book> topBooks = Brepo.findAll(pageable).getContent();
+    
+    List<NewRelease> newReleases = topBooks.stream()
+            .map(book -> {
+                FilePdf filePdf = book.getFilePdf();
+
+                // Lấy hình ảnh từ FilePdf
+                ImagesBook image = getImage(filePdf);
+                byte[] fileImage = image != null ? image.getImage_data() : null;
+
+                return NewRelease.builder()
+                        .bookId(book.getId())
+                        .bookName(book.getName())
+                        .rating(book.getRating())
+                        .Imagedata(fileImage)
+                        .build();
+            })
+            .collect(Collectors.toList());
+
+    return newReleases;
+}
+
 
     public ImagesBook getImage(FilePdf file) {
         System.out.println(file.getId());
