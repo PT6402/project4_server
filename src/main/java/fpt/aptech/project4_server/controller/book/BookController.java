@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
  */
@@ -101,19 +101,29 @@ public class BookController {
 
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
-        ResultDto<?> response = pv.deleteBookById(id);
-        if (response.isStatus()) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-    }
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
+//        ResultDto<?> response = pv.deleteBookById(id);
+//        if (response.isStatus()) {
+//            return new ResponseEntity<>(response, HttpStatus.OK);
+//        } else {
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//    }
 
     @GetMapping("/check/{bookid}")
     public ResponseEntity<ResultDto<?>> checkStatus(@PathVariable int bookid) {
         ResultDto<?> result = pv.checkStatus(bookid);
         return ResponseEntity.ok(result);
+    }
+    
+    @PutMapping("/{bookId}")
+    public ResponseEntity<ResultDto<?>> notSellBook(@PathVariable int bookId) {
+        ResultDto<?> result = pv.notSellBook(bookId);
+        if (result.isStatus()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
     }
 }
