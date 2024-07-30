@@ -65,7 +65,7 @@ public class StatisticController {
     }
 
     @GetMapping("/top4")
-    public List<Book> getTop4BooksByCreateAt() {
+    public List<NewRelease> getTop4Books() {
         return statService.getTop4BooksByCreateAt();
     }
 }

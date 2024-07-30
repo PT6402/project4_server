@@ -4,6 +4,7 @@
  */
 package fpt.aptech.project4_server.dto.statistic;
 
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,7 @@ public class NewRelease {
 
     private Integer bookId;
     private String bookName;
+   private double rating;
+    @Lob
+    private byte[] Imagedata;
 }

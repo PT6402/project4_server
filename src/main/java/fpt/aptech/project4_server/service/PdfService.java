@@ -544,76 +544,76 @@ public class PdfService {
     }
 }
 
-    @Transactional
-    public ResultDto<?> deleteBookById(int bookId) {
-        try {
-            // Kiểm tra xem sách có tồn tại không
-            Optional<Book> optionalBook = bookrepo.findById(bookId);
-            if (!optionalBook.isPresent()) {
-                ResultDto<?> response = ResultDto.builder()
-                        .status(false)
-                        .message("Book not found with id: " + bookId)
-                        .build();
-                return response;
-            }
-
-            Book book = optionalBook.get();
-
-            // Kiểm tra trạng thái của sách
-            ResultDto<?> checkStatusResult = checkStatus(bookId);
-            if (!checkStatusResult.isStatus()) {
-                return checkStatusResult;
-            }
-
-            Object model = checkStatusResult.getModel();
-            if (model == null || (model instanceof Boolean && !(Boolean) model)) {
-                // Xóa ngay sách nếu statusMybook là false
-                // Xử lý xóa các liên kết và sách
-                handleBookDeletion(book);
-
-                ResultDto<?> response = ResultDto.builder()
-                        .status(true)
-                        .message("Delete successfully")
-                        .build();
-                return response;
-
-            } else {
-                // Đánh dấu cần xóa và chờ đến ngày hết hạn
-                ScheduleBookDeletion scheduledBookDeletion = new ScheduleBookDeletion();
-                scheduledBookDeletion.setBookId(bookId);
-
-                // Lấy ngày hết hạn trễ nhất từ kết quả checkStatusResult
-                if (model instanceof LocalDateTime) {
-                    scheduledBookDeletion.setExpiredDate((LocalDateTime) model);
-                } else {
-                    // Nếu không có ngày hết hạn thì có thể xử lý mặc định ở đây
-                    // Ví dụ:
-                    // scheduledBookDeletion.setExpiredDate(LocalDateTime.now().plusDays(30));
-                    // Hoặc trả về lỗi nếu không có ngày hết hạn
-                    ResultDto<?> response = ResultDto.builder()
-                            .status(false)
-                            .message("Failed to schedule deletion. Missing expiry date.")
-                            .build();
-                    return response;
-                }
-
-                SDrepo.save(scheduledBookDeletion);
-
-                ResultDto<?> response = ResultDto.builder()
-                        .status(false)
-                        .message("Book has active mybook. It will be deleted after the expired date.")
-                        .model(bookId) // Lưu bookId vào model để lên lịch xoá sau này
-                        .build();
-                return response;
-            }
-        } catch (Exception e) {
-            ResultDto<?> response = ResultDto.builder()
-                    .status(false)
-                    .message("Delete fail: " + e.getMessage())
-                    .build();
-            return response;
-        }
-    }
+//    @Transactional
+//    public ResultDto<?> deleteBookById(int bookId) {
+//        try {
+//            // Kiểm tra xem sách có tồn tại không
+//            Optional<Book> optionalBook = bookrepo.findById(bookId);
+//            if (!optionalBook.isPresent()) {
+//                ResultDto<?> response = ResultDto.builder()
+//                        .status(false)
+//                        .message("Book not found with id: " + bookId)
+//                        .build();
+//                return response;
+//            }
+//
+//            Book book = optionalBook.get();
+//
+//            // Kiểm tra trạng thái của sách
+//            ResultDto<?> checkStatusResult = checkStatus(bookId);
+//            if (!checkStatusResult.isStatus()) {
+//                return checkStatusResult;
+//            }
+//
+//            Object model = checkStatusResult.getModel();
+//            if (model == null || (model instanceof Boolean && !(Boolean) model)) {
+//                // Xóa ngay sách nếu statusMybook là false
+//                // Xử lý xóa các liên kết và sách
+//                handleBookDeletion(book);
+//
+//                ResultDto<?> response = ResultDto.builder()
+//                        .status(true)
+//                        .message("Delete successfully")
+//                        .build();
+//                return response;
+//
+//            } else {
+//                // Đánh dấu cần xóa và chờ đến ngày hết hạn
+//                ScheduleBookDeletion scheduledBookDeletion = new ScheduleBookDeletion();
+//                scheduledBookDeletion.setBookId(bookId);
+//
+//                // Lấy ngày hết hạn trễ nhất từ kết quả checkStatusResult
+//                if (model instanceof LocalDateTime) {
+//                    scheduledBookDeletion.setExpiredDate((LocalDateTime) model);
+//                } else {
+//                    // Nếu không có ngày hết hạn thì có thể xử lý mặc định ở đây
+//                    // Ví dụ:
+//                    // scheduledBookDeletion.setExpiredDate(LocalDateTime.now().plusDays(30));
+//                    // Hoặc trả về lỗi nếu không có ngày hết hạn
+//                    ResultDto<?> response = ResultDto.builder()
+//                            .status(false)
+//                            .message("Failed to schedule deletion. Missing expiry date.")
+//                            .build();
+//                    return response;
+//                }
+//
+//                SDrepo.save(scheduledBookDeletion);
+//
+//                ResultDto<?> response = ResultDto.builder()
+//                        .status(false)
+//                        .message("Book has active mybook. It will be deleted after the expired date.")
+//                        .model(bookId) // Lưu bookId vào model để lên lịch xoá sau này
+//                        .build();
+//                return response;
+//            }
+//        } catch (Exception e) {
+//            ResultDto<?> response = ResultDto.builder()
+//                    .status(false)
+//                    .message("Delete fail: " + e.getMessage())
+//                    .build();
+//            return response;
+//        }
+//    }
 
     // Hàm kiểm tra và cập nhật trạng thái của sách
     public ResultDto<?> checkStatus(int bookId) {
@@ -712,6 +712,64 @@ public class PdfService {
         }
 
     }
+    
+    
+    public ResultDto<?> notSellBook(int bookId) {
+    try {
+        Optional<Book> optionalBook = bookrepo.findById(bookId);
+        if (!optionalBook.isPresent()) {
+            throw new EntityNotFoundException("Book not found with id: " + bookId);
+        }
+        Double priceShow = 0.0;
+        Book existingBook = optionalBook.get();
+        Double price1 = existingBook.getPrice();
+
+        if (price1 != null && price1 != 0) {
+            String newName = price1 + "-" + existingBook.getName();
+            existingBook.setName(newName);
+            existingBook.setPrice(0);
+            priceShow = existingBook.getPrice();
+        } else {
+            String name = existingBook.getName();
+            if (name != null && name.contains("-")) {
+                String[] parts = name.split("-");
+                try {
+                    Double newPrice = Double.valueOf(parts[0]);
+                    existingBook.setPrice(newPrice);
+                    priceShow = newPrice;
+
+                    // Loại bỏ chuỗi giá và dấu gạch ngang khỏi tên sách
+                    String originalName = name.substring(name.indexOf("-") + 1);
+                    existingBook.setName(originalName.trim());
+
+                } catch (NumberFormatException e) {
+                    return ResultDto.builder()
+                            .status(false)
+                            .message("Invalid price format in book name")
+                            .build();
+                }
+            } else {
+                return ResultDto.builder()
+                        .status(false)
+                        .message("Book name does not contain a price")
+                        .build();
+            }
+        }
+
+        bookrepo.save(existingBook); // Save the updated book
+        return ResultDto.builder()
+                .status(true)
+                .model(priceShow)
+                .message("Book status changed successfully")
+                .build();
+
+    } catch (Exception e) {
+        return ResultDto.builder()
+                .status(false)
+                .message("Change status fail: " + e.getMessage())
+                .build();
+    }
+}
 
    
 }

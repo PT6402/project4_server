@@ -20,8 +20,8 @@ public class BookAdCreateRes {
     private int pageQuantity;
     private String edition;
     private String description;
-    private double rating;
-    private int ratingQuantity;
+//    private double rating;
+//    private int ratingQuantity;
     List<Author> authorlist;
      List<Category> catelist;
      private int pubId;
