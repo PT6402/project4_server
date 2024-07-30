@@ -34,76 +34,77 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @SuppressWarnings("removal")
 public class SecurityConfig {
-    private final AppProperties appProperties;
-    private final CusUserDetailsService customUserDetailsService;
-    private final CustomOauth2Service customOAuth2UserService;
-    private final HandleOAuth2Success handleOAuth2Success;
-    private final HandleOAuth2Fail handleOAuth2Fail;
-    private final AuthenticationProvider authenticationProvider;
-    private final AuthFilter authFilter;
-    private final PasswordEncoder passwordEncoder;
-    private final OAuth2Cookie oAuth2Cookie;
-    private final LogoutHandler logoutHandler;
+        private final AppProperties appProperties;
+        private final CusUserDetailsService customUserDetailsService;
+        private final CustomOauth2Service customOAuth2UserService;
+        private final HandleOAuth2Success handleOAuth2Success;
+        private final HandleOAuth2Fail handleOAuth2Fail;
+        private final AuthenticationProvider authenticationProvider;
+        private final AuthFilter authFilter;
+        private final PasswordEncoder passwordEncoder;
+        private final OAuth2Cookie oAuth2Cookie;
+        private final LogoutHandler logoutHandler;
 
-    @Bean
-    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(customUserDetailsService)
-                .passwordEncoder(passwordEncoder)
-                .and()
-                .build();
-    }
+        @Bean
+        public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+                return http.getSharedObject(AuthenticationManagerBuilder.class)
+                                .userDetailsService(customUserDetailsService)
+                                .passwordEncoder(passwordEncoder)
+                                .and()
+                                .build();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(o -> o.configurationSource(corsConfiguration()))
-                .authorizeHttpRequests(req -> req
-                        // .requestMatchers(LIST_NO_AUTH)
-                        .anyRequest()
-                        .permitAll()
-                // .denyAll()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint()
-                        .baseUri("/oauth2/authorize")
-                        .authorizationRequestRepository(oAuth2Cookie)
-                        .and()
-                        .redirectionEndpoint()
-                        .baseUri("/oauth2/callback/*")
-                        .and()
-                        .userInfoEndpoint()
-                        .userService(customOAuth2UserService)
-                        .and()
-                        .successHandler(handleOAuth2Success)
-                        .failureHandler(
-                                handleOAuth2Fail)
+                http
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .cors(o -> o.configurationSource(corsConfiguration()))
+                                .authorizeHttpRequests(req -> req
+                                                // .requestMatchers(LIST_NO_AUTH)
+                                                .anyRequest()
+                                                .permitAll()
+                                // .denyAll()
+                                )
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .oauth2Login(oauth2 -> oauth2
+                                                .authorizationEndpoint()
+                                                .baseUri("/oauth2/authorize")
+                                                .authorizationRequestRepository(oAuth2Cookie)
+                                                .and()
+                                                .redirectionEndpoint()
+                                                .baseUri("/oauth2/callback/*")
+                                                .and()
+                                                .userInfoEndpoint()
+                                                .userService(customOAuth2UserService)
+                                                .and()
+                                                .successHandler(handleOAuth2Success)
+                                                .failureHandler(
+                                                                handleOAuth2Fail)
 
-                )
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-                .logout(logout -> logout
-                        .logoutUrl("/auth/logout")
-                        .addLogoutHandler(logoutHandler));
+                                )
+                                .authenticationProvider(authenticationProvider)
+                                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                                .logout(logout -> logout
+                                                .logoutUrl("/api/v1/user/logout")
+                                                .addLogoutHandler(logoutHandler));
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfiguration() {
+        @Bean
+        public CorsConfigurationSource corsConfiguration() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(appProperties.getCors().getAllowed_origins());
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(Long.valueOf(appProperties.getCors().getMax_age_secs()));
-        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**",
-                configuration);
-        return urlBasedCorsConfigurationSource;
-    }
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(appProperties.getCors().getAllowed_origins());
+                configuration.addAllowedHeader("*");
+                configuration.addAllowedMethod("*");
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(Long.valueOf(appProperties.getCors().getMax_age_secs()));
+                UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
+                urlBasedCorsConfigurationSource.registerCorsConfiguration("/**",
+                                configuration);
+                return urlBasedCorsConfigurationSource;
+        }
 }

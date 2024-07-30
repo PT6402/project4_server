@@ -57,74 +57,73 @@ public class StatisticService {
         return query.getResultList();
     }
 
-public List<TopBuy> getTopBuy() {
-    // Lấy danh sách BookStatistic
-    List<BookStatistic> bookStatistics = getBookStatistics();
+    public List<TopBuy> getTopBuy() {
+        // Lấy danh sách BookStatistic
+        List<BookStatistic> bookStatistics = getBookStatistics();
 
-    // Sắp xếp danh sách theo số lượt mua giảm dần và chọn ra 5 sách đầu tiên
-    List<TopBuy> topBuys = bookStatistics.stream()
-            .sorted((b1, b2) -> Long.compare(b2.getBoughtBooks(), b1.getBoughtBooks()))
-            .limit(5)
-            .map(bookStatistic -> {
-                // Lấy FilePdf từ bookId
-                Book book = Brepo.findById(bookStatistic.getBookId()).orElse(null);
-                if (book != null) {
-                    FilePdf filePdf = book.getFilePdf();
+        // Sắp xếp danh sách theo số lượt mua giảm dần và chọn ra 5 sách đầu tiên
+        List<TopBuy> topBuys = bookStatistics.stream()
+                .sorted((b1, b2) -> Long.compare(b2.getBoughtBooks(), b1.getBoughtBooks()))
+                .limit(5)
+                .map(bookStatistic -> {
+                    // Lấy FilePdf từ bookId
+                    Book book = Brepo.findById(bookStatistic.getBookId()).orElse(null);
+                    if (book != null) {
+                        FilePdf filePdf = book.getFilePdf();
 
-                    // Lấy hình ảnh từ FilePdf
-                    ImagesBook image = getImage(filePdf);
-                    byte[] fileImage = image != null ? image.getImage_data() : null;
+                        // Lấy hình ảnh từ FilePdf
+                        ImagesBook image = getImage(filePdf);
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
 
-                    return TopBuy.builder()
-                            .bookId(bookStatistic.getBookId())
-                            .bookName(bookStatistic.getBookName())
-                            .boughtBooks(bookStatistic.getBoughtBooks())
-                            .Imagedata(fileImage)
-                            .build();
-                }
-                return null;
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                        return TopBuy.builder()
+                                .bookId(bookStatistic.getBookId())
+                                .bookName(bookStatistic.getBookName())
+                                .boughtBooks(bookStatistic.getBoughtBooks())
+                                .Imagedata(fileImage)
+                                .build();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-    return topBuys;
-}
+        return topBuys;
+    }
 
+    public List<TopRent> getTopRent() {
+        // Lấy danh sách BookStatistic
+        List<BookStatistic> bookStatistics = getBookStatistics();
 
-   public List<TopRent> getTopRent() {
-    // Lấy danh sách BookStatistic
-    List<BookStatistic> bookStatistics = getBookStatistics();
+        // Sắp xếp danh sách theo số lượt thuê giảm dần và chọn ra 5 sách đầu tiên
+        List<TopRent> topRents = bookStatistics.stream()
+                .sorted((b1, b2) -> Long.compare(b2.getRentedBooks(), b1.getRentedBooks()))
+                .limit(5)
+                .map(bookStatistic -> {
+                    // Lấy FilePdf từ bookId
+                    Book book = Brepo.findById(bookStatistic.getBookId()).orElse(null);
+                    if (book != null) {
+                        FilePdf filePdf = book.getFilePdf();
 
-    // Sắp xếp danh sách theo số lượt thuê giảm dần và chọn ra 5 sách đầu tiên
-    List<TopRent> topRents = bookStatistics.stream()
-            .sorted((b1, b2) -> Long.compare(b2.getRentedBooks(), b1.getRentedBooks()))
-            .limit(5)
-            .map(bookStatistic -> {
-                // Lấy FilePdf từ bookId
-                Book book = Brepo.findById(bookStatistic.getBookId()).orElse(null);
-                if (book != null) {
-                    FilePdf filePdf = book.getFilePdf();
+                        // Lấy hình ảnh từ FilePdf
+                        ImagesBook image = getImage(filePdf);
+                        byte[] fileImage = image != null ? image.getImage_data() : null;
 
-                    // Lấy hình ảnh từ FilePdf
-                    ImagesBook image = getImage(filePdf);
-                    byte[] fileImage = image != null ? image.getImage_data() : null;
+                        return TopRent.builder()
+                                .bookId(bookStatistic.getBookId())
+                                .bookName(bookStatistic.getBookName())
+                                .rentedBooks(bookStatistic.getRentedBooks())
+                                .Imagedata(fileImage)
+                                .build();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-                    return TopRent.builder()
-                            .bookId(bookStatistic.getBookId())
-                            .bookName(bookStatistic.getBookName())
-                            .rentedBooks(bookStatistic.getRentedBooks())
-                            .Imagedata(fileImage)
-                            .build();
-                }
-                return null;
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        return topRents;
+    }
 
-    return topRents;
-}
-
-   public List<TopLike> findTopBooksByWishlistCount() {
+    public List<TopLike> findTopBooksByWishlistCount() {
         List<Wishlist> wishlists = WLrepo.findAll();
         Map<Integer, TopLike> bookCountMap = new HashMap<>();
 
@@ -135,6 +134,7 @@ public List<TopBuy> getTopBuy() {
                 topLike.setBookId(book.getId());
                 topLike.setBookName(book.getName());
                 topLike.setRating(book.getRating());
+                topLike.setPrice(book.getPrice());
 
                 // Assuming you want to get the cover image data
                 if (book.getFilePdf() != null && book.getFilePdf().getImagesbook() != null) {

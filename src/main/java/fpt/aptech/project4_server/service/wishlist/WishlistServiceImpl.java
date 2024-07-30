@@ -75,6 +75,7 @@ public class WishlistServiceImpl implements WishlistService {
             wlUserRes.setRating(wishlist.getBook().getRating());
             wlUserRes.setRatingQuantity(wishlist.getBook().getRatingQuantity());
             wlUserRes.setWishId(wishlist.getId());
+            wlUserRes.setPrice(wishlist.getBook().getPrice());
             // Lấy hình ảnh từ danh sách imagebook có cover = 1
             byte[] coverImage = wishlist.getBook().getFilePdf().getImagesbook().stream()
                 .filter(c -> c.isCover())
