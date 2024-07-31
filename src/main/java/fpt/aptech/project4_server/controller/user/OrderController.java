@@ -46,7 +46,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(@CurrentUser UserGlobal user) {
+    public ResponseEntity<ResultDto<?>> getOrdersByUserId(@CurrentUser UserGlobal user) {
         return orderService.getOrdersByUserId(user.getId());
     }
 

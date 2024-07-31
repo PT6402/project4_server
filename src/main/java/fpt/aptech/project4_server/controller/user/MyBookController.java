@@ -6,8 +6,11 @@ package fpt.aptech.project4_server.controller.user;
 
 import fpt.aptech.project4_server.security.CurrentUser;
 import fpt.aptech.project4_server.security.UserGlobal;
+import fpt.aptech.project4_server.service.BookService;
 import fpt.aptech.project4_server.service.MyBookService;
 import jakarta.websocket.server.PathParam;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("api/v1/mybook")
+@RequiredArgsConstructor
 public class MyBookController {
-    @Autowired
-    MyBookService MBservice;
+
+    private final MyBookService MBservice;
+    private final BookService bookService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createMBook(@RequestParam Integer orderId, @RequestParam Integer userDetailId)
@@ -38,7 +43,6 @@ public class MyBookController {
 
     @GetMapping
     public ResponseEntity<?> getMybooksByUserDetailId(@CurrentUser UserGlobal user) {
-        ResponseEntity<?> response = MBservice.ShowMybooklist(user.getId());
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        return bookService.getMyBook(user.getId());
     }
 }

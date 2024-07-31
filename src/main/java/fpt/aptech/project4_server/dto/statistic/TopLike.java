@@ -22,6 +22,7 @@ public class TopLike {
 
     private Integer bookId;
     private String bookName;
+    private double price;
     private Long likeQty;
     private double rating;
     @Lob

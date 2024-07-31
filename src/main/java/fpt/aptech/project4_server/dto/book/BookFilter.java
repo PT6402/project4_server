@@ -23,4 +23,5 @@ public class BookFilter {
     private Integer from;
     private Integer to;
     private List<Integer> list;
+
 }

@@ -1,7 +1,7 @@
-    /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
- */
+/*
+* Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+* Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
+*/
 package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
@@ -10,8 +10,10 @@ import fpt.aptech.project4_server.dto.category.CateAdCreateRes;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.Category;
 import fpt.aptech.project4_server.entities.book.FilePdf;
+import fpt.aptech.project4_server.service.BookService;
 import fpt.aptech.project4_server.service.PdfService;
 import fpt.aptech.project4_server.util.ResultDto;
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
@@ -37,10 +39,12 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("api/v1/book")
+@RequiredArgsConstructor
 public class BookController {
 
-    @Autowired
-    PdfService pv;
+    private final PdfService pv;
+
+    private final BookService adminBookService;
 
     @PostMapping("/create")
 
@@ -101,22 +105,22 @@ public class BookController {
 
     }
 
-//    @DeleteMapping("/delete/{id}")
-//    public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
-//        ResultDto<?> response = pv.deleteBookById(id);
-//        if (response.isStatus()) {
-//            return new ResponseEntity<>(response, HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//    }
+    // @DeleteMapping("/delete/{id}")
+    // public ResponseEntity<ResultDto<?>> deleteBook(@PathVariable int id) {
+    // ResultDto<?> response = pv.deleteBookById(id);
+    // if (response.isStatus()) {
+    // return new ResponseEntity<>(response, HttpStatus.OK);
+    // } else {
+    // return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    // }
+    // }
 
     @GetMapping("/check/{bookid}")
     public ResponseEntity<ResultDto<?>> checkStatus(@PathVariable int bookid) {
         ResultDto<?> result = pv.checkStatus(bookid);
         return ResponseEntity.ok(result);
     }
-    
+
     @PutMapping("/{bookId}")
     public ResponseEntity<ResultDto<?>> notSellBook(@PathVariable int bookId) {
         ResultDto<?> result = pv.notSellBook(bookId);
@@ -126,4 +130,16 @@ public class BookController {
             return ResponseEntity.badRequest().body(result);
         }
     }
+
+    @GetMapping("/admin/books")
+    public ResponseEntity<ResultDto<?>> getBookAll() {
+        return adminBookService.getBooks();
+    }
+
+    // get categories - authors - publisher
+    @GetMapping("/admin/book-properties")
+    public ResponseEntity<ResultDto<?>> getPropertiesList() {
+        return adminBookService.getPropertiesList();
+    }
+
 }

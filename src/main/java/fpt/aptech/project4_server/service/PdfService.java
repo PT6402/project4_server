@@ -494,14 +494,19 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
                 // Lọc theo cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
                 if (bf.getList() != null && !bf.getList().isEmpty()) {
                     books = books.stream()
+
                             .filter(book -> book.getCategories().stream().anyMatch(cate -> bf.getList().contains(cate.getId())))
+
                             .collect(Collectors.toList());
                 }
 
                 // Lọc theo rating nếu được cung cấp
                 if (bf.getRating() != null) {
                     books = books.stream()
-                            .filter(book -> book.getRating() >= bf.getRating() && book.getRating() < (bf.getRating() + 1))
+
+                            .filter(book -> book.getRating() >= bf.getRating()
+                                    && book.getRating() < (bf.getRating() + 1))
+
                             .collect(Collectors.toList());
                 }
 
@@ -523,6 +528,7 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
                 ImagesBook image = getImage(c.getFilePdf());
                 byte[] fileImage = image != null ? image.getImage_data() : null;
 
+
                 return BookPagnination.builder()
                         .bookid(c.getId())
                         .name(c.getName())
@@ -531,6 +537,7 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
                         .ImageCove(fileImage)
                         .build();
             }).collect(Collectors.toList());
+
 
             List<BookPagnination> listNew = new ArrayList<>();
             for (BookPagnination bp : bookPagninations) {

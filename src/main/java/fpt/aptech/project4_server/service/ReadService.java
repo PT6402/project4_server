@@ -4,17 +4,25 @@
  */
 package fpt.aptech.project4_server.service;
 
+import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.CurrentPage;
 import fpt.aptech.project4_server.entities.book.ImageRead;
 import fpt.aptech.project4_server.entities.user.Mybook;
+import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.CPRepo;
 import fpt.aptech.project4_server.repository.ImageReadRepo;
 import fpt.aptech.project4_server.repository.Mybookrepo;
+import fpt.aptech.project4_server.repository.UserDetailRepo;
+import fpt.aptech.project4_server.security.UserGlobal;
 import fpt.aptech.project4_server.util.ResultDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.imageio.ImageIO;
@@ -31,15 +39,16 @@ import org.springframework.stereotype.Service;
  * @author macos
  */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ReadService {
-    @Autowired
-    private CPRepo cprepo;
 
-    @Autowired
-    private ImageReadRepo irepo;
+    private final CPRepo cprepo;
 
-    @Autowired
-    private Mybookrepo MBrepo;
+    private final ImageReadRepo irepo;
+
+    private final Mybookrepo MBrepo;
+    private final UserDetailRepo userDetailRepo;
 
     private List<ImageRead> convertPdfToImages(int mybookid, int startIndex) throws IOException {
         Optional<Mybook> optionalMB = MBrepo.findById(mybookid);
@@ -81,6 +90,40 @@ public class ReadService {
         }
     }
 
+    private List<ImageRead> convertPdfToImagesCus(Book book, int startIndex) throws IOException {
+
+        try (PDDocument document = Loader.loadPDF(book.getFilePdf().getFile_data())) {
+            PDFRenderer pdfRenderer = new PDFRenderer(document);
+            List<ImageRead> imagesList = new ArrayList<>();
+
+            for (int page = startIndex; page < (startIndex + 5) && page < document.getNumberOfPages(); page++) {
+
+                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "jpg", baos);
+                baos.flush();
+                byte[] imageInByte = baos.toByteArray();
+                baos.close();
+
+                // Lưu hình ảnh vào file hệ thống
+                String imageName = book.getId() + "_page_" + (page + 1) + ".jpg";
+                // Path imagePath = Paths.get(fileUpload, imageName);
+                // Files.createDirectories(imagePath.getParent());
+                // Files.write(imagePath, imageInByte);
+
+                ImageRead imageRead = new ImageRead();
+                imageRead.setImage_name(imageName);
+                imageRead.setImage_data(imageInByte);
+                imageRead.setCurrent_image(page == startIndex - 1); // Chỉ đặt cover là true cho hình đầu tiên
+                // imageRead.setCurrentpage(existingMB.getCurrentpage());
+
+                imagesList.add(imageRead);
+            }
+
+            return imagesList;
+        }
+    }
+
     private List<ImageRead> convertPdfToImagesInitial(int mybookid) throws IOException {
         Optional<Mybook> optionalMB = MBrepo.findById(mybookid);
         if (optionalMB.isEmpty()) {
@@ -112,6 +155,39 @@ public class ReadService {
                 imageRead.setImage_data(imageInByte);
                 imageRead.setCurrent_image(page == 0); // Chỉ đặt cover là true cho hình đầu tiên
                 imageRead.setCurrentpage(existingMB.getCurrentpage());
+
+                imagesList.add(imageRead);
+            }
+
+            return imagesList;
+        }
+    }
+
+    private List<ImageRead> convertPdfToImagesInitialCus(Book book) throws IOException {
+
+        try (PDDocument document = Loader.loadPDF(book.getFilePdf().getFile_data())) {
+            PDFRenderer pdfRenderer = new PDFRenderer(document);
+            List<ImageRead> imagesList = new ArrayList<>();
+
+            for (int page = 0; page < 10 && page < document.getNumberOfPages(); page++) {
+                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "jpg", baos);
+                baos.flush();
+                byte[] imageInByte = baos.toByteArray();
+                baos.close();
+
+                // Lưu hình ảnh vào file hệ thống
+                String imageName = book.getId() + "_page_" + (page + 1) + ".jpg";
+                // Path imagePath = Paths.get(fileUpload, imageName);
+                // Files.createDirectories(imagePath.getParent());
+                // Files.write(imagePath, imageInByte);
+
+                ImageRead imageRead = new ImageRead();
+                imageRead.setImage_name(imageName);
+                imageRead.setImage_data(imageInByte);
+                imageRead.setCurrent_image(page == 0); // Chỉ đặt cover là true cho hình đầu tiên
+                // imageRead.setCurrentpage(existingMB.getCurrentpage());
 
                 imagesList.add(imageRead);
             }
@@ -183,6 +259,50 @@ public class ReadService {
             ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public ResponseEntity<ResultDto<?>> getPageByCurrentPage(int userId, int bookId) {
+        try {
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+            log.info(String.valueOf(userDetail.getId()));
+            var mybook = MBrepo.findByUserDetailAndBook(userDetail.getId(), bookId)
+                    .orElseThrow(() -> new Exception("mybook not found"));
+
+            var listPageBook = convertPdfToImagesInitialCus(mybook.getBook());
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("list", listPageBook);
+            result.put("totalPage", mybook.getBook().getPageQuantity());
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(result).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    public ResponseEntity<ResultDto<?>> getAppendPageByCurrentPage(int userId, int bookId, int currentPage) {
+        try {
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+            log.info(String.valueOf(userDetail.getId()));
+            var mybook = MBrepo.findByUserDetailAndBook(userDetail.getId(), bookId)
+                    .orElseThrow(() -> new Exception("mybook not found"));
+
+            var listPageBook = convertPdfToImagesCus(mybook.getBook(), currentPage);
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("list", listPageBook);
+            result.put("totalPage", mybook.getBook().getPageQuantity());
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(result).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
 }

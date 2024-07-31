@@ -23,11 +23,13 @@ import fpt.aptech.project4_server.service.cart.CartService;
 import fpt.aptech.project4_server.service.jwt.JwtService;
 import fpt.aptech.project4_server.service.mail.MailServiceImpl;
 import fpt.aptech.project4_server.util.ResultDto;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,35 +41,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
-
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private ImageBookRepo IBrepo;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private MailServiceImpl mailService;
-    @Autowired
-    private JwtService jservice;
-    @Autowired
-    private UserDetailRepo userDetailRepo;
-    @Autowired
-    private MyBookService MBservice;
-    @Autowired
-    private CartService cartservice;
-    @Autowired
-    private CartRepository cartRepository;
-
-    @Autowired
-    private PaymentService paymentService;
-
-    @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private PackageReadRepository packageReadRepository;
+    private final OrderRepository orderRepository;
+    private final ImageBookRepo IBrepo;
+    private final OrderDetailRepository orderDetailRepository;
+    private final MailServiceImpl mailService;
+    private final JwtService jservice;
+    private final UserDetailRepo userDetailRepo;
+    private final MyBookService MBservice;
+    private final CartService cartservice;
+    private final CartRepository cartRepository;
+    private final PaymentService paymentService;
+    private final BookRepository bookRepository;
+    private final PackageReadRepository packageReadRepository;
+    private final ReviewRepository reviewRepository;
 
     public ResponseEntity<ResultDto<?>> checkoutCart(int userId, int cartId) {
         try {
@@ -142,7 +130,8 @@ public class OrderService {
         try {
             UserDetail userDetail = userDetailRepo.findByUserId(userId)
                     .orElseThrow(() -> new Exception("UserDetail not found"));
-//            List<OrderDetail> orderdetail= orderDetailRepository.findByOrderId(paycheck.getOrderId());
+            // List<OrderDetail> orderdetail=
+            // orderDetailRepository.findByOrderId(paycheck.getOrderId());
             int userIdToken = jservice.getUserIdByToken(paycheck.getToken());
             Optional<Order> updateorder = orderRepository.findById(paycheck.getOrderId());
             Order order = updateorder.get();
@@ -174,10 +163,12 @@ public class OrderService {
     private String createOrderTextBody(Order order, UserDetail userDetail) {
         StringBuilder textBody = new StringBuilder();
         textBody.append("Successful payment\n\n");
-        textBody.append("Thank you for your trust in us, ").append(userDetail.getFullname()).append(", Your order is paid. Please check 'MyBook' to enjoy the product.\n\n");
+        textBody.append("Thank you for your trust in us, ").append(userDetail.getFullname())
+                .append(", Your order is paid. Please check 'MyBook' to enjoy the product.\n\n");
         textBody.append("Order Details\n");
         textBody.append("Order ID: ").append(order.getId()).append("\n");
-        textBody.append("Created Date: ").append(order.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
+        textBody.append("Created Date: ")
+                .append(order.getCreateAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("\n");
         textBody.append("-----------------------------------------------------\n");
         textBody.append("Book Name\t\tPrice\n");
         textBody.append("-----------------------------------------------------\n");
@@ -289,7 +280,7 @@ public class OrderService {
 
     }
 
-    public ResponseEntity<ResultDto<List<OrderAndDetailDto>>> getOrdersByUserId(int userId) {
+    public ResponseEntity<ResultDto<?>> getOrdersByUserId(int userId) {
         try {
             UserDetail userDetail = userDetailRepo.findByUserId(userId)
                     .orElseThrow(() -> new Exception("UserDetail not found"));
@@ -301,46 +292,37 @@ public class OrderService {
                         List<OrderDetailDto> orderDetailDtos = order.getOrderDetails().stream()
                                 .map(orderDetail -> {
                                     Book book = orderDetail.getBook();
-                                    ImagesBook image = getImage(book.getFilePdf());
-                                    byte[] fileImage = image != null ? image.getImage_data() : null;
-                                    String packageName = "";
-                                    Optional<PackageRead> pack = packageReadRepository
-                                            .findById(orderDetail.getPackId());
-                                    if (pack.isPresent()) {
-                                        packageName = pack.get().getPackageName();
+                                    HashMap<String, Object> getReview = new HashMap<>();
+                                    var review = reviewRepository.findByBookIdAndUserDetailId(userDetail.getId(),
+                                            book.getId()).orElse(null);
+                                    var orderDetailDto = OrderDetailDto.builder()
+                                            .bookId(book.getId())
+                                            .bookName(book.getName())
+                                            .image(getImage(book.getFilePdf()).getImage_data())
+                                            .price(orderDetail.getPrice())
+                                            .dayPackage(
+                                                    orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity()
+                                                            : 0)
+                                            .build();
+                                    if (review != null) {
+                                        getReview.put("star", review.getRating());
+                                        getReview.put("content", review.getContent());
+                                        getReview.put("id", review.getId());
+                                        orderDetailDto.setReview(getReview);
                                     }
-                                    return new OrderDetailDto(
-                                            orderDetail.getId(),
-                                            book.getName(),
-                                            book.getId(),
-                                            orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
-                                            // lý
-                                            // giá
-                                            // trị
-                                            // null
-                                            orderDetail.getPackId(),
-                                            orderDetail.getPrice(),
-                                            packageName,
-                                            fileImage);
+                                    return orderDetailDto;
                                 })
-                                .collect(Collectors.toList());
-                        return new OrderAndDetailDto(order.getId(), order.getCreateAt(), orderDetailDtos,
-                                order.getPaymentStatus());
+                                .toList();
+                        return OrderAndDetailDto.builder().orderId(order.getId()).creatDate(order.getCreateAt())
+                                .orderDetails(orderDetailDtos).paymentStatus(order.getPaymentStatus()).build();
                     })
-                    .collect(Collectors.toList());
-
-            return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
-                    .status(true)
-                    .message("Success")
-                    .model(orderDtos)
-                    .build(), HttpStatus.OK);
+                    .toList();
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(orderDtos).build();
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            e.printStackTrace(); // In lỗi ra console để kiểm tra
-            return new ResponseEntity<>(ResultDto.<List<OrderAndDetailDto>>builder()
-                    .status(false)
-                    .message("Failed to retrieve orders")
-                    .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+            ResultDto<?> response = ResultDto.builder().message(e.getMessage()).status(false).build();
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
@@ -363,16 +345,28 @@ public class OrderService {
                                     if (pack.isPresent()) {
                                         packageName = pack.get().getPackageName();
                                     }
-                                    return new OrderDetailDto(
-                                            orderDetail.getId(),
-                                            book.getName(),
-                                            book.getId(),
-                                            orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0, // Xử
+                                    return OrderDetailDto.builder()
+                                            .id(orderDetail.getId())
+                                            .bookName(book.getName())
+                                            .bookId(book.getId())
+                                            .dayQuantity(
+                                                    orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity()
+                                                            : 0)
+                                            .packId(orderDetail.getPackId())
+                                            .packName(packageName)
+                                            .image(fileImage)
+                                            .price(orderDetail.getPrice())
+                                            .build();
+                                    // return new OrderDetailDto(
+                                    // orderDetail.getId(),
+                                    // book.getName(),
+                                    // book.getId(),
+                                    // , // Xử
 
-                                            orderDetail.getPackId(),
-                                            orderDetail.getPrice(),
-                                            packageName,
-                                            fileImage);
+                                    // orderDetail.getPackId(),
+                                    // orderDetail.getPrice(),
+                                    // packageName,
+                                    // fileImage);
                                 })
                                 .collect(Collectors.toList());
                         return new OrderAdmin(order.getId(), order.getCreateAt(), orderDetailDtos,
@@ -420,15 +414,18 @@ public class OrderService {
                         if (pack.isPresent()) {
                             packageName = pack.get().getPackageName();
                         }
-                        return new OrderDetailDto(
-                                orderDetail.getId(),
-                                book.getName(),
-                                book.getId(),
-                                orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0,
-                                orderDetail.getPackId(),
-                                orderDetail.getPrice(),
-                                packageName,
-                                fileImage);
+                        return OrderDetailDto.builder()
+                                .id(orderDetail.getId())
+                                .bookName(book.getName())
+                                .bookId(book.getId())
+                                .dayQuantity(
+                                        orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity()
+                                                : 0)
+                                .packId(orderDetail.getPackId())
+                                .packName(packageName)
+                                .image(fileImage)
+                                .price(orderDetail.getPrice())
+                                .build();
                     })
                     .collect(Collectors.toList());
 
