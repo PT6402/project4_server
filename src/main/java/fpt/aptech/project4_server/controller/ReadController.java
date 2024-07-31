@@ -35,26 +35,20 @@ public class ReadController {
 
     public ResponseEntity<?> readInitial(@PathVariable int index, @PathVariable("mybookid") int mybookid)
             throws IOException {
-
         return rs.createCurrentPageInitial(index, mybookid);
-
     }
 
+    // -------------
     @GetMapping("/{bookId}")
     public ResponseEntity<?> readBook(@CurrentUser UserGlobal user, @PathVariable("bookId") int bookId)
             throws IOException {
-
         return rs.getPageByCurrentPage(user.getId(), bookId);
-
     }
 
     @GetMapping("/{bookId}/{currentPage}")
     public ResponseEntity<?> readAppendBook(@CurrentUser UserGlobal user, @PathVariable("bookId") int bookId,
-            @PathVariable("currentPage") int currentPage)
-            throws IOException {
-
+            @PathVariable("currentPage") int currentPage) throws IOException {
         return rs.getAppendPageByCurrentPage(user.getId(), bookId, currentPage);
-
     }
 
     //

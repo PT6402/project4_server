@@ -19,6 +19,7 @@ import fpt.aptech.project4_server.repository.PublisherRepository;
 import fpt.aptech.project4_server.util.ResultDto;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -116,37 +117,37 @@ public class PublisherService {
         }
     }
 
-
-//    public ResponseEntity<ResultDto<Publisher>> updatePub(Integer id, PubCreateRes pubDetails) {
-//        try {
-//            Optional<Publisher> pubOptional = Prepo.findById(id);
-//            if (pubOptional.isPresent()) {
-//                Publisher pub = pubOptional.get();
-//                pub.setName(pubDetails.getName());
-//                pub.setDescription(pubDetails.getDescription());
-//
-//                Publisher updatedPub = Prepo.save(pub);
-//                ResultDto<Publisher> response = ResultDto.<Publisher>builder()
-//                        .status(true)
-//                        .message("Publisher updated successfully")
-//                        .model(updatedPub)
-//                        .build();
-//                return new ResponseEntity<>(response, HttpStatus.OK);
-//            } else {
-//                ResultDto<Publisher> response = ResultDto.<Publisher>builder()
-//                        .status(false)
-//                        .message("Publiser not found")
-//                        .build();
-//                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-//            }
-//        } catch (Exception e) {
-//            ResultDto<Publisher> response = ResultDto.<Publisher>builder()
-//                    .status(false)
-//                    .message("Failed to update publisher")
-//                    .build();
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//    }
+    // public ResponseEntity<ResultDto<Publisher>> updatePub(Integer id,
+    // PubCreateRes pubDetails) {
+    // try {
+    // Optional<Publisher> pubOptional = Prepo.findById(id);
+    // if (pubOptional.isPresent()) {
+    // Publisher pub = pubOptional.get();
+    // pub.setName(pubDetails.getName());
+    // pub.setDescription(pubDetails.getDescription());
+    //
+    // Publisher updatedPub = Prepo.save(pub);
+    // ResultDto<Publisher> response = ResultDto.<Publisher>builder()
+    // .status(true)
+    // .message("Publisher updated successfully")
+    // .model(updatedPub)
+    // .build();
+    // return new ResponseEntity<>(response, HttpStatus.OK);
+    // } else {
+    // ResultDto<Publisher> response = ResultDto.<Publisher>builder()
+    // .status(false)
+    // .message("Publiser not found")
+    // .build();
+    // return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    // }
+    // } catch (Exception e) {
+    // ResultDto<Publisher> response = ResultDto.<Publisher>builder()
+    // .status(false)
+    // .message("Failed to update publisher")
+    // .build();
+    // return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    // }
+    // }
 
     public ResponseEntity<ResultDto<Publisher>> updatePub(Integer id, PubCreateRes pubDetails) {
         try {
@@ -209,26 +210,39 @@ public class PublisherService {
         }
     }
 
-    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByPubId(int pubId) {
+    public ResponseEntity<ResultDto<?>> getBooksByPubId(int pubId) {
         try {
-            List<Book> books = bookrepo.findBooksByPublisherId(pubId);
+            Publisher publisher = Prepo.findById(pubId).orElseThrow(() -> new Exception("publisher not found"));
 
-            List<BookUserRes> bookUserResList = books.stream()
-                    .map(this::convertToBookUserRes)
-                    .collect(Collectors.toList());
+            var bookUserResList = publisher.getBooks().stream()
+                    .map(c -> {
+                        HashMap<String, Object> pubMap = new HashMap<>();
+                        pubMap.put("id", c.getId());
+                        pubMap.put("name", c.getName());
+                        pubMap.put("price", c.getPrice());
+                        pubMap.put("image", getImage(c.getFilePdf()).getImage_data());
+                        return pubMap;
+                    })
+                    .toList();
 
-            ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("listBook", bookUserResList);
+            result.put("image", publisher.getImage_data());
+            result.put("name", publisher.getName());
+            result.put("description", publisher.getDescription());
+
+            ResultDto<?> response = ResultDto.builder()
                     .status(true)
                     .message("Successfully retrieved books by publisher ID")
-                    .model(bookUserResList)
+                    .model(result)
                     .build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
                     .status(false)
                     .message("Failed to retrieve books by publisher ID")
                     .build();
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -243,7 +257,6 @@ public class PublisherService {
         List<AuthorUserRes> authorResList = book.getAuthors().stream()
                 .map(author -> new AuthorUserRes(author.getId(), author.getName()))
                 .collect(Collectors.toList());
-
 
         return BookUserRes.builder()
                 .id(book.getId())

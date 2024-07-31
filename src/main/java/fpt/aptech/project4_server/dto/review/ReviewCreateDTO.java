@@ -13,5 +13,4 @@ public class ReviewCreateDTO {
     private String content;
     private double rating;
     private int bookId;
-    private int userId;
 }

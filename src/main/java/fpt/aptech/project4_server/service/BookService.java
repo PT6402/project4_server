@@ -1,6 +1,9 @@
 package fpt.aptech.project4_server.service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hibernate.mapping.Map;
@@ -13,11 +16,15 @@ import fpt.aptech.project4_server.dto.book.BookResultAdmin;
 import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
+import fpt.aptech.project4_server.entities.user.Mybook;
+import fpt.aptech.project4_server.entities.user.UserDetail;
 import fpt.aptech.project4_server.repository.AuthorRepository;
 import fpt.aptech.project4_server.repository.BookRepo;
 import fpt.aptech.project4_server.repository.CateRepo;
 import fpt.aptech.project4_server.repository.ImageBookRepo;
+import fpt.aptech.project4_server.repository.Mybookrepo;
 import fpt.aptech.project4_server.repository.PublisherRepository;
+import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +37,8 @@ public class BookService {
   private final AuthorRepository authorRepo;
   private final PublisherRepository publisherRepo;
   private final ImageBookRepo imageBookRepo;
+  private final Mybookrepo mybookrepo;
+  private final UserDetailRepo userDetailRepo;
 
   public ResponseEntity<ResultDto<?>> getBooks() {
     try {
@@ -109,6 +118,62 @@ public class BookService {
       // Xử lý lỗi
       ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public ResponseEntity<ResultDto<?>> getMyBook(int userId) {
+    try {
+      UserDetail userDetail = userDetailRepo.findByUserId(userId)
+          .orElseThrow(() -> new Exception("UserDetail not found"));
+      List<Mybook> mybooks = mybookrepo.findByUserDetailId(userDetail.getId());
+      var listMyBook = mybooks.stream()
+          .map(mybook -> {
+            HashMap<String, Object> myBookItem = new HashMap<>();
+
+            myBookItem.put("id", mybook.getBook().getId());
+            myBookItem.put("bookname", mybook.getBook().getName());
+            myBookItem.put("dayGet", mybook.getCreateAt());
+            myBookItem.put("dayExpired", mybook.getExpiredDate());
+            myBookItem.put("fileimage", getImage(mybook.getBook().getFilePdf())
+                .getImage_data());
+
+            handleStateAndDayTotal(myBookItem, mybook);// return dayTotal and status
+            return myBookItem;
+          }).toList();
+      ResultDto<?> response = ResultDto.builder().message("ok").status(true).model(listMyBook).build();
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
+      return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private void handleStateAndDayTotal(HashMap<String, Object> myBookItem, Mybook mybook) {
+    Long daysDif = mybook.getExpiredDate() != null
+        ? ChronoUnit.DAYS.between(LocalDateTime.now(), mybook.getExpiredDate())
+        : null;
+    int caseValue = daysDif == null ? 0 : (daysDif > 3 ? 1 : (daysDif < 0 ? 3 : 2));
+
+    switch (caseValue) {
+      case 0:
+        myBookItem.put("dayTotal", 0);
+        myBookItem.put("status", 0);
+        break;
+      case 1:
+        myBookItem.put("dayTotal", daysDif != null ? Math.abs(daysDif) : 0);
+        myBookItem.put("status", 1);
+        break;
+      case 2:
+        myBookItem.put("dayTotal", daysDif != null ? Math.abs(daysDif) : 0);
+        myBookItem.put("status", 2);
+
+        break;
+      case 3:
+        myBookItem.put("dayTotal", 0);
+        myBookItem.put("status", 3);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + caseValue);
     }
   }
 

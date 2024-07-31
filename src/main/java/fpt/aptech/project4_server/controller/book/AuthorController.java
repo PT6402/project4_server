@@ -64,7 +64,7 @@ public class AuthorController {
     }
 
     @GetMapping("/booksByAuthor")
-    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthor(@RequestParam("authorId") int authorId) {
+    public ResponseEntity<ResultDto<?>> getBooksByAuthor(@RequestParam("authorId") int authorId) {
         return authorService.getBooksByAuthorId(authorId);
     }
 

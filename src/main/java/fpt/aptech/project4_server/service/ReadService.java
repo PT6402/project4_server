@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.imageio.ImageIO;
@@ -269,7 +270,10 @@ public class ReadService {
                     .orElseThrow(() -> new Exception("mybook not found"));
 
             var listPageBook = convertPdfToImagesInitialCus(mybook.getBook());
-            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listPageBook).build();
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("list", listPageBook);
+            result.put("totalPage", mybook.getBook().getPageQuantity());
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(result).build();
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
@@ -288,7 +292,10 @@ public class ReadService {
                     .orElseThrow(() -> new Exception("mybook not found"));
 
             var listPageBook = convertPdfToImagesCus(mybook.getBook(), currentPage);
-            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(listPageBook).build();
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("list", listPageBook);
+            result.put("totalPage", mybook.getBook().getPageQuantity());
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(result).build();
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {

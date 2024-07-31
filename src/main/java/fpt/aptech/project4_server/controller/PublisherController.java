@@ -51,17 +51,19 @@ public class PublisherController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResultDto<Publisher>> updateAuthor(@PathVariable("id") int id, @ModelAttribute PubCreateRes pubDetails) {
+    public ResponseEntity<ResultDto<Publisher>> updateAuthor(@PathVariable("id") int id,
+            @ModelAttribute PubCreateRes pubDetails) {
         return Pservice.updatePub(id, pubDetails);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResultDto<List<PubSearch>>> searchAuthor(@RequestParam("name") String name) throws IOException {
+    public ResponseEntity<ResultDto<List<PubSearch>>> searchAuthor(@RequestParam("name") String name)
+            throws IOException {
         return Pservice.searchByNamePub(name);
     }
 
     @GetMapping("/booksByPub")
-    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthor(@RequestParam("pubId") int pubId) {
+    public ResponseEntity<ResultDto<?>> getBooksByAuthor(@RequestParam("pubId") int pubId) {
         return Pservice.getBooksByPubId(pubId);
     }
 }

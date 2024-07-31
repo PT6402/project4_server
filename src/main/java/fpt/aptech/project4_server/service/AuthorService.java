@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -191,24 +192,36 @@ public class AuthorService {
         }
     }
 
-    public ResponseEntity<ResultDto<List<BookUserRes>>> getBooksByAuthorId(int authorId) {
+    public ResponseEntity<ResultDto<?>> getBooksByAuthorId(int authorId) {
         try {
-            List<Book> books = bookrepo.findByAuthorId(authorId);
+            Author author = authorRepository.findById(authorId).orElseThrow(() -> new Exception("author not found"));
+            // List<Book> books = bookrepo.findByAuthorId(authorId);
 
-            List<BookUserRes> bookUserResList = books.stream()
-                    .map(this::convertToBookUserRes)
-                    .collect(Collectors.toList());
-
-            ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
+            var bookUserResList = author.getBooks().stream()
+                    .map(c -> {
+                        HashMap<String, Object> authorMap = new HashMap<>();
+                        authorMap.put("id", c.getId());
+                        authorMap.put("name", c.getName());
+                        authorMap.put("price", c.getPrice());
+                        authorMap.put("image", getImage(c.getFilePdf()).getImage_data());
+                        return authorMap;
+                    })
+                    .toList();
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("listBook", bookUserResList);
+            result.put("image", author.getImage_data());
+            result.put("name", author.getName());
+            // result.put("description", author.get());
+            ResultDto<?> response = ResultDto.builder()
                     .status(true)
                     .message("Successfully retrieved books by author ID")
-                    .model(bookUserResList)
+                    .model(result)
                     .build();
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             ResultDto<List<BookUserRes>> response = ResultDto.<List<BookUserRes>>builder()
                     .status(false)
-                    .message("Failed to retrieve books by author ID")
+                    .message(e.getMessage())
                     .build();
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
