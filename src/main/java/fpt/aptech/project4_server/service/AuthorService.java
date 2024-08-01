@@ -85,7 +85,7 @@ public class AuthorService {
             List<AuthorSearch> authorSearchList = authors.stream()
                     .map(author -> {
                         AuthorSearch dto = new AuthorSearch();
-                        dto.setId(author.getId());
+                        dto.setAuthorId(author.getId());
                         dto.setFileImage(author.getImage_data()); // Giả sử `getImageData` trả về byte[]
                         dto.setName(author.getName());
                         return dto;

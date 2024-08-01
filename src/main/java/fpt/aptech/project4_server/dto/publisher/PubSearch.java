@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PubSearch {
-    private int id;
+    private int pubId;
     private byte[] fileImage;
     private String name;
 }
