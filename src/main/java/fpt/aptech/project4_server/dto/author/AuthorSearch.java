@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class AuthorSearch {
     private int authorId;
+
      private byte[] fileImage;
+
     private String name;
 }
