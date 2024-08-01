@@ -188,7 +188,7 @@ public class PublisherService {
             List<PubSearch> PubSearchList = pubs.stream()
                     .map(pub -> {
                         PubSearch dto = new PubSearch();
-                        dto.setId(pub.getId());
+                        dto.setPubId(pub.getId());
                         dto.setFileImage(pub.getImage_data()); // Giả sử `getImageData` trả về byte[]
                         dto.setName(pub.getName());
                         return dto;
