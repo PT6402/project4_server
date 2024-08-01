@@ -65,6 +65,7 @@ public class BookService {
         }).collect(Collectors.toList());
 
         return BookResultAdmin.builder()
+            .id(item.getId())
             .name(item.getName())
             .price(item.getPrice())
             .image(
