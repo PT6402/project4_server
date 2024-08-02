@@ -297,70 +297,68 @@ public class PdfService {
         return imagesList.isEmpty() ? Optional.empty() : Optional.of(imagesList);
     }
 
-
-@Transactional
-public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) {
-    try {
-        Optional<Book> optionalBook = bookrepo.findById(id);
-        if (!optionalBook.isPresent()) {
-            throw new EntityNotFoundException("Book not found with id: " + id);
-        }
-
-        Book existingBook = optionalBook.get();
-        PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
-
-        existingBook.setId(id);
-        existingBook.setName(bookres.getName());
-        existingBook.setPrice(bookres.getPrice());
-        existingBook.setPageQuantity(document.getNumberOfPages());
-        existingBook.setEdition(bookres.getEdition());
-        existingBook.setDescription(bookres.getDescription());
-        existingBook.setAuthors(bookres.getAuthorlist());
-        existingBook.setCategories(bookres.getCatelist());
-        var updateBook = bookrepo.save(existingBook);
-
-        var idpdf = pdfrepo.findById(existingBook.getFilePdf().getId());
-        if (idpdf.isEmpty()) {
-            throw new EntityNotFoundException("FilePdf not found with id: " + existingBook.getFilePdf().getId());
-        } else {
-            var filePdfupdate = idpdf.get();
-            filePdfupdate.setFile_name(bookres.getFile().getOriginalFilename());
-            filePdfupdate.setFile_type(bookres.getFile().getContentType());
-            filePdfupdate.setFile_data(bookres.getFile().getBytes());
-            filePdfupdate.setBook(updateBook);
-
-            // Xóa hình ảnh cũ
-            filePdfupdate.getImagesbook().clear();
-            pdfrepo.save(filePdfupdate); // Lưu PDF để xóa các hình ảnh cũ
-
-            // Chuyển đổi PDF đã cập nhật thành hình ảnh và lưu chúng
-            List<ImagesBook> imagelist = convertPdfToImages(filePdfupdate);
-            for (ImagesBook img : imagelist) {
-                img.setPdf(filePdfupdate);
+    @Transactional
+    public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) {
+        try {
+            Optional<Book> optionalBook = bookrepo.findById(id);
+            if (!optionalBook.isPresent()) {
+                throw new EntityNotFoundException("Book not found with id: " + id);
             }
-            filePdfupdate.getImagesbook().addAll(imagelist);
 
-            // Lưu PDF đã cập nhật
-            pdfrepo.save(filePdfupdate);
+            Book existingBook = optionalBook.get();
+            PDDocument document = Loader.loadPDF(bookres.getFile().getBytes());
+
+            existingBook.setId(id);
+            existingBook.setName(bookres.getName());
+            existingBook.setPrice(bookres.getPrice());
+            existingBook.setPageQuantity(document.getNumberOfPages());
+            existingBook.setEdition(bookres.getEdition());
+            existingBook.setDescription(bookres.getDescription());
+            existingBook.setAuthors(bookres.getAuthorlist());
+            existingBook.setCategories(bookres.getCatelist());
+            var updateBook = bookrepo.save(existingBook);
+
+            var idpdf = pdfrepo.findById(existingBook.getFilePdf().getId());
+            if (idpdf.isEmpty()) {
+                throw new EntityNotFoundException("FilePdf not found with id: " + existingBook.getFilePdf().getId());
+            } else {
+                var filePdfupdate = idpdf.get();
+                filePdfupdate.setFile_name(bookres.getFile().getOriginalFilename());
+                filePdfupdate.setFile_type(bookres.getFile().getContentType());
+                filePdfupdate.setFile_data(bookres.getFile().getBytes());
+                filePdfupdate.setBook(updateBook);
+
+                // Xóa hình ảnh cũ
+                filePdfupdate.getImagesbook().clear();
+                pdfrepo.save(filePdfupdate); // Lưu PDF để xóa các hình ảnh cũ
+
+                // Chuyển đổi PDF đã cập nhật thành hình ảnh và lưu chúng
+                List<ImagesBook> imagelist = convertPdfToImages(filePdfupdate);
+                for (ImagesBook img : imagelist) {
+                    img.setPdf(filePdfupdate);
+                }
+                filePdfupdate.getImagesbook().addAll(imagelist);
+
+                // Lưu PDF đã cập nhật
+                pdfrepo.save(filePdfupdate);
+            }
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("Update successfully")
+                    .model(existingBook)
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (EntityNotFoundException e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        } catch (IOException e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: Error processing PDF file").build();
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        ResultDto<?> response = ResultDto.builder().status(true).message("Update successfully")
-                .model(existingBook)
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-
-    } catch (EntityNotFoundException e) {
-        ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    } catch (IOException e) {
-        ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: Error processing PDF file").build();
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    } catch (Exception e) {
-        ResultDto<?> response = ResultDto.builder().status(false).message("Update fail: " + e.getMessage()).build();
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
-
 
     public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
         try {
@@ -494,19 +492,15 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
                 // Lọc theo cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
                 if (bf.getList() != null && !bf.getList().isEmpty()) {
                     books = books.stream()
-
                             .filter(book -> book.getCategories().stream().anyMatch(cate -> bf.getList().contains(cate.getId())))
-
                             .collect(Collectors.toList());
                 }
 
                 // Lọc theo rating nếu được cung cấp
                 if (bf.getRating() != null) {
                     books = books.stream()
-
                             .filter(book -> book.getRating() >= bf.getRating()
-                                    && book.getRating() < (bf.getRating() + 1))
-
+                            && book.getRating() < (bf.getRating() + 1))
                             .collect(Collectors.toList());
                 }
 
@@ -527,17 +521,22 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
             List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
                 ImagesBook image = getImage(c.getFilePdf());
                 byte[] fileImage = image != null ? image.getImage_data() : null;
-
-
+                List<AuthorShow> authors = c.getAuthors().stream()
+                        .map(author -> AuthorShow.builder()
+                        .id(author.getId())
+                        .name(author.getName())
+                        .build())
+                        .collect(Collectors.toList());
                 return BookPagnination.builder()
                         .bookid(c.getId())
                         .name(c.getName())
+                        .authors(authors)
+                        .price(c.getPrice())
                         .rating(c.getRating())
                         .ratingQuantity(c.getRatingQuantity())
                         .ImageCove(fileImage)
                         .build();
             }).collect(Collectors.toList());
-
 
             List<BookPagnination> listNew = new ArrayList<>();
             for (BookPagnination bp : bookPagninations) {
@@ -786,4 +785,79 @@ public ResponseEntity<ResultDto<?>> UpdateBook(int id, BookAdCreateRes bookres) 
         }
     }
 
+    public ResponseEntity<ResultDto<?>> FilterFlutter(Integer page, Integer limit, Double rating, Integer from, Integer to, List<Integer> list) {
+        try {
+            List<Book> books = bookrepo.findAll(); // Lấy tất cả sách làm cơ sở ban đầu
+
+            // Kiểm tra nếu các bộ lọc không null
+            if (rating != null || from != null || to != null || (list != null && !list.isEmpty())) {
+                // Lọc theo cate_id trong danh sách từ BookFilter nếu danh sách không rỗng
+                if (list != null && !list.isEmpty()) {
+                    books = books.stream()
+                            .filter(book -> book.getCategories().stream().anyMatch(cate -> list.contains(cate.getId())))
+                            .collect(Collectors.toList());
+                }
+
+                // Lọc theo rating nếu được cung cấp
+                if (rating != null) {
+                    books = books.stream()
+                            .filter(book -> book.getRating() >= rating && book.getRating() < (rating + 1))
+                            .collect(Collectors.toList());
+                }
+
+                // Lọc theo giá nếu from và to được cung cấp
+                if (from != null && to != null) {
+                    books = books.stream()
+                            .filter(book -> book.getPrice() >= from && book.getPrice() <= to)
+                            .collect(Collectors.toList());
+                }
+            }
+
+            int totalBooks = books.size();
+            List<Book> paginatedBooks;
+            int start = Math.min((page - 1) * limit, totalBooks);
+            int end = Math.min(page * limit, totalBooks);
+            paginatedBooks = books.subList(start, end);
+
+            List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
+                ImagesBook image = getImage(c.getFilePdf());
+                byte[] fileImage = image != null ? image.getImage_data() : null;
+                   List<AuthorShow> authors = c.getAuthors().stream()
+                        .map(author -> AuthorShow.builder()
+                        .id(author.getId())
+                        .name(author.getName())
+                        .build())
+                        .collect(Collectors.toList());
+                return BookPagnination.builder()
+                        .bookid(c.getId())
+                        .name(c.getName())
+                        .authors(authors)
+                        .price(c.getPrice())
+                        .rating(c.getRating())
+                        .ratingQuantity(c.getRatingQuantity())
+                        .ImageCove(fileImage)
+                        .build();
+            }).collect(Collectors.toList());
+
+            List<BookPagnination> listNew = new ArrayList<>();
+            for (BookPagnination bp : bookPagninations) {
+                if (!listNew.contains(bp)) {
+                    listNew.add(bp);
+                }
+            }
+
+            Paginations pag = new Paginations();
+            pag.setPaglist(listNew);
+            pag.setTotalPage((totalBooks + limit - 1) / limit);
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder()
+                    .status(false)
+                    .message("Fail to show")
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
