@@ -19,19 +19,11 @@ import org.springframework.data.repository.query.Param;
  */
 public interface WishlistRepo extends JpaRepository<Wishlist, Integer> {
 
-    @Query("Select b from Wishlist b where b.userDetail.id=:userID AND b.book.id=:bookID")
+  @Query("Select b from Wishlist b where b.userDetail.id = :userID AND b.book.id = :bookID")
     Optional<Wishlist> findByUserDetailAndBook(@Param("userID") Integer userID, @Param("bookID") Integer bookID);
 
-    @Query("Select c from Wishlist c where c.userDetail.id=:userID")
+    @Query("Select c from Wishlist c where c.userDetail.id = :userID")
     List<Wishlist> findByUserDetailId(@Param("userID") Integer userID);
 
-   
-//    @Query("SELECT new fpt.aptech.project4_server.dto.statistic.TopLike(w.book.id, w.book.name, COUNT(w.book.id), w.book.rating, ib.image_data) "
-//        + "FROM Wishlist w "
-//        + "JOIN w.book.filePdf f "
-//        + "JOIN f.imagesbook ib "
-//        + "WHERE ib.cover = true "
-//        + "GROUP BY w.book.id, w.book.name, w.book.rating, ib.image_data "
-//        + "ORDER BY COUNT(w.book.id) DESC")
-//List<TopLike> findTopBooksByWishlistCount();
+
 }

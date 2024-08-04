@@ -47,4 +47,14 @@ public class WishlistController {
             @CurrentUser UserGlobal user) {
         return wls.deleteWishlist(bookId, user.getId());
     }
+    
+    
+    
+    @GetMapping("/check")
+    public ResponseEntity<ResultDto<?>> checkStatus(
+            @RequestParam("bookId") int bookId, 
+            @CurrentUser UserGlobal user) {
+        System.out.println("bookid:"+bookId +"useriD:"+user.getId());
+        return wls.checkStatus(bookId, user.getId());
+    }
 }

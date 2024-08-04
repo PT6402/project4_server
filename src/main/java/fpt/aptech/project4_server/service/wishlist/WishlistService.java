@@ -16,4 +16,5 @@ public interface WishlistService {
     ResponseEntity<ResultDto<?>> createWishlist(int bookId, int userId);
 
     ResponseEntity<ResultDto<?>> deleteWishlist(int bookId, int userId);
+    ResponseEntity<ResultDto<?>> checkStatus(int bookId, int userId);
 }

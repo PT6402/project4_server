@@ -131,4 +131,46 @@ public class WishlistServiceImpl implements WishlistService {
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
   }
+  
+  public ResponseEntity<ResultDto<?>> checkStatus(int bookId, int userId) {
+    try {
+        UserDetail userDetail = userDetailRepo.findByUserId(userId)
+            .orElseThrow(() -> new Exception("UserDetail not found"));
+
+        Book book = bookRepo.findById(bookId)
+            .orElseThrow(() -> new Exception("Book not found"));
+
+        Wishlist wishlistItem = wishlistRepo.findByUserDetailAndBook(userDetail.id, bookId)
+            .orElse(null);
+        boolean isInWishlist;
+        if(wishlistItem!=null){
+            isInWishlist = true;
+              System.out.println("Is in wishlist: " + isInWishlist);
+        ResultDto<?> response = ResultDto.<Boolean>builder()
+            .status(true)
+            .model(isInWishlist)
+            .message(isInWishlist ? "Wishlist added" : "Wishlist not added")
+            .build();
+
+        }else{isInWishlist=false;}
+        
+         System.out.println("Is in wishlist: " + isInWishlist);
+        ResultDto<?> response = ResultDto.<Boolean>builder()
+            .status(true)
+            .model(isInWishlist)
+            .message(isInWishlist ? "Wishlist added" : "Wishlist not added")
+            .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    } catch (Exception e) {
+        ResultDto<?> response = ResultDto.builder()
+            .status(false)
+            .message(e.getMessage())
+            .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+}
+
+  
 }
