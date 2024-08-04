@@ -28,6 +28,7 @@ import lombok.experimental.SuperBuilder;
 public class Publisher extends BaseEntity {
 
     private String name;
+        @Lob
     private String description;
     @Lob
     private byte[] Image_data;
