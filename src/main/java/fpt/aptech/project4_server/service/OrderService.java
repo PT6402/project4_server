@@ -4,8 +4,10 @@ import com.stripe.exception.StripeException;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.dto.order.OrderAdmin;
 import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
+import fpt.aptech.project4_server.dto.order.OrderAndDetailFlutter;
 import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
 import fpt.aptech.project4_server.dto.order.OrderDetailDto;
+import fpt.aptech.project4_server.dto.order.OrderFlutterShow;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
 import fpt.aptech.project4_server.dto.payment.PaymentResponse;
@@ -13,6 +15,7 @@ import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.book.PackageRead;
+import fpt.aptech.project4_server.entities.book.Review;
 import fpt.aptech.project4_server.entities.user.Cart;
 import fpt.aptech.project4_server.entities.user.CartItem;
 import fpt.aptech.project4_server.entities.user.Order;
@@ -451,5 +454,57 @@ public class OrderService {
                     .build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    public ResponseEntity<ResultDto<?>> getOrdersByUserIdF(int userId) {
+        try {
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+
+            List<Order> orders = userDetail.getOrders();
+
+            List<OrderAndDetailFlutter> orderDtos = orders.stream()
+                    .map(order -> {
+                        List<OrderFlutterShow> orderDetailDtos = order.getOrderDetails().stream()
+                                .map(orderDetail -> {
+                                    Book book = orderDetail.getBook();
+                                    List<Review> reviews = reviewRepository.findAllByBookIdAndUserDetailId(userDetail.getId(), book.getId());
+
+                                    List<HashMap<String, Object>> reviewList = reviews.stream().map(review -> {
+                                        HashMap<String, Object> reviewMap = new HashMap<>();
+                                        reviewMap.put("star", review.getRating());
+                                        reviewMap.put("content", review.getContent());
+                                        reviewMap.put("id", review.getId());
+                                        reviewMap.put("createDate", review.getCreateAt());
+                                        return reviewMap;
+                                    }).collect(Collectors.toList());
+
+                                    return OrderFlutterShow.builder()
+                                            .bookId(book.getId())
+                                            .bookName(book.getName())
+                                            .image(getImage(book.getFilePdf()).getImage_data())
+                                            .price(orderDetail.getPrice())
+                                            .dayPackage(orderDetail.getDayQuantity() != null ? orderDetail.getDayQuantity() : 0)
+                                            .reviews(reviewList)
+                                            .build();
+                                }).collect(Collectors.toList());
+
+                        return OrderAndDetailFlutter.builder()
+                                .orderId(order.getId())
+                                .creatDate(order.getCreateAt())
+                                .orderDetailsFlutter(orderDetailDtos)
+                                .paymentStatus(order.getPaymentStatus())
+                                .build();
+                    }).collect(Collectors.toList());
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(orderDtos).build();
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().message(e.getMessage()).status(false).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 
 }
+
+

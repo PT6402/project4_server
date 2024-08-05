@@ -59,5 +59,10 @@ public class OrderController {
     public ResponseEntity<ResultDto<OrderAdmin>> getOrderDetailsForAdmin(@PathVariable int orderId) {
         return orderService.getOrderDetailsForAdmin(orderId);
     }
+    
+     @GetMapping("/Fget")
+    public ResponseEntity<ResultDto<?>> getOrdersByUserIdF(@CurrentUser UserGlobal user) {
+        return orderService.getOrdersByUserIdF(user.getId());
+    }
 
 }
