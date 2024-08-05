@@ -68,8 +68,8 @@ public class BookController {
     }
 
     @GetMapping("/showpage")
-    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id, @RequestParam("limit") Integer limit) {
-        return pv.Pagnination(id, limit);
+    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id) {
+        return pv.Pagnination(id);
 
     }
 
