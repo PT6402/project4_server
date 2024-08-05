@@ -31,6 +31,7 @@ public class Book extends BaseEntity {
     private double price;
     private int pageQuantity;
     private String edition;
+    @Lob
     private String description;
     private double rating;
     private int ratingQuantity;

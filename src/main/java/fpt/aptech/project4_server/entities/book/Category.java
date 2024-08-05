@@ -22,6 +22,7 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "tbCategory")
 public class Category extends BaseEntity{
     private String name;
+    @Lob
     private String description;
     @Lob
     private byte[] Imagedata;

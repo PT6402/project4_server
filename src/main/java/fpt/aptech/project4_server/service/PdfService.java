@@ -360,7 +360,7 @@ public class PdfService {
         }
     }
 
-    public ResponseEntity<ResultDto<?>> Pagnination(int page, int limit) {
+    public ResponseEntity<ResultDto<?>> Pagnination(int page) {
         try {
             // Lấy tất cả các sách từ bookrepo
             List<Book> allBooks = bookrepo.findAll();
@@ -370,7 +370,7 @@ public class PdfService {
             // Tính toán chỉ số bắt đầu và kết thúc cho trang hiện tại
             if (page == 1) {
                 int start = Math.min(page - 1, totalBooks);
-                int end = Math.min(page * limit, totalBooks);
+                int end = Math.min(page * 10, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
 
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
@@ -395,19 +395,20 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                if (totalBooks < limit) {
+                if (totalBooks < 10) {
                     pag.setTotalPage(1);
-                } else if (limit % totalBooks == 0) {
-                    pag.setTotalPage(limit / totalBooks);
+                } else if (  totalBooks%10 == 0) {
+                    pag.setTotalPage(totalBooks/10);
                 } else {
-                    pag.setTotalPage(limit / totalBooks + 1);
+                     int totalPages = (int) Math.ceil((double) totalBooks / 10);
+                    pag.setTotalPage(totalPages);
                 }
 
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                int start = Math.min((page - 1) * limit, totalBooks);
-                int end = Math.min(page * limit, totalBooks);
+                int start = Math.min((page - 1) * 10, totalBooks);
+                int end = Math.min(page * 10, totalBooks);
                 List<Book> paginatedBooks = allBooks.subList(start, end);
 
                 List<BookPagnination> bookPagninations = paginatedBooks.stream().map(c -> {
@@ -431,12 +432,13 @@ public class PdfService {
                 }).collect(Collectors.toList());
                 Paginations pag = new Paginations();
                 pag.setPaglist(bookPagninations);
-                if (totalBooks < limit) {
+                 if (totalBooks < 10) {
                     pag.setTotalPage(1);
-                } else if (limit % totalBooks == 0) {
-                    pag.setTotalPage(limit / totalBooks);
+                } else if (  totalBooks%10 == 0) {
+                    pag.setTotalPage(totalBooks/10);
                 } else {
-                    pag.setTotalPage(limit / totalBooks + 1);
+                     int totalPages = (int) Math.ceil((double) totalBooks / 10);
+                    pag.setTotalPage(totalPages);
                 }
                 ResultDto<?> response = ResultDto.builder().status(true).message("ok").model(pag).build();
                 return new ResponseEntity<>(response, HttpStatus.OK);
