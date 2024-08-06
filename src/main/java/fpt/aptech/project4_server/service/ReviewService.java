@@ -10,6 +10,7 @@ import fpt.aptech.project4_server.repository.BookRepo;
 import fpt.aptech.project4_server.repository.ReviewRepository;
 import fpt.aptech.project4_server.repository.UserDetailRepo;
 import fpt.aptech.project4_server.util.ResultDto;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
@@ -202,6 +203,63 @@ public class ReviewService {
                     .status(false)
                     .message(e.getMessage())
                     .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+    
+    public ResponseEntity<ResultDto<?>> createReviewF(int userId, ReviewCreateDTO reviewRequest) {
+        try {
+            // forbidden word
+            if (forbidden.containsForbiddenWord(reviewRequest.getContent())) {
+                throw new Exception("Your review contain forbidden words");
+            }
+            // Tìm book
+            var bookOptional = bookRepository.findById(reviewRequest.getBookId())
+                    .orElseThrow(() -> new Exception("book not found"));
+
+            // Tìm user
+            UserDetail userDetail = userDetailRepository.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+
+//            // Kiểm tra xem review đã tồn tại chưa
+//            var existingReview = reviewRepository.findByBookIdAndUserDetailId(userDetail.getId(),
+//                    reviewRequest.getBookId());
+//            if (existingReview.isPresent()) {
+//                ResultDto<?> response = ResultDto.builder().status(false)
+//                        .message("User has already reviewed this book!").build();
+//                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//            }
+
+            // Tạo review mới
+            var newReview = Review.builder()
+                    .content(reviewRequest.getContent())
+                    .rating(reviewRequest.getRating())
+                    .book(bookOptional)
+                    .userDetail(userDetail)
+                
+                    .build();
+
+            var reviewSaved = reviewRepository.save(newReview);
+            bookOptional.setRatingQuantity(bookOptional.getRatingQuantity() + 1);
+            List<Review> reviewList = reviewRepository.findByBookId(reviewRequest.getBookId());
+
+            double totalRating = reviewList.stream()
+                    .mapToDouble(Review::getRating)
+                    .sum();
+            double averageRating = totalRating / bookOptional.getRatingQuantity();
+            bookOptional.setRating(averageRating);
+            bookRepository.save(bookOptional);
+
+            HashMap<String, Object> result = new HashMap<>();
+            result.put("id", reviewSaved.getId());
+            result.put("content", reviewSaved.getContent());
+            result.put("star", reviewSaved.getRating());
+
+            ResultDto<?> response = ResultDto.builder().status(true).message("Review created successfully!")
+                    .model(result).build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }

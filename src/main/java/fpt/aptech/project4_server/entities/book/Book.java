@@ -38,7 +38,7 @@ public class Book extends BaseEntity {
     private String description;
     private double rating;
     private int ratingQuantity;
-
+    
     @Column(name = "status_mybook")
     private Boolean statusMybook;
 

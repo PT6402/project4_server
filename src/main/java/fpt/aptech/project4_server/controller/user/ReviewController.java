@@ -57,4 +57,10 @@ public class ReviewController {
             @RequestBody ReviewUpdateDTO reviewUpdateDTO) {
         return reviewService.updateReview(user.getId(), reviewUpdateDTO);
     }
+    
+      @PostMapping("/F")
+    public ResponseEntity<ResultDto<?>> createReviewF(@CurrentUser UserGlobal user,
+            @RequestBody ReviewCreateDTO reviewRequest) {
+        return reviewService.createReviewF(user.getId(), reviewRequest);
+    }
 }
