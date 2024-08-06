@@ -13,7 +13,7 @@ spring:
       max-request-size: 30000MB
 
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=Ebookshelf;TrustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;databaseName=Project4DB;TrustServerCertificate=true
     username: sa
     password: Phattran.123
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

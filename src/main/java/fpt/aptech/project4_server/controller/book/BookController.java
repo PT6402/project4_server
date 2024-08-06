@@ -99,39 +99,43 @@ public class BookController {
             @RequestBody BookFilter bookfilter) {
         return pv.Filter(page, limit, bookfilter);
     }
-    
-@PostMapping("/filterFlutter")
-public ResponseEntity<?> BookPageFilter1(
-        @RequestParam("page") Integer page,
-        @RequestParam("limit") Integer limit,
-        @RequestParam(value = "from", required = false, defaultValue = "null") String fromStr,
-        @RequestParam(value = "to", required = false, defaultValue = "null") String toStr,
-        @RequestParam(value = "rating", required = false, defaultValue = "null") String ratingStr,
-        @RequestParam(value = "list", required = false, defaultValue = "null") List<String> listStr) {
 
-    // Chuyển đổi các giá trị từ String sang Integer và Double nếu cần thiết
-    Integer from = (fromStr != null && !fromStr.equals("null")) ? Integer.valueOf(fromStr) : null;
-    Integer to = (toStr != null && !toStr.equals("null")) ? Integer.valueOf(toStr) : null;
-    Double rating = (ratingStr != null && !ratingStr.equals("null")) ? Double.valueOf(ratingStr) : null;
-    List<Integer> list = (listStr != null && !listStr.equals("null")) ? new ArrayList<>() : null;
+    @PostMapping("/filterFlutter")
+    public ResponseEntity<?> BookPageFilter1(
+            @RequestParam("page") Integer page,
+            @RequestParam("limit") Integer limit,
+            @RequestParam(value = "from", required = false, defaultValue = "null") String fromStr,
+            @RequestParam(value = "to", required = false, defaultValue = "null") String toStr,
+            @RequestParam(value = "rating", required = false, defaultValue = "null") String ratingStr,
+            @RequestParam(value = "list", required = false, defaultValue = "null") List<String> listStr) {
 
-    if (list != null) {
-        for (String str : listStr) {
-            if (!str.equals("null")) {
-                list.add(Integer.valueOf(str));
+        // Chuyển đổi các giá trị từ String sang Integer và Double nếu cần thiết
+        Integer from = (fromStr != null && !fromStr.equals("null")) ? Integer.valueOf(fromStr) : null;
+        Integer to = (toStr != null && !toStr.equals("null")) ? Integer.valueOf(toStr) : null;
+        Double rating = (ratingStr != null && !ratingStr.equals("null")) ? Double.valueOf(ratingStr) : null;
+        List<Integer> list = (listStr != null && !listStr.equals("null")) ? new ArrayList<>() : null;
+
+        if (list != null) {
+            for (String str : listStr) {
+                if (!str.equals("null")) {
+                    list.add(Integer.valueOf(str));
+                }
             }
         }
+
+        // Debug thông tin
+        System.out.println("limit: " + limit + ", from: " + from + ", to: " + to + ", rating: " + rating + ", list: "
+                + list + ", page: " + page);
+
+        return pv.FilterFlutter(page, limit, rating, from, to, list);
     }
-
-    // Debug thông tin
-    System.out.println("limit: " + limit + ", from: " + from + ", to: " + to + ", rating: " + rating + ", list: " + list + ", page: " + page);
-
-    return pv.FilterFlutter(page, limit, rating, from, to, list);
-}
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
-
+        // Kiểm tra nếu file là null hoặc rỗng
+        if (bookad.getFile() == null || bookad.getFile().isEmpty()) {
+            bookad.setFile(null); // Đặt file là null rõ ràng
+        }
         return pv.UpdateBook(id, bookad);
 
     }
@@ -171,6 +175,11 @@ public ResponseEntity<?> BookPageFilter1(
     @GetMapping("/admin/book-properties")
     public ResponseEntity<ResultDto<?>> getPropertiesList() {
         return adminBookService.getPropertiesList();
+    }
+
+    @GetMapping("/admin/bookOne/{bookId}")
+    public ResponseEntity<?> getOneBookAdmin(@PathVariable("bookId") int bookId) {
+        return adminBookService.getOneBookAdmin(bookId);
     }
 
 }

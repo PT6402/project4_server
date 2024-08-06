@@ -3,17 +3,14 @@ package fpt.aptech.project4_server.service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.List;
 import java.util.stream.Collectors;
-
-import org.hibernate.mapping.Map;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fpt.aptech.project4_server.dto.book.BookPropertiesResultAdmin;
 import fpt.aptech.project4_server.dto.book.BookResultAdmin;
-import fpt.aptech.project4_server.entities.book.Book;
 import fpt.aptech.project4_server.entities.book.FilePdf;
 import fpt.aptech.project4_server.entities.book.ImagesBook;
 import fpt.aptech.project4_server.entities.user.Mybook;
@@ -146,6 +143,35 @@ public class BookService {
     } catch (Exception e) {
       ResultDto<?> response = ResultDto.builder().status(false).message(e.getMessage()).build();
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public ResponseEntity<ResultDto<?>> getOneBookAdmin(int bookId) {
+    try {
+      var book = bookrepo.findById(bookId).orElseThrow(() -> new Exception("book not found"));
+
+      int[] authorIds = book.getAuthors().stream()
+          .mapToInt(author -> author.getId())
+          .toArray();
+
+      int[] categoryIds = book.getCategories().stream()
+          .mapToInt(cate -> cate.getId())
+          .toArray();
+
+      HashMap<String, Object> bookResult = new HashMap<>();
+      bookResult.put("name", book.getName());
+      bookResult.put("price", book.getPrice());
+      bookResult.put("edition", book.getEdition());
+      bookResult.put("authors", authorIds);
+      bookResult.put("catetorys", categoryIds);
+      bookResult.put("publisherId", book.getPublisher().getId());
+      bookResult.put("description", book.getDescription());
+
+      ResultDto<?> response = ResultDto.builder().message("ok").status(true).model(bookResult).build();
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      ResultDto<?> response = ResultDto.builder().message(e.getMessage()).status(false).build();
+      return ResponseEntity.badRequest().body(response);
     }
   }
 
