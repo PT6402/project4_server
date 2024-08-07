@@ -1,7 +1,3 @@
-/*
-* Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-* Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
-*/
 package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
@@ -34,9 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * @author macos
- */
 @RestController
 @RequestMapping("api/v1/book")
 @RequiredArgsConstructor

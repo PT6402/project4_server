@@ -34,9 +34,14 @@ public class OrderController {
         return orderService.checkoutCart(user.getId(), cartId);
     }
 
+    @PostMapping("/create-payment-intent/{cartId}")
+    public ResponseEntity<ResultDto<?>> createPaymentIntentAndHandleOrder(@CurrentUser UserGlobal user, @PathVariable int cartId) {
+        return orderService.createPaymentIntentAndHandleOrder(user.getId(), cartId);
+    }
+
     @PutMapping("/{orderId}")
     public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId,
-            @RequestBody OrderUpdateRequest orderUpdateRequest) {
+                                                    @RequestBody OrderUpdateRequest orderUpdateRequest) {
         return orderService.updateOrder(orderId, orderUpdateRequest);
     }
 

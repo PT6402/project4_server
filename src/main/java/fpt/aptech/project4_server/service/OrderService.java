@@ -1,6 +1,8 @@
 package fpt.aptech.project4_server.service;
 
 import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import fpt.aptech.project4_server.dto.cart.CartItemAddRequest;
 import fpt.aptech.project4_server.dto.order.OrderAdmin;
 import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
@@ -110,6 +112,7 @@ public class OrderService {
 
             // Tạo link thanh toán
             PaymentResponse paymentResponse = paymentService.createPaymentLink(savedOrder);
+
             cartservice.clearCart(userId);
             return new ResponseEntity<>(ResultDto.builder()
                     .status(true)
@@ -157,6 +160,86 @@ public class OrderService {
         } catch (Exception e) {
             return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
                     HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<ResultDto<?>> createPaymentIntentAndHandleOrder(int userId, int cartId) {
+        try {
+            // Step 1: Validate the user and retrieve their cart
+            UserDetail userDetail = userDetailRepo.findByUserId(userId)
+                    .orElseThrow(() -> new Exception("UserDetail not found"));
+
+            Optional<Cart> cartOptional = cartRepository.findById(cartId);
+            if (cartOptional.isEmpty() || cartOptional.get().getCartItems().isEmpty()) {
+                return new ResponseEntity<>(
+                        ResultDto.builder().status(false).message("Cart is empty or not found").build(),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+            Cart cart = cartOptional.get();
+            List<CartItem> cartItems = cart.getCartItems();
+            List<OrderDetail> orderDetails = new ArrayList<>();
+            double totalPrice = 0.0;
+
+            // Step 2: Create a new Order
+            Order order = Order.builder()
+                    .userDetail(userDetail)
+                    .paymentStatus(0) // Initial payment status
+                    .orderDetails(orderDetails)
+                    .dateOrder(LocalDateTime.now())
+                    .build();
+
+            for (CartItem cartItem : cartItems) {
+                Book book = cartItem.getBook();
+                double price = cartItem.getPrice();
+                totalPrice += price;
+
+                OrderDetail orderDetail = new OrderDetail();
+                orderDetail.setOrder(order);
+                orderDetail.setBook(book);
+                orderDetail.setDayQuantity(cartItem.getDayQuantity());
+                orderDetail.setPrice(price);
+                orderDetail.setPackId(cartItem.getPackId());
+                orderDetails.add(orderDetail);
+            }
+
+            order.setOrderDetails(orderDetails);
+            order.setTotalPrice(totalPrice);
+            Order savedOrder = orderRepository.save(order);
+
+            // Save OrderDetails after Order has been saved
+            for (OrderDetail orderDetail : orderDetails) {
+                orderDetail.setOrder(savedOrder);
+                orderDetailRepository.save(orderDetail);
+            }
+
+            // Step 3: Create the Stripe PaymentIntent
+            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                    .setAmount((long) (totalPrice * 100)) // Amount in cents
+                    .setCurrency("usd")
+                    .addPaymentMethodType("card") // Specify payment method type
+                    .putMetadata("order_id", String.valueOf(savedOrder.getId())) // Attach order ID as metadata
+                    .build();
+
+            PaymentIntent paymentIntent = PaymentIntent.create(params);
+
+            // Step 4: Clear the Cart
+            cartservice.clearCart(userId);
+
+            // Step 5: Return the PaymentIntent client secret to the frontend
+            return new ResponseEntity<>(ResultDto.builder()
+                    .status(true)
+                    .message("Payment Intent created and order initialized")
+                    .model(paymentIntent.getClientSecret())
+                    .build(), HttpStatus.OK);
+
+        } catch (StripeException e) {
+            return new ResponseEntity<>(
+                    ResultDto.builder().status(false).message("Payment error: " + e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>(ResultDto.builder().status(false).message(e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
