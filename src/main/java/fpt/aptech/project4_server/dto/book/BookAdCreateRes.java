@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 @Builder
@@ -20,18 +22,20 @@ public class BookAdCreateRes {
     private int pageQuantity;
     private String edition;
     private String description;
-//    private double rating;
-//    private int ratingQuantity;
+    // private double rating;
+    // private int ratingQuantity;
     List<Author> authorlist;
-     List<Category> catelist;
-     private int pubId;
+    List<Category> catelist;
+    private int pubId;
+
+    @Nullable
     private MultipartFile file;
-   
-//       public int getPubId() {
-//        return pubId;
-//    }
-//
-//    public void setPubId(int pubId) {
-//        this.pubId = pubId;
-//    }
+
+    // public int getPubId() {
+    // return pubId;
+    // }
+    //
+    // public void setPubId(int pubId) {
+    // this.pubId = pubId;
+    // }
 }

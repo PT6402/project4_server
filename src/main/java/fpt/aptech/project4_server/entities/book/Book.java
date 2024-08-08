@@ -31,10 +31,14 @@ public class Book extends BaseEntity {
     private double price;
     private int pageQuantity;
     private String edition;
+
+    private byte[] imageCover;
+
+    @Lob
     private String description;
     private double rating;
     private int ratingQuantity;
-
+    
     @Column(name = "status_mybook")
     private Boolean statusMybook;
 
@@ -54,20 +58,12 @@ public class Book extends BaseEntity {
     @JsonIgnore
     private List<Review> review;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinTable(
-            name = "Author_Book",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    @JoinTable(name = "Author_Book", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "author_id"))
     private List<Author> authors;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinTable(
-            name = "Category_Book",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "cate_id")
-    )
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    @JoinTable(name = "Category_Book", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "cate_id"))
     private List<Category> categories;
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)

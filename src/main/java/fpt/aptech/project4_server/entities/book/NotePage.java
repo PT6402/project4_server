@@ -29,6 +29,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "tbNotePage")
 public class NotePage extends BaseEntity{
+        @Lob
     private String NoteContent;
     @Lob
     private byte[] NotePageData;

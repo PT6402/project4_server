@@ -1,5 +1,6 @@
-package fpt.aptech.project4_server.dto.review;
+package fpt.aptech.project4_server.dto.order;
 
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +10,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewCreateDTO {
-    private String content;
-    private double rating;
-    private int bookId;
-    
+public class PaymentCheckForFlutter {
+    private int orderId;
 }

@@ -1,3 +1,7 @@
+/*
+* Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+* Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
+*/
 package fpt.aptech.project4_server.controller.book;
 
 import fpt.aptech.project4_server.dto.book.BookAdCreateRes;
@@ -12,6 +16,8 @@ import fpt.aptech.project4_server.util.ResultDto;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +36,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * @author macos
+ */
 @RestController
 @RequestMapping("api/v1/book")
 @RequiredArgsConstructor
@@ -59,8 +68,8 @@ public class BookController {
     }
 
     @GetMapping("/showpage")
-    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id, @RequestParam("limit") Integer limit) {
-        return pv.Pagnination(id, limit);
+    public ResponseEntity<?> BookPage(@RequestParam("page") Integer id) {
+        return pv.Pagnination(id);
 
     }
 
@@ -91,9 +100,42 @@ public class BookController {
         return pv.Filter(page, limit, bookfilter);
     }
 
+    @PostMapping("/filterFlutter")
+    public ResponseEntity<?> BookPageFilter1(
+            @RequestParam("page") Integer page,
+            @RequestParam("limit") Integer limit,
+            @RequestParam(value = "from", required = false, defaultValue = "null") String fromStr,
+            @RequestParam(value = "to", required = false, defaultValue = "null") String toStr,
+            @RequestParam(value = "rating", required = false, defaultValue = "null") String ratingStr,
+            @RequestParam(value = "list", required = false, defaultValue = "null") List<String> listStr) {
+
+        // Chuyển đổi các giá trị từ String sang Integer và Double nếu cần thiết
+        Integer from = (fromStr != null && !fromStr.equals("null")) ? Integer.valueOf(fromStr) : null;
+        Integer to = (toStr != null && !toStr.equals("null")) ? Integer.valueOf(toStr) : null;
+        Double rating = (ratingStr != null && !ratingStr.equals("null")) ? Double.valueOf(ratingStr) : null;
+        List<Integer> list = (listStr != null && !listStr.equals("null")) ? new ArrayList<>() : null;
+
+        if (list != null) {
+            for (String str : listStr) {
+                if (!str.equals("null")) {
+                    list.add(Integer.valueOf(str));
+                }
+            }
+        }
+
+        // Debug thông tin
+        System.out.println("limit: " + limit + ", from: " + from + ", to: " + to + ", rating: " + rating + ", list: "
+                + list + ", page: " + page);
+
+        return pv.FilterFlutter(page, limit, rating, from, to, list);
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateBook(@ModelAttribute BookAdCreateRes bookad, @PathVariable int id) {
-
+        // Kiểm tra nếu file là null hoặc rỗng
+        if (bookad.getFile() == null || bookad.getFile().isEmpty()) {
+            bookad.setFile(null); // Đặt file là null rõ ràng
+        }
         return pv.UpdateBook(id, bookad);
 
     }
@@ -133,6 +175,11 @@ public class BookController {
     @GetMapping("/admin/book-properties")
     public ResponseEntity<ResultDto<?>> getPropertiesList() {
         return adminBookService.getPropertiesList();
+    }
+
+    @GetMapping("/admin/bookOne/{bookId}")
+    public ResponseEntity<?> getOneBookAdmin(@PathVariable("bookId") int bookId) {
+        return adminBookService.getOneBookAdmin(bookId);
     }
 
 }

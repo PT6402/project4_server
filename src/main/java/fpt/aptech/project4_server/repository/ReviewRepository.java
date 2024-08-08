@@ -15,4 +15,7 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
     @Query("Select b from Review b where b.userDetail.id=:userID AND b.book.id=:bookID")
     Optional<Review> findByBookIdAndUserDetailId(@Param("userID") Integer userID, @Param("bookID") Integer bookID);
+    
+       @Query("Select b from Review b where b.userDetail.id=:userID AND b.book.id=:bookID")
+    List<Review> findAllByBookIdAndUserDetailId(@Param("userID") Integer userID, @Param("bookID") Integer bookID);
 }

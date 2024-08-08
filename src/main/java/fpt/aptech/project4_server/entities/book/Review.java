@@ -7,6 +7,7 @@ import fpt.aptech.project4_server.entities.user.UserDetail;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 @Table(name = "tbReview")
 public class Review extends BaseEntity {
-
+        @Lob
     private String content;
     private double rating;
 
