@@ -1,12 +1,9 @@
 package fpt.aptech.project4_server.controller.user;
 
 import fpt.aptech.project4_server.dto.order.OrderAdmin;
-import fpt.aptech.project4_server.dto.order.OrderAndDetailDto;
-import fpt.aptech.project4_server.dto.order.OrderCreateRequest;
-import fpt.aptech.project4_server.dto.order.OrderDetailDto;
 import fpt.aptech.project4_server.dto.order.OrderUpdateRequest;
 import fpt.aptech.project4_server.dto.order.PaymentCheck;
-import fpt.aptech.project4_server.entities.user.Order;
+import fpt.aptech.project4_server.dto.order.PaymentCheckForFlutter;
 import fpt.aptech.project4_server.security.CurrentUser;
 import fpt.aptech.project4_server.security.UserGlobal;
 import fpt.aptech.project4_server.service.OrderService;
@@ -29,14 +26,24 @@ public class OrderController {
         return orderService.checkPayment(user.getId(), paycheck);
     }
 
+    @PostMapping("/checkPaymentForFlutter")
+    public ResponseEntity<ResultDto<?>> checkPaymentForFlutter(@CurrentUser UserGlobal user, @RequestBody PaymentCheckForFlutter paymentCheckForFlutter) {
+        return orderService.checkPaymentForFlutter(user.getId(), paymentCheckForFlutter);
+    }
+
     @PostMapping("/checkout/{cartId}")
     public ResponseEntity<ResultDto<?>> checkoutCart(@CurrentUser UserGlobal user, @PathVariable int cartId) {
         return orderService.checkoutCart(user.getId(), cartId);
     }
 
+    @PostMapping("/create-payment-intent/{cartId}")
+    public ResponseEntity<ResultDto<?>> createPaymentIntentAndHandleOrder(@CurrentUser UserGlobal user, @PathVariable int cartId) {
+        return orderService.createPaymentIntentAndHandleOrder(user.getId(), cartId);
+    }
+
     @PutMapping("/{orderId}")
     public ResponseEntity<ResultDto<?>> updateOrder(@PathVariable int orderId,
-            @RequestBody OrderUpdateRequest orderUpdateRequest) {
+                                                    @RequestBody OrderUpdateRequest orderUpdateRequest) {
         return orderService.updateOrder(orderId, orderUpdateRequest);
     }
 
